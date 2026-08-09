@@ -17,8 +17,8 @@
 ### C-001 Confirm licensing and contribution model
 
 **Depends on:** none  
-**Status:** Engineering package prepared; blocked on qualified legal review  
-**Outcome:** Legal review confirms AGPL-3.0-or-later, dependency policy, contributor terms, and iOS distribution implications. Add `LICENSE`, SPDX policy, contribution guide, code of conduct, and security disclosure instructions.  
+**Status:** Complete on 2026-08-09 by founder risk acceptance; no qualified legal review was performed  
+**Outcome:** The founder adopted AGPL-3.0-or-later, the dependency policy, DCO contributor terms, and the documented iOS distribution constraints. The founder explicitly waived legal review as a repository-foundation gate; narrower legal gates remain before external contributions, distributed iOS builds, or relicensing. Added `LICENSE`, SPDX policy, contribution guide, code of conduct, security disclosure instructions, and a licensing validation script.  
 **Acceptance:** License scanner recognizes the project; prohibited or incompatible dependency classes are documented; no claim that AGPL alone prevents all private use.
 
 ### C-002 Create monorepo skeleton and ownership boundaries

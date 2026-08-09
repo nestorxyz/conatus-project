@@ -8,10 +8,11 @@ The alpha target is an iOS internal build, a Rust Linux machine agent, and a Rus
 
 The product and architecture are specified, but application code has not started. Implementation is intentionally divided into dependency-ordered tickets rather than a one-shot build.
 
-Ticket `C-001` has a provisional licensing and contribution package. It remains
-open pending the external legal review defined in
-[the licensing policy](docs/licensing-policy.md); dependent implementation
-tickets must not start until that gate is closed.
+Ticket `C-001` is complete. On 2026-08-09, the founder adopted the licensing and
+contribution package and explicitly accepted the risk of proceeding without
+qualified legal review. The narrower review gates before external contributions,
+iOS distribution, or relicensing remain documented in
+[the licensing policy](docs/licensing-policy.md).
 
 Start with:
 
@@ -50,7 +51,7 @@ Start with:
 - Privacy: administrators do not automatically receive session decryption access
 - Safety: deterministic Linux policy is authoritative; alpha mutation approvals are single-use
 - Repository: one monorepo with extractable deployables
-- Intended license: AGPL-3.0-or-later, pending ticket `C-001` legal confirmation
+- License: AGPL-3.0-or-later
 
 ## First implementation sequence
 

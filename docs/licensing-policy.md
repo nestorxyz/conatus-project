@@ -5,14 +5,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Licensing and Contribution Policy
 
-**Status:** Provisional project policy; external legal review required to close C-001  
+**Status:** Adopted 2026-08-09 by founder risk acceptance; no qualified legal review performed  
 **Project license:** `AGPL-3.0-or-later`  
 **Contribution mechanism:** Developer Certificate of Origin 1.1
 
-This document records the project's engineering policy, not legal advice. The
-founder must obtain qualified legal review before C-001 is marked complete and
-before public iOS distribution, accepting outside contributions, or a transaction
-that assumes relicensing rights.
+This document records the project's engineering policy, not legal advice. On
+2026-08-09, the founder explicitly accepted the unresolved legal risk and waived
+qualified legal review as a blocker to repository foundation work. This decision
+does not represent legal confirmation. Qualified review remains required before
+distributing an iOS build, accepting outside contributions, or entering a
+transaction that assumes relicensing rights.
 
 ## Project licensing
 
@@ -105,10 +107,14 @@ Internal distribution is not treated as a blanket exemption. App Store acceptanc
 is not evidence of license compliance, and AGPL compliance is not evidence of
 compliance with Apple's agreement.
 
-## Required review record
+## Founder risk acceptance and future review record
 
-C-001 can close only when a dated review identifies the reviewer and jurisdiction
-and answers, in writing:
+C-001 was closed on 2026-08-09 by founder risk acceptance, without a lawyer or
+law firm reviewing the policy. This waiver unblocks internal repository work only;
+it does not waive obligations imposed by licenses, contracts, or law.
+
+Before any remaining review gate closes, a dated record must identify the reviewer
+and jurisdiction and answer, in writing:
 
 - whether `AGPL-3.0-or-later` fits the hosted service and all planned binaries;
 - whether DCO-only contributions fit acquisition and relicensing goals;

@@ -26,7 +26,7 @@ Conatus needs a narrow foundation that can become a commercial-grade independent
 | Encryption | Per-device and per-machine identity keys; per-session content keys | Recovery may restore account control without recovering old content |
 | Approval policy | Read-only registered capabilities may auto-run; execution and mutation require approval; privileged actions denied | Safe initial posture with measurable friction |
 | Repository | One monorepo with extractable deployables | Fast coordination without architectural coupling |
-| License | AGPL-3.0-or-later, pending legal confirmation | Network-modified distributions must offer corresponding source under the license terms |
+| License | AGPL-3.0-or-later with DCO 1.1 contributions | Founder accepted proceeding without legal review on 2026-08-09; narrower review gates remain in the licensing policy |
 
 ## Organization ownership and departure policy
 
@@ -53,7 +53,6 @@ Administrators may manage retention, membership, machines, and policy. They do n
 4. **iOS terminal renderer:** evaluate an established permissively licensed emulator versus a native renderer backed by a Rust parser.
 5. **Railway PostgreSQL:** decide between Railway-managed PostgreSQL and an external managed provider after restore and failover testing.
 6. **Business model:** validate pricing before billing implementation.
-7. **License:** obtain legal confirmation that AGPL-3.0-or-later matches contributor, app-store, dependency, and acquisition goals.
 
 ## Business-model recommendation
 
@@ -78,4 +77,3 @@ Railway supports persistent services, WebSockets, private networking, PostgreSQL
 - Preserve container and database portability.
 
 Railway documentation currently contains inconsistent WebSocket-duration guidance, so the acceptance test—not an assumed lifetime—is authoritative for Conatus.
-
