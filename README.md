@@ -8,11 +8,16 @@ The alpha target is an iOS internal build, a Rust Linux machine agent, and a Rus
 
 The product and architecture are specified, but application code has not started. Implementation is intentionally divided into dependency-ordered tickets rather than a one-shot build.
 
-Ticket `C-001` is complete. On 2026-08-09, the founder adopted the licensing and
+Tickets `C-001` through `C-003` are complete. On 2026-08-09, the founder adopted the licensing and
 contribution package and explicitly accepted the risk of proceeding without
 qualified legal review. The narrower review gates before external contributions,
 iOS distribution, or relicensing remain documented in
 [the licensing policy](docs/licensing-policy.md).
+
+The repository skeleton and its dependency-free CI/supply-chain quality gates
+are also complete; the next dependency-unblocked work is the C-004 Rust web-stack
+spike, C-005 terminal-renderer spike, C-006 identity decision, or C-007
+cryptographic design review.
 
 Start with:
 
@@ -23,6 +28,18 @@ Start with:
 5. [Technical specification](docs/technical-spec.md)
 6. [Security threat model](docs/threat-model.md)
 7. [Sequential implementation backlog](docs/implementation-backlog.md)
+
+## Bootstrap
+
+From a clean checkout, verify the repository skeleton with:
+
+```sh
+make bootstrap
+```
+
+The bootstrap is dependency-free: it validates component ownership, build entry
+points, and dependency boundaries without installing packages or changing the
+host system. Component-specific build tools are introduced by later tickets.
 
 ## Instructions for the implementing agent
 

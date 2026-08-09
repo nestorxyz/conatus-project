@@ -1,0 +1,15 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "@TIMESTAMP@",
+    "component": {
+      "type": "application",
+      "name": "conatus",
+      "version": "@REVISION@",
+      "licenses": [{"license": {"id": "AGPL-3.0-or-later"}}]
+    }
+  },
+  "components": []
+}

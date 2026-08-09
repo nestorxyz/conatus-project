@@ -24,13 +24,16 @@
 ### C-002 Create monorepo skeleton and ownership boundaries
 
 **Depends on:** C-001  
+**Status:** Complete on 2026-08-09
 **Outcome:** Create `apps/mobile`, `agents/machine`, `services/control-plane`, `packages/protocol`, and `packages/test-vectors`, each with an owner, README, build entry point, and dependency boundary.  
 **Acceptance:** Clean checkout runs a single documented bootstrap and verifies every empty component without global machine mutation.
 
 ### C-003 Establish CI quality and supply-chain baseline
 
 **Depends on:** C-002  
-**Outcome:** Formatting, linting, unit tests, dependency lock verification, secret scanning, license scanning, SBOM generation, and protected release workflow.  
+**Status:** Complete on 2026-08-09
+
+**Outcome:** Added local and GitHub CI gates for bootstrap, formatting, shell lint and tests, dependency locks, secret patterns, licensing, dependency-license inventory, and CycloneDX SBOM generation. GitHub Actions are commit-pinned, and signed-tag release validation is gated by the protected `release` environment. Negative fixtures record all four required failure modes.
 **Acceptance:** A deliberately malformed format, test failure, fake secret, and prohibited license each fail CI in a fixture or recorded validation.
 
 ### C-004 Select Rust web stack through a spike

@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: 2026 Conatus contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+name: Protected release validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing signed release tag to validate
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    environment: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.tag }}
+      - name: Require a signed tag
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: git verify-tag "$RELEASE_TAG"
+      - name: Run quality gates
+        run: make ci
+      - name: Generate release SBOM
+        run: make sbom
+      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: conatus-${{ inputs.tag }}-sbom
+          path: artifacts/conatus.cdx.json
+          if-no-files-found: error

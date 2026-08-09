@@ -12,3 +12,7 @@ target/
 node_modules/
 coverage/
 dist/
+
+# Local bootstrap/tool caches
+.cache/
+artifacts/
