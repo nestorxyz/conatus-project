@@ -27,7 +27,7 @@ Start with:
 ## Instructions for the implementing agent
 
 1. Read the documents above before changing files.
-2. Inspect Git status and preserve `baseline.md`, `warp/`, and unrelated user work.
+2. Inspect Git status and preserve unrelated user work.
 3. Work on one backlog ticket at a time and honor its dependencies.
 4. Begin with `C-001 Confirm licensing and contribution model`; do not scaffold the product before resolving that gate.
 5. Update or add an ADR before implementation diverges from an accepted decision.
@@ -67,10 +67,3 @@ C-001 License and contribution model
 ```
 
 Parallel work is allowed only where the backlog dependencies permit it. The first executable alpha milestone is defined by acceptance scenarios `A-001` through `A-015` in [alpha-scope.md](docs/alpha-scope.md).
-
-## Reference material
-
-- `baseline.md` contains the original product direction.
-- `warp/` is a local reference checkout used to study engineering patterns and standards.
-
-Neither reference is the Conatus implementation, and neither should be modified as part of normal Conatus tickets.

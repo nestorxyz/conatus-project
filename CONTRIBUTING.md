@@ -16,7 +16,6 @@ security, and reviewability take priority over speed.
 - Discuss security-sensitive design changes before implementation.
 - Never include credentials, provider authentication files, private keys, tokens,
   personal data, or proprietary source code in an issue, patch, fixture, or log.
-- Do not copy code from `warp/`; it is architectural reference material only.
 
 ## Contribution process
 

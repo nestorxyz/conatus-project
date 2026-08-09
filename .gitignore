@@ -1,9 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Conatus contributors
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-# Local architectural reference checkout; never part of Conatus.
-/warp/
-
 # Project secrets are stored outside the repository.
 .env
 .env.*
