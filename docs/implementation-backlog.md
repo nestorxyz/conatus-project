@@ -39,7 +39,10 @@
 ### C-004 Select Rust web stack through a spike
 
 **Depends on:** C-002  
-**Outcome:** Compare Axum and Actix Web for authenticated WebSockets, cancellation, backpressure, OpenTelemetry, graceful shutdown, and test ergonomics; record ADR.  
+**Status:** Complete on 2026-08-09
+**Outcome:** Compared Axum and Actix Web and selected Axum in ADR 0002. A locked,
+disposable loopback harness verifies authenticated WebSockets, bounded-queue
+backpressure, trace instrumentation, graceful shutdown, and 96 reconnect cycles.
 **Acceptance:** The selected stack passes a small load/reconnect harness and the rejected option is explained without building production services.
 
 ### C-005 Select iOS terminal rendering approach

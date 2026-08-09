@@ -1,3 +1,11 @@
 # SPDX-FileCopyrightText: 2026 Conatus contributors
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # name	version	license	use	source	review
+axum	0.8.9	MIT	C-004 WebSocket spike	https://crates.io/crates/axum	2026-08-09
+futures-util	0.3.33	MIT OR Apache-2.0	C-004 stream utilities	https://crates.io/crates/futures-util	2026-08-09
+http	1.5.0	MIT OR Apache-2.0	C-004 test request types	https://crates.io/crates/http	2026-08-09
+tokio	1.53.1	MIT	C-004 async runtime	https://crates.io/crates/tokio	2026-08-09
+tokio-tungstenite	0.27.0	MIT	C-004 WebSocket test client	https://crates.io/crates/tokio-tungstenite	2026-08-09
+tokio-util	0.7.19	MIT	C-004 cancellation token	https://crates.io/crates/tokio-util	2026-08-09
+tracing	0.1.44	MIT	C-004 instrumentation	https://crates.io/crates/tracing	2026-08-09
+tracing-subscriber	0.3.23	MIT	C-004 instrumentation test	https://crates.io/crates/tracing-subscriber	2026-08-09

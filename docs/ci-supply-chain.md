@@ -19,9 +19,10 @@ which prove that malformed formatting, a failing test, a synthetic credential,
 and an explicitly prohibited dependency license are rejected.
 
 `make sbom` writes a CycloneDX 1.5 document to
-`artifacts/conatus.cdx.json`. Until package manifests are introduced, its
-component list is intentionally empty. A ticket that adds a package ecosystem
-must extend SBOM generation and the license inventory in the same change.
+`artifacts/conatus.cdx.json`. Its component list is generated from the reviewed
+dependency-license inventory. A ticket that adds a package ecosystem must extend
+the inventory in the same change; direct dependencies remain locked by the
+ecosystem lockfile and the inventory check rejects prohibited license classes.
 
 The release workflow accepts only an existing signed tag and targets the GitHub
 `release` environment. Repository administrators must configure that environment

@@ -5,8 +5,9 @@ organization-scoped authorization.
 
 ## Build entry point
 
-Run `make verify` from this directory. The Rust web-stack spike will add the
-first executable crate after its framework decision is recorded.
+Run `make verify` from this directory. The disposable C-004 comparison harness
+is under `spikes/rust-web-stack`; it is acceptance evidence and is not a
+production service.
 
 ## Dependency boundary
 

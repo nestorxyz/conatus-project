@@ -48,7 +48,8 @@ Administrators may manage retention, membership, machines, and policy. They do n
 ## Open decisions that block specific tickets
 
 1. **Identity provider:** evaluate WorkOS, Clerk, Auth0, and a self-hosted OIDC option before identity implementation.
-2. **Rust HTTP framework:** choose Axum or Actix Web through a small WebSocket and observability spike.
+2. **Rust HTTP framework:** resolved by [ADR 0002](0002-rust-web-stack.md),
+   which selects Axum after the C-004 WebSocket and observability spike.
 3. **E2EE construction:** commission a cryptographic design review before implementing production keys; do not invent primitives.
 4. **iOS terminal renderer:** evaluate an established permissively licensed emulator versus a native renderer backed by a Rust parser.
 5. **Railway PostgreSQL:** decide between Railway-managed PostgreSQL and an external managed provider after restore and failover testing.
