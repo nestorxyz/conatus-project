@@ -14,6 +14,7 @@ Start here:
 10. [Sequential implementation backlog](implementation-backlog.md)
 11. [Licensing and contribution policy](licensing-policy.md)
 12. [CI and supply-chain baseline](ci-supply-chain.md)
+13. [Identity-provider decision](decisions/0007-identity-provider.md)
 
 The product, technical, and security specifications define invariants. ADRs explain durable choices. The alpha scope defines the first release boundary. The backlog orders implementation but does not override an invariant or ADR.
 

@@ -47,7 +47,9 @@ Administrators may manage retention, membership, machines, and policy. They do n
 
 ## Open decisions that block specific tickets
 
-1. **Identity provider:** evaluate WorkOS, Clerk, Auth0, and a self-hosted OIDC option before identity implementation.
+1. **Identity provider:** resolved by [ADR 0007](0007-identity-provider.md),
+   which selects WorkOS AuthKit while keeping authorization and durable security
+   audit records inside Conatus.
 2. **Rust HTTP framework:** resolved by [ADR 0002](0002-rust-web-stack.md),
    which selects Axum after the C-004 WebSocket and observability spike.
 3. **E2EE construction:** commission a cryptographic design review before implementing production keys; do not invent primitives.

@@ -8,7 +8,7 @@ The alpha target is an Android internal build, a Rust Linux machine agent, and a
 
 The product and architecture are specified, but application code has not started. Implementation is intentionally divided into dependency-ordered tickets rather than a one-shot build.
 
-Tickets `C-001` through `C-004` are complete. On 2026-08-09, the founder adopted the licensing and
+Tickets `C-001` through `C-004` and C-006 are complete. On 2026-08-09, the founder adopted the licensing and
 contribution package and explicitly accepted the risk of proceeding without
 qualified legal review. The narrower review gates before external contributions,
 iOS distribution, or relicensing remain documented in
@@ -17,8 +17,9 @@ iOS distribution, or relicensing remain documented in
 The repository skeleton, CI/supply-chain baseline, and Axum web-stack decision
 are complete. ADR 0004 moved the private alpha to Android and deferred C-005;
 ADR 0006 selects fully native mobile clients. The next dependency-unblocked work
-is the C-008 Android terminal-renderer spike, C-006 identity decision, or C-007
-cryptographic design review.
+is the C-008 Android terminal-renderer spike or C-007 cryptographic design
+review. C-006 selected WorkOS AuthKit while retaining Conatus-owned
+authorization and durable security audit records.
 
 Start with:
 

@@ -55,7 +55,12 @@ backpressure, trace instrumentation, graceful shutdown, and 96 reconnect cycles.
 ### C-006 Select identity provider
 
 **Depends on:** C-001  
-**Outcome:** Evaluate OIDC providers for passkeys/MFA, organizations, revocation, audit, pricing, exportability, native Android support, and future native iOS support; record ADR.
+**Status:** Complete on 2026-08-11
+**Outcome:** Evaluated WorkOS AuthKit, Clerk, Auth0, and self-hosted Keycloak and
+selected WorkOS AuthKit in ADR 0007. Conatus retains authoritative
+organization authorization, device and machine trust, and durable security
+audit records. Native clients use a public-client system-browser authorization
+code flow with PKCE, subject to the C-050 conformance proof.
 **Acceptance:** Document login, refresh, logout, lost-device, provider outage, and migration behavior.
 
 ### C-007 Complete cryptographic design review
