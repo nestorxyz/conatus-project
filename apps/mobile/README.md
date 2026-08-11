@@ -1,14 +1,25 @@
 # Mobile application
 
-React Native iOS client for timelines, approvals, and terminal interaction.
+Native Kotlin/Jetpack Compose Android client for timelines, approvals, and
+terminal interaction. The terminal is a custom Android `View` backed by a Rust
+parser through a bounded JNI boundary. Native iOS work is retained but deferred
+until physical-device validation is available.
 
 ## Build entry point
 
 Run `make verify` from this directory. A later mobile-foundation ticket will add
-the React Native toolchain without changing this entry point.
+the pinned Android Gradle, Kotlin, Compose, Rust, and NDK toolchains without
+changing this entry point.
+
+The terminal-renderer evaluations and physical-device procedures live under
+`spikes/ios-terminal-renderer` (deferred C-005) and
+`spikes/android-terminal-renderer` (C-008). Run `make spike` to validate their
+tracked corpora and evidence schemas. These checks do not replace either
+ticket's physical-device acceptance gate.
 
 ## Dependency boundary
 
 May depend on generated artifacts from `packages/protocol`. It must not import
-control-plane or machine-agent implementation code. Native platform modules stay
-behind mobile-owned TypeScript interfaces.
+control-plane or machine-agent implementation code. JNI-accessible Rust cores
+stay behind mobile-owned, versioned Kotlin interfaces and cannot import
+deployable-component internals.

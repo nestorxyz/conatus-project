@@ -41,7 +41,8 @@ Large output, diffs, and files are encrypted before upload. References include d
 - Additive payload changes use new fields.
 - Semantic changes use a new payload version.
 - Mobile and Linux agent support the current and immediately previous production protocol generation.
-- Golden vectors are generated once and consumed by Rust and TypeScript tests.
+- Golden vectors are generated once and consumed by Rust and Kotlin tests;
+  future Swift tests consume the same language-neutral fixtures.
 - Provider protocol versions are independent of Conatus protocol versions.
 
 ## Railway acceptance requirements
@@ -61,4 +62,3 @@ The protocol ticket must add:
 - Error taxonomy
 - Golden canonicalization and compatibility vectors
 - Size and timeout constants with rationale
-

@@ -1,0 +1,111 @@
+// SPDX-FileCopyrightText: 2026 Conatus contributors
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+package dev.conatus.terminal
+
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Typeface
+import android.text.InputType
+import android.util.AttributeSet
+import android.util.TypedValue
+import android.view.MotionEvent
+import android.view.View
+import android.view.accessibility.AccessibilityEvent
+import android.view.inputmethod.BaseInputConnection
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputConnection
+import kotlin.math.floor
+
+internal class TerminalView @JvmOverloads constructor(
+    context: Context,
+    attributes: AttributeSet? = null,
+) : View(context, attributes) {
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.rgb(232, 238, 242)
+        typeface = Typeface.MONOSPACE
+        textSize = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_SP,
+            16f,
+            resources.displayMetrics,
+        )
+    }
+    private var snapshot: TerminalSnapshot? = null
+    private var selectedRow: Int? = null
+    var onTextInput: ((String) -> Unit)? = null
+
+    init {
+        isFocusable = true
+        isFocusableInTouchMode = true
+        importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
+        setBackgroundColor(Color.rgb(16, 20, 24))
+    }
+
+    fun show(value: TerminalSnapshot) {
+        val previous = snapshot
+        if (previous != null && value.generation < previous.generation) return
+        snapshot = value
+        contentDescription = accessibleText(value)
+        invalidate()
+        sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED)
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        val current = snapshot ?: return
+        val metrics = paint.fontMetrics
+        val lineHeight = metrics.descent - metrics.ascent
+        current.rows.forEachIndexed { rowIndex, row ->
+            if (selectedRow == rowIndex) {
+                paint.color = Color.rgb(48, 73, 83)
+                canvas.drawRect(0f, rowIndex * lineHeight, width.toFloat(), (rowIndex + 1) * lineHeight, paint)
+            }
+            paint.color = Color.rgb(232, 238, 242)
+            val baseline = rowIndex * lineHeight - metrics.ascent
+            row.forEachIndexed { column, cell ->
+                canvas.drawText(cell.text, column * paint.measureText("M"), baseline, paint)
+            }
+        }
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (event.action != MotionEvent.ACTION_UP) return true
+        requestFocus()
+        val lineHeight = paint.fontMetrics.run { descent - ascent }
+        selectedRow = floor(event.y / lineHeight).toInt().coerceIn(0, (snapshot?.screenLines ?: 1) - 1)
+        sendAccessibilityEventUnchecked(
+            AccessibilityEvent.obtain(AccessibilityEvent.TYPE_ANNOUNCEMENT).apply {
+                text.add(selectedText())
+                className = TerminalView::class.java.name
+                packageName = context.packageName
+            },
+        )
+        invalidate()
+        return true
+    }
+
+    override fun onCheckIsTextEditor(): Boolean = true
+
+    override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection {
+        outAttrs.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+        outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI
+        return object : BaseInputConnection(this, false) {
+            override fun commitText(text: CharSequence?, newCursorPosition: Int): Boolean {
+                text?.toString()?.let { onTextInput?.invoke(it) }
+                return true
+            }
+        }
+    }
+
+    fun selectedText(): String = selectedRow
+        ?.let { snapshot?.rows?.getOrNull(it) }
+        ?.joinToString(separator = "") { it.text }
+        ?.trimEnd()
+        .orEmpty()
+
+    private fun accessibleText(value: TerminalSnapshot): String = value.rows
+        .joinToString(separator = "\n") { row -> row.joinToString(separator = "") { it.text }.trimEnd() }
+        .trimEnd()
+}

@@ -1,8 +1,8 @@
 # Conatus
 
-Conatus is an open-source, mobile-first control surface for developers to operate Linux machines and terminal-based coding agents securely from an iPhone. It combines a structured, resumable block timeline with a full interactive terminal.
+Conatus is an open-source, mobile-first control surface for developers to operate Linux machines and terminal-based coding agents securely from a phone. It combines a structured, resumable block timeline with a full interactive terminal.
 
-The alpha target is an iOS internal build, a Rust Linux machine agent, and a Rust control plane hosted on Railway. Codex is the first structured agent adapter; Codex, Claude Code, Gemini CLI, and other terminal applications remain usable through the essential PTY mode.
+The alpha target is an Android internal build, a Rust Linux machine agent, and a Rust control plane hosted on Railway. Codex is the first structured agent adapter; Codex, Claude Code, Gemini CLI, and other terminal applications remain usable through the essential PTY mode. iOS is deferred until physical-device validation is available.
 
 ## Implementation status
 
@@ -15,8 +15,10 @@ iOS distribution, or relicensing remain documented in
 [the licensing policy](docs/licensing-policy.md).
 
 The repository skeleton, CI/supply-chain baseline, and Axum web-stack decision
-are complete; the next dependency-unblocked work is the C-005 terminal-renderer
-spike, C-006 identity decision, or C-007 cryptographic design review.
+are complete. ADR 0004 moved the private alpha to Android and deferred C-005;
+ADR 0006 selects fully native mobile clients. The next dependency-unblocked work
+is the C-008 Android terminal-renderer spike, C-006 identity decision, or C-007
+cryptographic design review.
 
 Start with:
 
@@ -57,7 +59,8 @@ host system. Component-specific build tools are introduced by later tickets.
 
 - Product name: Conatus
 - Positioning: independent developer product
-- Mobile: React Native, iOS first, internal distribution
+- Mobile: native Kotlin/Jetpack Compose, Android first, internal distribution;
+  native iOS deferred
 - Machine agent: Linux only, Rust, unprivileged user service
 - Control plane: Rust on Railway with PostgreSQL
 - Interaction: structured blocks plus essential full PTY
@@ -76,7 +79,7 @@ C-001 License and contribution model
   -> C-002 Monorepo skeleton
   -> C-003 CI and supply-chain baseline
   -> C-004 Rust web-stack spike
-  -> C-005 iOS terminal-renderer spike
+  -> C-008 Android terminal-renderer spike
   -> C-006 Identity-provider decision
   -> C-007 Cryptographic design review
   -> Phase 1 protocol tickets

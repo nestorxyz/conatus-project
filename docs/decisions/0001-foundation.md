@@ -13,7 +13,7 @@ Conatus needs a narrow foundation that can become a commercial-grade independent
 |---|---|---|
 | Product | Independent mobile control surface for developers | Acquisition interest is an outcome, not the product identity |
 | Name | Conatus | Trademark and domain review remain required before public launch |
-| Mobile | React Native, iOS first, internal distribution | Android code quality is preserved but Android release work is deferred |
+| Mobile | React Native, iOS first, internal distribution | Superseded by ADR 0004 for Android-first alpha and ADR 0006 for native mobile clients |
 | Machine | Linux only | No premature macOS or Windows abstractions |
 | Terminal | Full PTY is essential in alpha | Terminal correctness is on the critical path |
 | Agents | Any CLI agent via PTY; Codex first structured adapter | Broad compatibility plus one high-quality integration |
@@ -51,7 +51,9 @@ Administrators may manage retention, membership, machines, and policy. They do n
 2. **Rust HTTP framework:** resolved by [ADR 0002](0002-rust-web-stack.md),
    which selects Axum after the C-004 WebSocket and observability spike.
 3. **E2EE construction:** commission a cryptographic design review before implementing production keys; do not invent primitives.
-4. **iOS terminal renderer:** evaluate an established permissively licensed emulator versus a native renderer backed by a Rust parser.
+4. **Mobile terminal renderer:** ADR 0004 defers the iOS C-005 gate; ADR 0005
+   selects the native Android renderer candidate; ADR 0006 selects native mobile
+   clients.
 5. **Railway PostgreSQL:** decide between Railway-managed PostgreSQL and an external managed provider after restore and failover testing.
 6. **Business model:** validate pricing before billing implementation.
 

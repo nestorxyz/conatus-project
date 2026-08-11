@@ -24,11 +24,11 @@ grep -q 'AGPL-3.0-or-later' docs/licensing-policy.md ||
 grep -q 'Developer Certificate of Origin 1.1' CONTRIBUTING.md ||
   fail 'DCO contribution terms are missing'
 
-if find . -path './.git' -prune -o -path './warp' -prune -o -type f \
+if find . -path './.git' -prune -o -path './.cache' -prune -o \
+  -path './warp' -prune -o -type f \
   \( -name '*.pem' -o -name '*.key' -o -name '.env' -o -name '.env.*' \) \
   ! -name '.env.example' -print | grep -q .; then
   fail 'a prohibited secret-like file is present'
 fi
 
 printf 'licensing check: ok (AGPL-3.0-or-later)\n'
-

@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2026 Conatus contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+[package]
+name = "conatus-android-terminal-spike"
+version = "0.0.0"
+edition = "2024"
+publish = false
+license = "AGPL-3.0-or-later"
+
+[dependencies]
+alacritty_terminal = "=0.26.0"
+jni = "=0.21.1"
+
+[lib]
+crate-type = ["rlib", "cdylib"]

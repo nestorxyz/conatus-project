@@ -1,11 +1,11 @@
 # Alpha Scope and Acceptance
 
 **Status:** Approved implementation target  
-**Platforms:** iOS internal build, Linux machine agent, Railway control plane
+**Platforms:** Android internal build, Linux machine agent, Railway control plane
 
 ## Goal
 
-A developer can pair a Linux machine, start or monitor work from an iPhone, resolve a single-use approval, use a real terminal, lose connectivity, and recover the authoritative session without duplicate execution.
+A developer can pair a Linux machine, start or monitor work from an Android phone, resolve a single-use approval, use a real terminal, lose connectivity, and recover the authoritative session without duplicate execution.
 
 ## Included
 
@@ -20,14 +20,14 @@ A developer can pair a Linux machine, start or monitor work from an iPhone, reso
 - Arbitrary installed CLI agents through PTY mode
 - Single-use approvals
 - Event streaming, durable cursors, reconnect, and replay
-- Full-screen iOS terminal with input lease, resize, control-key accessory, and bounded scrollback
+- Full-screen Android terminal with input lease, resize, control-key accessory, and bounded scrollback
 - Basic Git status and diff observation
-- Internal iOS distribution and signed Linux-agent artifacts
+- Internal Android distribution and signed Linux-agent artifacts
 - Railway deployment with PostgreSQL, health checks, backups, and operational telemetry
 
 ## Excluded
 
-- Android, macOS, and Windows agents
+- iOS mobile application; macOS, Android, and Windows machine agents
 - App Store distribution
 - Invitations and team administration UI
 - Shared terminal input
@@ -65,4 +65,3 @@ A developer can pair a Linux machine, start or monitor work from an iPhone, reso
 - Crash-free internal mobile sessions exceed the agreed threshold over a two-week dogfood period.
 - No duplicate execution incident during forced retry and reconnect testing.
 - On-call owner, rollback instructions, restore instructions, and security contact exist.
-

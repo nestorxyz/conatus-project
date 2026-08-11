@@ -44,10 +44,15 @@ The cloud authenticates routing metadata and authorization but should not requir
 
 ### Mobile client
 
-- React Native and TypeScript, targeting iOS internal builds first.
-- Native Swift/Kotlin modules for terminal rendering, secure keys, background behavior, and platform integrations where React Native is insufficient.
+- Native Kotlin and Jetpack Compose, targeting Android internal builds first;
+  native Swift/SwiftUI iOS work is deferred until physical-device validation is
+  available.
+- A custom Android terminal `View` uses a Rust parser through a narrow,
+  versioned JNI boundary. Kotlin remains authoritative for rendering, IME,
+  selection, TalkBack, lifecycle, secure keys, and platform integrations.
 - Encrypted local persistence for session metadata and event projections.
-- Generated API and protocol types; handwritten network DTO duplication is prohibited.
+- Generated Kotlin API and protocol types; handwritten network DTO duplication
+  is prohibited.
 
 ### Machine agent
 

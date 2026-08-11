@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Conatus contributors
+  SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<resources>
+    <style name="Theme.ConatusTerminalSpike" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:colorAccent">#80CBC4</item>
+        <item name="android:navigationBarColor">#101418</item>
+        <item name="android:statusBarColor">#101418</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

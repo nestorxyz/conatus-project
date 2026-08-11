@@ -48,13 +48,14 @@ backpressure, trace instrumentation, graceful shutdown, and 96 reconnect cycles.
 ### C-005 Select iOS terminal rendering approach
 
 **Depends on:** C-001, C-002  
-**Outcome:** Evaluate candidate terminal parser/renderers for license, UTF-8, ANSI/OSC safety, accessibility, performance, selection, and React Native integration; record ADR.  
+**Status:** Deferred on 2026-08-09 by ADR 0004 until physical iPhone hardware is available
+**Outcome:** Evaluate candidate terminal parser/renderers for license, UTF-8, ANSI/OSC safety, accessibility, performance, selection, and native Swift integration; record ADR.
 **Acceptance:** Prototype renders the malicious-terminal corpus and a long scrollback trace on a physical iPhone without unsafe side effects.
 
 ### C-006 Select identity provider
 
 **Depends on:** C-001  
-**Outcome:** Evaluate OIDC providers for passkeys/MFA, organizations, revocation, audit, pricing, exportability, and React Native support; record ADR.  
+**Outcome:** Evaluate OIDC providers for passkeys/MFA, organizations, revocation, audit, pricing, exportability, native Android support, and future native iOS support; record ADR.
 **Acceptance:** Document login, refresh, logout, lost-device, provider outage, and migration behavior.
 
 ### C-007 Complete cryptographic design review
@@ -63,19 +64,31 @@ backpressure, trace instrumentation, graceful shutdown, and 96 reconnect cycles.
 **Outcome:** Specify device/machine identity, pairing transcript, per-session keys, key wrapping, rotation, recovery, revocation generation, algorithms, libraries, and metadata authentication.  
 **Acceptance:** Independent expert review closes all critical/high findings before production cryptography is implemented.
 
+### C-008 Select Android terminal rendering approach
+
+**Depends on:** C-001, C-002
+**Status:** In progress; ADR 0005, candidate comparison, malicious corpus,
+evidence validator, pinned Rust parser/grid core, bounded JNI surface, and host
+corpus tests are complete. The Android release harness builds successfully;
+physical-device validation was deferred by the founder on 2026-08-11 and is
+documented in the spike handoff. Device evidence remains required before
+selection.
+**Outcome:** Evaluate established permissively licensed Android terminal parser/renderers and a native Kotlin renderer backed by a Rust parser for UTF-8, ANSI/OSC safety, TalkBack, performance, selection, Compose/View hosting, and JNI integration; record ADR.
+**Acceptance:** Prototype renders the malicious-terminal corpus and a 10,000-line scrollback trace on a physical Android phone without unsafe side effects. Record device, Android/Gradle/JDK versions, duration, peak memory, lifecycle, selection, largest-font-scale, and TalkBack evidence.
+
 ## Phase 1: Protocol and deterministic core
 
 ### C-010 Define protocol schemas and error taxonomy
 
 **Depends on:** C-004, C-007  
 **Outcome:** Add versioned Protobuf handshake, envelope, session, run, approval, PTY, artifact, and error schemas.  
-**Acceptance:** Rust and TypeScript generation succeeds; schema lint and compatibility rules run in CI.
+**Acceptance:** Rust and Kotlin generation succeeds; schema lint and compatibility rules run in CI. Add Swift generation before resumed iOS implementation.
 
 ### C-011 Add protocol golden vectors
 
 **Depends on:** C-010  
 **Outcome:** Canonical binary/JSON diagnostic vectors cover known, unknown, malformed, oversized, and previous-version messages.  
-**Acceptance:** Rust and TypeScript independently parse and re-emit every preservation vector identically where required.
+**Acceptance:** Rust and Kotlin independently parse and re-emit every preservation vector identically where required; future Swift bindings must pass the same vectors.
 
 ### C-012 Implement canonical operation model
 
@@ -98,7 +111,7 @@ backpressure, trace instrumentation, graceful shutdown, and 96 reconnect cycles.
 ### C-015 Implement block projection core
 
 **Depends on:** C-014  
-**Outcome:** TypeScript projection creates fallback, user, command, approval, agent, error, Git, and test blocks from events.  
+**Outcome:** A deterministic projection core consumable from Kotlin creates fallback, user, command, approval, agent, error, Git, and test blocks from events; choose pure Kotlin or a bounded shared Rust core before implementation.
 **Acceptance:** Rebuilding from the same event stream is deterministic; unknown events survive and render safely (`P-031`–`P-034`).
 
 ## Phase 2: Control-plane durable kernel
@@ -209,10 +222,10 @@ backpressure, trace instrumentation, graceful shutdown, and 96 reconnect cycles.
 **Outcome:** Ordered bounded frames, acknowledgement, checkpoint, lease transfer, and unavailable-history signaling.  
 **Acceptance:** Random disconnect test restores a coherent screen and labels missing history (`P-023`).
 
-### C-042 Implement iOS terminal native bridge
+### C-042 Integrate Android terminal core
 
-**Depends on:** C-005, C-041  
-**Outcome:** React Native screen integrates the selected safe terminal renderer and binary PTY frames.  
+**Depends on:** C-008, C-041
+**Outcome:** The native Kotlin app integrates the selected Rust terminal core, custom Android terminal view, and binary PTY frames through the bounded JNI API.
 **Acceptance:** Physical-device performance, background/foreground, memory pressure, rotation, and parser-security tests pass.
 
 ### C-043 Implement mobile terminal controls
@@ -227,7 +240,7 @@ backpressure, trace instrumentation, graceful shutdown, and 96 reconnect cycles.
 **Outcome:** Test installed stable Codex, Claude Code, and Gemini CLI interactively without special parsing.  
 **Acceptance:** Start, authenticate through provider-supported local flow, operate, interrupt, resize, disconnect, and resume terminal observation (`A-008`).
 
-## Phase 5: iOS product shell
+## Phase 5: Android product shell
 
 ### C-050 Implement authentication and secure local session
 
@@ -241,11 +254,11 @@ backpressure, trace instrumentation, graceful shutdown, and 96 reconnect cycles.
 **Outcome:** Separate personal/company contexts, machine reachability, active runs, pending approvals, completions, and stale-state UI.  
 **Acceptance:** No recents or cached content leak across organization switching (`P-004`, `P-005`).
 
-### C-052 Implement iOS pairing flow
+### C-052 Implement Android pairing flow
 
 **Depends on:** C-031, C-050  
 **Outcome:** Scan/enter challenge, compare identity, confirm, expire, recover, and revoke.  
-**Acceptance:** UX and security pairing scenarios pass on physical devices (`A-001`).
+**Acceptance:** UX and security pairing scenarios pass on physical Android devices (`A-001`).
 
 ### C-053 Implement session timeline and local projections
 
@@ -332,7 +345,7 @@ backpressure, trace instrumentation, graceful shutdown, and 96 reconnect cycles.
 ### C-073 Create signed internal release pipeline
 
 **Depends on:** C-003, C-030, C-050, C-070  
-**Outcome:** Signed Linux agent and iOS internal builds, provenance, SBOM, staged environment promotion, and rollback.  
+**Outcome:** Signed Linux agent and Android internal builds, provenance, SBOM, staged environment promotion, and rollback.
 **Acceptance:** Tampered artifact is rejected; previous version can be restored without schema loss.
 
 ### C-074 Conduct alpha security review
@@ -355,6 +368,6 @@ backpressure, trace instrumentation, graceful shutdown, and 96 reconnect cycles.
 4. Gemini CLI structured adapter
 5. Signed automatic Linux-agent updates
 6. Team audit export and policy management
-7. Android product work
+7. Resume iOS renderer and product work
 8. App Store release preparation
 9. Billing and plan enforcement

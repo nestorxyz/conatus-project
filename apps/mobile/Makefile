@@ -1,4 +1,17 @@
-.PHONY: verify
-verify:
+.PHONY: verify spike ios-spike android-spike android-native-core
+verify: spike
 	@test -f README.md
 	@test -f OWNERS
+
+spike: ios-spike android-spike
+
+ios-spike:
+	@cd ../.. && ./scripts/check-ios-terminal-spike.sh
+
+android-spike: android-native-core
+	@cd ../.. && ./scripts/check-android-terminal-spike.sh
+
+android-native-core:
+	@cd spikes/android-terminal-renderer/native-core && cargo test --locked
+	@cd spikes/android-terminal-renderer/native-core && cargo clippy --locked --all-targets -- -D warnings
+	@cd spikes/android-terminal-renderer/native-core && cargo fmt --check

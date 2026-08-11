@@ -47,7 +47,8 @@ that ticket.
 
 ## Repository boundaries
 
-- `apps/mobile`: React Native client; may consume generated protocol artifacts.
+- `apps/mobile`: native Kotlin/Jetpack Compose Android client; may consume
+  generated Kotlin protocol artifacts and narrowly scoped Rust native cores.
 - `agents/machine`: unprivileged Rust Linux agent; may consume Rust protocol
   artifacts and must not depend on service or mobile internals.
 - `services/control-plane`: Rust cloud services; may consume Rust protocol

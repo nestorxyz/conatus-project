@@ -18,7 +18,7 @@ Show personal and company organizations as separate contexts. Switching organiza
 
 ### 2. Pair Linux machine
 
-Start pairing on Linux, scan or enter the short-lived challenge on iOS, compare machine identity and fingerprint, confirm both ends, then show the machine online. Include expired, replayed, wrong-account, and interrupted states.
+Start pairing on Linux, scan or enter the short-lived challenge on Android, compare machine identity and fingerprint, confirm both ends, then show the machine online. Include expired, replayed, wrong-account, and interrupted states.
 
 ### 3. Home and monitoring
 
@@ -59,4 +59,3 @@ List devices and machines separately. Revocation previews its effect on active r
 ## Prototype evidence
 
 Each flow needs a happy path, loading, empty, offline, permission-denied, expired, concurrent-change, and recoverable-error state. Approval, reconnection, and terminal flows require an interactive prototype and narrated usability test before implementation is considered complete.
-

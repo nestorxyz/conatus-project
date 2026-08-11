@@ -9,6 +9,9 @@
 # Common local artifacts
 .DS_Store
 target/
+build/
+.gradle/
+.gradle-user-home/
 node_modules/
 coverage/
 dist/

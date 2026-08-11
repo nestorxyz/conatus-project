@@ -189,7 +189,7 @@ Every structured result offers access to relevant raw data.
 
 ### Private alpha
 
-- iOS internal development builds
+- Android internal development builds
 - One user, multiple machines
 - Pairing and revocation
 - Session timeline and composer
@@ -256,7 +256,8 @@ Guardrail measures:
 - The customer can be an individual developer or an organization.
 - Accounts may belong to multiple organizations; personal and company workspaces remain separate.
 - Linux is the only machine-agent platform in the initial product.
-- iOS is the only mobile platform in alpha and is distributed through internal builds.
+- Android is the only mobile platform in alpha and is distributed through internal builds.
+- iOS implementation resumes after alpha when physical-device validation is available.
 - Monitoring existing work and starting new work have equal product priority.
 - Raw terminal mode is essential for alpha.
 - Codex is the first structured adapter; all terminal-compatible agents remain usable through PTY mode.

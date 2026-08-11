@@ -9,13 +9,15 @@ fail() {
   exit 1
 }
 
-find . -path './.git' -prune -o -path './tests/fixtures' -prune -o \
+find . -path './.git' -prune -o -path './.cache' -prune -o \
+  -path './tests/fixtures' -prune -o \
   -name Cargo.toml -print | while IFS= read -r manifest; do
   directory=${manifest%/*}
   test -f "$directory/Cargo.lock" || fail "$manifest has no Cargo.lock"
 done
 
-find . -path './.git' -prune -o -path './tests/fixtures' -prune -o \
+find . -path './.git' -prune -o -path './.cache' -prune -o \
+  -path './tests/fixtures' -prune -o \
   -name package.json -print | while IFS= read -r manifest; do
   directory=${manifest%/*}
   test -f "$directory/package-lock.json" || test -f "$directory/yarn.lock" ||

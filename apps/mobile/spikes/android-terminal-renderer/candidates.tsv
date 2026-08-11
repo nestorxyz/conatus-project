@@ -1,0 +1,5 @@
+candidate	family	license	status	reason
+xterm-js-webview	established-web	MIT	fallback	Active core with selection and screen-reader mode; optional side-effecting add-ons can be omitted
+termux-terminal-view	established-native	GPLv3-with-file-exceptions	rejected-license	A permissive module boundary cannot be assumed without file-level provenance and legal review
+alacritty-terminal-kotlin-view	rust-parser-native-renderer	Apache-2.0-or-MIT	device-candidate	Highest long-term Android UX ceiling and product-owned boundary; rendering selection IME accessibility and JNI must be built
+jackpal-android-terminal-emulator	established-native	Apache-2.0	rejected-maintenance	Archived and predates current Android lifecycle and accessibility expectations
