@@ -19,7 +19,9 @@ are complete. ADR 0004 moved the private alpha to Android and deferred C-005;
 ADR 0006 selects fully native mobile clients. The next dependency-unblocked work
 is the C-008 Android terminal-renderer spike or C-007 cryptographic design
 review. C-006 selected WorkOS AuthKit while retaining Conatus-owned
-authorization and durable security audit records.
+authorization and durable security audit records. C-007 now has a proposed
+cryptographic architecture and an independent-review packet; it remains
+incomplete until an independent expert closes every critical and high finding.
 
 Start with:
 

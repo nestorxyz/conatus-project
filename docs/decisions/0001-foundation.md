@@ -52,7 +52,10 @@ Administrators may manage retention, membership, machines, and policy. They do n
    audit records inside Conatus.
 2. **Rust HTTP framework:** resolved by [ADR 0002](0002-rust-web-stack.md),
    which selects Axum after the C-004 WebSocket and observability spike.
-3. **E2EE construction:** commission a cryptographic design review before implementing production keys; do not invent primitives.
+3. **E2EE construction:** ADR 0008 proposes the exact architecture and review
+   packet for C-007. It remains unaccepted until an independent cryptography
+   expert closes every critical and high finding; do not implement production
+   keys or invent primitives before that gate closes.
 4. **Mobile terminal renderer:** ADR 0004 defers the iOS C-005 gate; ADR 0005
    selects the native Android renderer candidate; ADR 0006 selects native mobile
    clients.

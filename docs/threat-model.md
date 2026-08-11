@@ -389,13 +389,17 @@ These risks require clear user communication, rapid revocation, bounded policy, 
 
 ## 13. Open security decisions
 
-1. Exact end-to-end key hierarchy and organization membership key rotation
-2. Account and organization recovery without silent content-access escalation
-3. Certificate pinning policy and emergency rotation mechanism
-4. Platform attestation use and its privacy implications
-5. Machine-agent sandboxing strategy per operating system
-6. Terminal scrollback retention and encryption location
-7. Whether reusable policies can authorize mutations in the first release
-8. How signed membership and revocation state is made available during temporary control-plane partitions
-9. Security boundary and disclosure for third-party coding-agent providers
+ADR 0008 proposes the exact end-to-end key hierarchy, membership rotation,
+pairing, revocation, and non-escalating recovery behavior for the first two
+items. Those decisions remain open until the C-007 independent review closes
+every critical and high finding.
 
+1. Independent expert validation of the proposed end-to-end construction and
+   recovery ceremonies
+2. Certificate pinning policy and emergency rotation mechanism
+3. Platform attestation use and its privacy implications
+4. Machine-agent sandboxing strategy per operating system
+5. Terminal scrollback retention and encryption location
+6. Whether reusable policies can authorize mutations in the first release
+7. How signed membership and revocation state is made available during temporary control-plane partitions
+8. Security boundary and disclosure for third-party coding-agent providers

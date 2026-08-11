@@ -66,6 +66,10 @@ code flow with PKCE, subject to the C-050 conformance proof.
 ### C-007 Complete cryptographic design review
 
 **Depends on:** C-001  
+**Status:** In progress; ADR 0008 and the independent-review packet were
+prepared on 2026-08-11. No independent reviewer is assigned, so the acceptance
+gate remains open and production cryptography remains blocked.
+
 **Outcome:** Specify device/machine identity, pairing transcript, per-session keys, key wrapping, rotation, recovery, revocation generation, algorithms, libraries, and metadata authentication.  
 **Acceptance:** Independent expert review closes all critical/high findings before production cryptography is implemented.
 

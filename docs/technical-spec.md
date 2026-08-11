@@ -277,6 +277,12 @@ Approval decisions are signed by the mobile device key and reference the digest.
 
 Key rotation, account recovery, organization ownership recovery, and lost-device behavior require dedicated ceremonies and tests; recovery must not silently bypass end-to-end confidentiality.
 
+[ADR 0008](decisions/0008-cryptographic-architecture.md) proposes the exact
+pairing, identity, key-wrapping, session-encryption, rotation, revocation, and
+recovery construction. It is not an accepted implementation decision until the
+C-007 [independent review](cryptographic-design-review.md) closes every critical
+and high finding. Production cryptography remains blocked until then.
+
 ## 12. Connection and reconnection
 
 - Mobile and machine use authenticated WebSocket connections over TLS 1.3 where supported.
