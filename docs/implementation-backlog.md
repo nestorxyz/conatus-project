@@ -68,10 +68,69 @@ code flow with PKCE, subject to the C-050 conformance proof.
 **Depends on:** C-001  
 **Status:** In progress; ADR 0008 and the independent-review packet were
 prepared on 2026-08-11. No independent reviewer is assigned, so the acceptance
-gate remains open and production cryptography remains blocked.
+gate remains open and production cryptography remains blocked. An AI-assisted
+pre-review identified one Critical and six High composition findings and
+produced an ordered remediation plan; it is advisory work and does not satisfy
+the independent-review gate.
 
 **Outcome:** Specify device/machine identity, pairing transcript, per-session keys, key wrapping, rotation, recovery, revocation generation, algorithms, libraries, and metadata authentication.  
 **Acceptance:** Independent expert review closes all critical/high findings before production cryptography is implemented.
+
+**Remediation progress:** C-007-R1 design is complete on 2026-08-12. The
+[authority state model](protocol/cryptographic-authority-state.md) defines
+paired endpoint trust, a single mobile content authority, target-machine linear
+commits, signer predicates, forks, partitions, revocation, and a semantic
+adversarial case matrix. This is remediation evidence, not independent closure.
+C-007-R2 was the next dependency-unblocked design work package.
+
+**C-007-R2 update:** Pairing and recovery ceremony design is complete on
+2026-08-12. The fixed `Noise_XXpsk3_25519_ChaChaPoly_SHA256` construction,
+one-attempt secret lifecycle, comparison and confirmation exchange,
+trusted-device recovery, local-machine recovery, and 24 semantic adversarial
+cases are documented. This is remediation evidence, not independent closure.
+C-007-R3 was the next dependency-unblocked work package.
+
+**C-007-R3 update:** Sender-authentication design is complete on 2026-08-12.
+Eligible endpoint signatures are verified before durable decryption or action,
+artifacts remain quarantined until sender-signed finalization, and every PTY
+lease/reconnect uses a fresh pairwise `Noise_KK_25519_ChaChaPoly_SHA256`
+channel with pre-execution frame checks. Thirty semantic adversarial cases are
+documented. This is remediation evidence, not independent closure. C-007-R4 is
+the next dependency-unblocked work package.
+
+**C-007-R4 update:** Nonce/crash semantic design is complete on 2026-08-12.
+Signed sender-incarnation grants, transactional counter allocation, immutable
+persist-before-send replay, artifact abandonment/restart, fresh PTY handshakes,
+typed uncertainty failures, supported restore boundaries, and 30 semantic fault
+cases are documented. Exact live-memory clones without trusted fresh entropy
+are explicitly unsupported and quarantined. This is remediation evidence, not
+executable validation or independent closure. C-007-R5 is the next
+dependency-unblocked work package.
+
+**C-007-R5 update:** The normative version-1 byte design is complete on
+2026-08-12. Closed CDDL maps, strict deterministic CBOR, detached COSE_Sign1,
+raw low-S ES256, purpose-bound key IDs, labeled hashes and HKDF, canonical HPKE
+pre-manifest/recipient inputs, AEAD projections, Noise contexts, an exact
+positive primitive fixture, and 45 negative confusion cases are documented.
+The fixture also covers all 32 version-1 body/projection branches; its ES256
+signature and HPKE open were independently reproduced in the workspace. This
+includes the RFC 9180 Appendix A.2.1 base-mode vector. This is design and
+language-neutral vector evidence, not
+cross-language implementation evidence or independent closure. C-007-R6 is the
+next dependency-unblocked work package.
+
+**C-007-R6 update:** The disposable platform-boundary prototype is partially
+complete on 2026-08-13. A 133-package checksum-locked Rust graph compiles for
+Linux and Android arm64; the direct dependency/license inventory and a current
+RustSec scan are recorded. Host tests cover the R5 ES256/JCA boundary, strict
+DER and low-S handling, COSE output, malformed inputs, Linux single-writer
+locking, atomic immutable publication, injected crashes, ownership, modes,
+restore, and idempotent unlink on ext4. The Android APK compiles with separate
+Keystore identity/approval keys, per-use biometric approval, per-private-key
+AES-GCM wrapping keys, bounded panic-contained JNI, security-posture reporting,
+and backup/D2D exclusions. Physical-device, credential-fallback, lifecycle,
+backup, sanitizer fuzzing, and non-ext4 filesystem evidence remains open, so
+C-007-R6 is not closed and C-007-R7 is still blocked.
 
 ### C-008 Select Android terminal rendering approach
 

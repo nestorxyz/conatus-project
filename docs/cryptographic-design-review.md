@@ -10,10 +10,10 @@ implemented.
 
 Determine whether ADR 0008 is a coherent, implementable composition of the
 referenced standards that satisfies `P-002`, `P-003`, `P-040` through `P-046`,
-`P-050` through `P-053`, `S-001` through `S-012`, and alpha scenarios `A-001`,
-`A-004`, `A-005`, `A-010`, `A-013`, and `A-015` without overstating recovery,
-revocation, metadata privacy, forward secrecy, or endpoint-compromise
-properties.
+`P-050` through `P-060`, `S-001` through `S-017`, and alpha scenarios `A-001`,
+`A-004`, `A-005`, `A-009`, `A-010`, `A-013`, `A-015`, and `A-016` without
+overstating recovery, revocation, metadata privacy, forward secrecy,
+nonce/restore safety, or endpoint-compromise properties.
 
 The review is design work, not a penetration test or implementation audit. It
 must nevertheless reject a design whose required behavior cannot be implemented
@@ -39,11 +39,14 @@ dependency scanner does not satisfy independence.
 2. `docs/product-spec.md`, `docs/alpha-scope.md`, `docs/technical-spec.md`, and
    `docs/threat-model.md` at the same commit.
 3. `docs/approval-policy.md`, ADR 0001, ADR 0006, and ADR 0007.
-4. Proposed pairing, session-epoch, envelope, artifact, PTY, rotation,
-   revocation, and recovery state machines from ADR 0008.
-5. The implementation-library feasibility notes and, when available, pinned
+4. The C-007-R1 through R5 authority, pairing/recovery, sender/channel,
+   nonce/retry, and cryptographic-byte profiles under `docs/protocol/`.
+5. The normative `packages/protocol/cddl/crypto-v1.cddl` schema.
+6. The semantic adversarial, fault, and exact byte matrices under
+   `packages/test-vectors/crypto/`.
+7. The implementation-library feasibility notes and, when available, pinned
    dependency versions and prototype vectors.
-6. This findings register and the key-compromise matrix below.
+8. This findings register and the key-compromise matrix below.
 
 Raw credentials, real repository content, device keys, provider tokens, and
 user data are never review artifacts.
@@ -52,9 +55,9 @@ user data are never review artifacts.
 
 ### Construction and encoding
 
-- Does Noise XX plus the exact fingerprint ceremony prevent undetected endpoint
-  substitution by the relay, and are the rendezvous secret and confirmation
-  steps correctly bound to the handshake?
+- Does the fixed Noise `XXpsk3` ceremony, full transferred PSK, exact comparison,
+  and post-handshake confirmation exchange prevent undetected endpoint
+  substitution by the relay, and are all keys and scopes correctly bound?
 - Is the HPKE base-mode use safe given that the key manifest is separately
   device-signed? Are `info`, AAD, recipient ordering, and manifest chaining
   sufficient to prevent cross-user, cross-organization, cross-session,
@@ -74,6 +77,11 @@ user data are never review artifacts.
 - Does persist-before-send interact safely with crashes and idempotency? Are
   counter gaps harmless, and is state uncertainty guaranteed to create a new
   derivation context?
+- Is the signed sender-incarnation grant sufficient for concurrent mobile
+  processes and cloned mobile state, including a compromised relay?
+- Are Linux `getrandom(2)`, VM Generation ID, Android backup exclusion, and
+  quarantine/re-pair requirements implementable on every supported platform?
+  Does the design clearly reject exact live-state clones it cannot distinguish?
 - Are artifact chunk chaining, PTY direction separation, lease transfer, and
   signed batch digests sufficient for integrity and attribution?
 - Does the split between endpoint-authenticated metadata and the server sequence
@@ -125,13 +133,17 @@ user data are never review artifacts.
 | Control-plane TLS or routing service | Metadata disclosure, traffic manipulation, denial of service | Payload plaintext and valid device approval signatures |
 | Authorization-proof signing key | False short-lived authorization proofs until key revocation | Device approval keys and ciphertext without an authorized recipient key |
 | One device identity-signing key | Device metadata and envelope impersonation until revocation | User-authenticated approval key, recipient key, other endpoints, and future content after rotation |
-| One device approval key | Approval forgery as that device while its local authentication gate can be satisfied | Content keys, other endpoint keys, and future authority after revocation |
+| One device approval key | Approval forgery and privileged session-state proposals as that device while its local authentication gate can be satisfied | Other endpoint keys, machine commit keys, and future authority after revocation delivery and rotation |
 | One device HPKE private key | Epochs wrapped to that key and their retained ciphertext | Epochs never wrapped to that key; other recipient private keys |
-| Current session epoch | Content and forgery risk inside that epoch | Other sessions and replacement random epochs |
-| Machine identity keys | Machine impersonation and machine-addressed session content | Other machines, device approval keys, unrelated sessions |
+| One device live-channel private key | Device impersonation inside a current machine-granted lease context | Durable identity/approval signatures, content keys, other devices, and unrelated machines |
+| Current session epoch | Content confidentiality and AEAD forgery risk inside that epoch | Eligible-sender attribution, signed artifact finalization, pairwise PTY channels, other sessions, and replacement random epochs |
+| Sender incarnation/outbox state | Unsent objects and retransmission metadata for that endpoint incarnation | Other endpoint keys; new encryption after restart requires a fresh signed incarnation, while uncertain or cloned state must quarantine |
+| Machine identity keys | Machine impersonation, state-commit equivocation, and local-recovery abuse for sessions targeting that machine | Other machines, device approval keys, and unrelated sessions |
+| Machine live-channel private key | Machine impersonation in pairwise PTY channels for pinned relationships | Machine identity commits, mobile signing keys, and unrelated machines |
 | Android local wrapping key | Locally wrapped HPKE material on that device | Non-exportable signing key and other devices |
 | Database or backup | Routing metadata, manifests, ciphertext, traffic history | Plaintext and endpoint private keys |
 | Identity-provider account | Account access subject to Conatus revocation and pairing | Existing device signatures and historical session keys by default |
+| Unused pairing/recovery secret | One ceremony attempt and possible active substitution attempt | Accepted endpoint binding when the complete comparison and endpoint signatures are verified; all other ceremonies |
 
 The reviewer must correct any row whose blast radius is incomplete or
 unachievable.

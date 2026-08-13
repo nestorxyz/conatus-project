@@ -26,9 +26,9 @@ Use separate signing, key-wrapping, content-encryption, and transport keys. Use
 standard protocol constructions rather than application-defined ciphers or key
 exchanges:
 
-- Noise `Noise_XX_25519_ChaChaPoly_SHA256` for first pairing, relayed by the
-  control plane and authenticated by an in-person comparison of the Noise
-  handshake fingerprint;
+- Noise `Noise_XXpsk3_25519_ChaChaPoly_SHA256` for pairing and recovery,
+  relayed by the control plane, authenticated by a locally transferred 32-byte
+  PSK, and confirmed through endpoint comparison and signatures;
 - COSE `Sign1` with ES256 for device, machine, authorization-proof, key-manifest,
   and approval signatures;
 - HPKE base mode with
@@ -54,12 +54,15 @@ mobile device owns those keys plus a distinct user-presence approval key:
 | Identity signing | P-256 ECDSA with SHA-256 (COSE ES256) | Pairing transcript, key manifests, durable-envelope attribution, machine statements |
 | Device approval signing | P-256 ECDSA with SHA-256 (COSE ES256) | Mobile approvals and sensitive commands after local user authentication; absent on machines |
 | Content-key recipient | X25519 | HPKE unwrap of session epoch secrets only |
+| Live-channel authentication | X25519 | Noise `KK` static key for pairwise PTY lease channels only |
 
 Noise XX uses fresh, pairing-only X25519 static and ephemeral keys. Those keys
 are erased after the pairing result is committed and are never reused as an
-HPKE recipient key. TLS, identity-provider, update-signing, control-plane proof,
-device signing, machine signing, HPKE, session, artifact, and PTY keys remain
-separate.
+HPKE recipient or live-channel key. The dedicated live-channel X25519 static
+key is long-lived, pinned by pairing or recovery, and used only with the fixed
+Noise `KK` protocol. TLS, identity-provider, update-signing, control-plane
+proof, device signing, machine signing, HPKE, ceremony Noise, live-channel
+Noise, session, artifact, and PTY transport keys remain separate.
 
 Public-key identifiers are the full 32-byte SHA-256 digest of a canonical
 public-key descriptor containing the protocol version, purpose, algorithm, and
@@ -67,13 +70,13 @@ public key. Identifiers are comparisons and lookup keys, never authorization.
 
 ### Signed object profile
 
-All security-sensitive signed objects use a versioned COSE `Sign1` structure
-and deterministic CBOR encoding. Protected headers contain the algorithm,
-protocol version, object type, and signing-key identifier. Organization,
-principal, device or machine, purpose, issuance, expiry, nonce, and revocation
-generation are in the signed payload when applicable. External AAD begins with
-the ASCII domain separator `Conatus-Crypto-v1` followed by the object-type
-label.
+All security-sensitive signed objects use the R5 untagged detached COSE_Sign1
+structure and deterministic CBOR encoding. Protected headers contain exactly
+the algorithm and signing-key identifier. Protocol version, object type,
+organization, principal, device or machine, purpose, issuance, expiry, nonce,
+and revocation generation are in the signed body when applicable. The exact
+deterministic external AAD binds suite, object type, signer role, organization,
+session, machine, and signing-key identifier.
 
 ES256 signatures use the fixed-width 64-byte `r || s` COSE representation.
 Signers normalize to low-S and verifiers reject non-canonical, high-S,
@@ -133,32 +136,36 @@ Noise endpoint and never receives a pairing transport key.
    secret to the QR or manually transferred payload; only its SHA-256 commitment
    is sent to the service.
 2. The machine enters the identifier and secret. The service rate-limits the
-   rendezvous, verifies the commitment and account binding, and relays a Noise
-   XX handshake. The Noise prologue commits to the Conatus protocol version,
-   rendezvous identifier, organization, initiating user, expiry, and secret
-   commitment.
-3. Each encrypted Noise payload contains its endpoint type, fresh nonce,
-   canonical identity-signing, device-approval where applicable, and HPKE
-   public-key descriptors, platform, and claimed internal identifiers. Both
-   sides reject mismatched prologues, roles, identifiers, repeats, invalid
-   public keys, and all-zero X25519 results.
-4. Both endpoints derive an eight-digit comparison code from separate labeled
-   output of the Noise handshake hash and show organization, user, endpoint
-   type, platform, and signing-key fingerprint. The user compares the two
-   displays and confirms each endpoint locally. The code is comparison evidence,
-   not an authentication token and cannot be submitted remotely.
-5. Each endpoint signs the final transcript hash plus both public-key bundles
-   and both local-confirmation nonces. The control plane commits pairing only
-   after receiving the two signatures and two confirmations in one transaction.
-6. The rendezvous and pairing keys are consumed and erased. Replay, expiry,
-   wrong user, wrong organization, conflicting transcript, missing local
-   confirmation, or a second commit returns one authoritative failure.
+   rendezvous, verifies the commitment and account binding, and relays the fixed
+   `Noise_XXpsk3_25519_ChaChaPoly_SHA256` handshake. The full 32-byte secret is
+   the Noise PSK and is processed by `MixKeyAndHash`; the public commitment is
+   not a substitute for it.
+3. The prologue binds the protocol and ceremony types, rendezvous, organization,
+   user, fixed roles, target machine, optional session and scope, expiry, and
+   secret commitment. Noise message 1 has an empty payload. Encrypted messages
+   2 and 3 carry the responder and initiator endpoint key bundles, roles,
+   platforms, fresh nonces, and scope.
+4. Both endpoints derive a 128-bit comparison value from a labeled hash of the
+   final Noise handshake hash. The primary flow scans a responder confirmation
+   QR; the manual fallback compares all eight four-hex-digit groups. Both sides
+   display organization, user, roles, platforms, keys, and recovery scope when
+   applicable.
+5. After local confirmation, ordered Noise transport messages exchange both
+   confirmation nonces and endpoint signatures over the final handshake hash,
+   prologue, payloads, exact key descriptors, and exact scope. The mobile
+   approval key also signs whenever the result grants content or authority.
+6. Both endpoints durably store the same fully signed record before uploading
+   it. The control-plane transaction is routing evidence, not the trust root.
+7. Each endpoint permits one local attempt per secret. Success, failure,
+   timeout, disconnect, cancellation, or restart consumes the secret and all
+   ceremony-only keys. A retry uses a new rendezvous, secret, static keys, and
+   ephemeral keys.
 
-The locally generated secret prevents an observer who sees only the rendezvous
-identifier from joining. Noise XX plus fingerprint comparison detects a relay
-that substitutes endpoint keys, including a compromised control plane. Manual
-entry must transfer the full secret; a short numeric pairing secret is not an
-allowed fallback.
+The complete prologue, messages, comparison, confirmation exchange, failure
+rules, and initial-pairing acceptance predicates are defined by the C-007-R2
+[pairing and recovery ceremonies](../protocol/pairing-and-recovery.md). Manual
+entry transfers the full unpadded-base64url 32-byte secret; a short numeric
+fallback is forbidden.
 
 ## Authorization proofs and revocation generations
 
@@ -186,15 +193,37 @@ signature required by an approval or sensitive command. The machine verifies
 both the proof and the approval-key-signed operation, with matching identities,
 generations, context, expiry, and canonical operation digest.
 
+Control-plane proofs are constraints, not grants of cryptographic authority.
+They cannot establish a new endpoint key, session root, content recipient,
+epoch, content authority, recovery grant, or replacement for a revoked
+authority. Those changes must satisfy the endpoint-rooted signer predicates and
+target-machine commit rules in the C-007-R1
+[cryptographic authority state model](../protocol/cryptographic-authority-state.md).
+
+Account-side revocation may immediately disable routing. Cryptographic
+revocation state advances through an endpoint-authorized proposal and a
+machine-signed session-state commit. Endpoints reject generations below their
+accepted local state, but this does not prove that a compromised control plane
+has delivered the latest transition. Cross-device gossip or transparency is
+required before claiming detection of all suppressed revocations.
+
 ## Session keys and content grants
 
-Each session begins with a uniformly random 32-byte session epoch secret and
-epoch number zero. The endpoint creating the session creates a signed key
-manifest containing:
+Each session begins with an endpoint-authorized `SessionRootProposal` and a
+target-machine-signed `SessionStateCommit`. The root selects one paired mobile
+device as the single content authority for alpha and fixes the target machine,
+initial two-recipient set, authority generation, and initial epoch. The control
+plane cannot select or replace this authority.
+
+The first epoch uses a uniformly random 32-byte session epoch secret and epoch
+number zero. Every epoch is proposed by the current content authority and
+becomes active only through the next machine-signed state commit. The signed
+epoch manifest contains:
 
 - protocol, suite, organization, workspace, session, and target-machine IDs;
 - epoch number and random epoch identifier;
-- creator identity and signing-key identifier;
+- creator identity and signing-key identifier, which must match the accepted
+  content authority;
 - previous-manifest digest for epoch greater than zero;
 - content-grant policy version and explicit recipient key identifiers;
 - one HPKE encapsulation and wrapped epoch secret per recipient;
@@ -204,16 +233,26 @@ manifest containing:
 The recipient set contains the target machine and only devices with an explicit
 session-content grant. Organization membership or administrator role alone
 never creates a wrap. The control plane stores manifests and ciphertext but
-does not appear in the recipient set. Recipients verify the manifest signature,
-authorization proof, organization/session binding, monotonic epoch, predecessor
-digest, complete recipient set, HPKE context, and key identifier before
-unwrapping.
+does not appear in the recipient set. Recipients verify the authority signature,
+any approval-key signature required for a recipient change, the authorization
+proof, the matching machine-signed state commit, organization/session binding,
+exact state sequence, monotonic epoch and generations, predecessor digest,
+complete recipient set, HPKE context, and key identifier before unwrapping. A
+proposal without its matching state commit is inert.
 
-HPKE `info` is the domain separator, protocol version, `session-key-wrap`
-label, organization ID, session ID, epoch identifier, recipient type, and
-recipient key identifier. The same canonical manifest fields excluding the
-encapsulation and ciphertext are HPKE AAD. An encapsulation is valid for one
-recipient and epoch only.
+The target machine durably signs at most one commit for a given session state
+sequence and parent. Concurrent proposals are never automatically rebased: the
+first valid proposal committed by the machine wins and all others receive a
+conflict. Conflicting valid machine commits or a successor that does not extend
+the locally accepted head cause a `security_fork` that stops new content and
+mutations pending explicit repair.
+
+The R5 byte profile constructs a complete deterministic pre-manifest before
+encapsulation. HPKE `info` binds version, suite, purpose, organization, session,
+epoch, recipient type/endpoint/key, and the labeled pre-manifest digest.
+Per-recipient AAD additionally binds canonical recipient index/count and the
+recipient descriptor digest. An encapsulation is valid for one recipient and
+epoch only; there is no circular “manifest except ciphertext” projection.
 
 An endpoint never uploads a plaintext epoch secret. It retains only epochs
 needed by local retention policy and erases superseded in-memory copies after
@@ -229,12 +268,22 @@ not concatenated ambiguously.
 
 ### Durable envelopes
 
-Each sender creates a random 128-bit stream identifier and derives an independent
-traffic key for that stream. Its ChaCha20-Poly1305 nonce is four zero bytes
-followed by a monotonically increasing big-endian 64-bit message counter. The
-sender persists the next counter before emitting ciphertext. After restore,
-rollback, or counter uncertainty, it creates a new random stream identifier and
-therefore a new traffic key; it never guesses the next value.
+Each process obtains a fresh signed sender-incarnation grant before creating
+new ciphertext. The grant binds 256 fresh sender bits, an incarnation
+generation, the accepted state, and, for mobile senders, 256 fresh target-
+machine challenge bits and both endpoint signatures. Each stream has a random
+256-bit identifier and an independent traffic key derived from the complete
+grant digest. A compromised control plane cannot choose both incarnation
+contributions or forge the grant.
+
+The ChaCha20-Poly1305 nonce is four zero bytes followed by a monotonically
+increasing big-endian 64-bit message counter. A local transaction reserves a
+counter before encryption and commits the complete signed ciphertext as an
+immutable outbox object before any network write. Counter gaps are harmless.
+Transport retry replays those exact bytes. Process death, restore, rollback,
+clone detection, or uncertainty ends the incarnation for new encryption; a
+restarted process may relay old immutable bytes but never resumes their key or
+counter state.
 
 AAD authenticates, at minimum:
 
@@ -243,6 +292,7 @@ protocol and payload version
 organization, workspace, session, run, machine, and sender-key identifiers
 event ID, event type, authoritative sequence when assigned, and epoch
 sender stream identifier and message counter
+complete sender-incarnation grant digest and generation
 occurred-at value, ciphertext length, compression mode, and artifact references
 ```
 
@@ -252,30 +302,76 @@ assigned sequence. They are never retroactively inserted into purportedly
 authenticated endpoint metadata. Recipients require both records before
 presenting server order as authoritative.
 
-The sender signs the envelope AAD and ciphertext digest. This preserves actor
-and endpoint attribution even though every content recipient knows the epoch
-secret. Duplicate `(session, epoch, sender, stream, counter)` tuples are rejected;
-same event ID with a different digest is a security error.
+The sender signs the complete immutable envelope body, including ciphertext. A
+recipient resolves the eligible sender key from accepted endpoint/session
+state, verifies the complete signature and context, and only then decrypts or
+acts. This preserves actor and endpoint attribution even though every content
+recipient knows the epoch secret. Duplicate
+`(session, epoch, sender, incarnation, stream, counter)` tuples are rejected;
+the same event ID with a different digest is a security error. A valid server
+receipt cannot replace a missing or invalid endpoint signature.
 
 ### Artifacts
 
-Derive a fresh artifact key from the epoch root and a random 128-bit artifact
-identifier. Four zero bytes plus a 64-bit chunk index form each nonce.
-AAD binds the complete artifact descriptor, total plaintext length when known,
-chunk index, final-chunk flag, and previous-chunk ciphertext digest. Finalization
-signs the ordered chunk digests and final size. Partial, reordered, duplicated,
-or cross-artifact chunks fail closed.
+Derive a fresh artifact key from the epoch root, sender-incarnation grant, and
+random 256-bit artifact and attempt identifiers. A sender-signed start record authenticates
+the immutable descriptor. Four zero bytes plus a 64-bit chunk index form each
+nonce. AAD binds the signed-start digest, artifact and attempt identifiers,
+sender, epoch, lengths, chunk index, final-chunk flag, and the R5 labeled
+previous-ciphertext digest.
+
+Every encrypted chunk is durably immutable before upload. After a crash, stored
+chunks may be replayed but the former attempt key is never reconstructed to
+append or finalize; an incomplete attempt is abandoned and the complete
+logical artifact starts under a fresh attempt and incarnation.
+
+Chunks remain quarantined until an eligible sender-signed finalization validates
+the exact ordered chunk digests, final chain digest, counts, and sizes, after
+which every chunk AEAD is verified before plaintext release. Partial,
+reordered, changed-duplicate, cross-attempt, unsigned, or invalidly finalized
+artifacts fail closed. Action-bearing artifact content is never executed,
+applied, approved, indexed, or presented as sender-authenticated before full
+finalization.
 
 ### PTY channels
 
-A PTY lease derives separate mobile-to-machine, machine-to-mobile, checkpoint,
-and audit keys from the session epoch, PTY ID, lease ID, both endpoint key IDs,
-and fresh channel nonces. Each direction has its own counter. Rekey before a
-counter can wrap, on lease transfer, after reconnect uncertainty, or after
-`2^32` frames, whichever occurs first. Lease acquisition and release are
-device-signed; high-volume frames are AEAD protected and covered by periodic
-signed batch digests so durable audit can attribute input without storing each
-keystroke.
+A PTY lease is established by an eligible device-signed request and a
+target-machine-signed grant that bind the session state, PTY, unique lease ID,
+monotonic lease generation, holder, dedicated live-channel key identifiers,
+proof, nonces, and expiry. The machine is the final lease authority and admits
+at most one current input holder.
+
+Every lease generation and reconnect performs a fresh
+`Noise_KK_25519_ChaChaPoly_SHA256` handshake. The dedicated device and machine
+Noise static keys are pinned by their pairing or recovery record and are
+separate from ceremony, HPKE, and signing keys. The prologue binds the complete
+lease request and grant, both endpoints, session state, PTY, generation, and
+expiry. Session epoch material is not an input, so a content recipient cannot
+derive the live-channel keys.
+
+Each direction uses its Noise transport cipher state. The canonical frame,
+including direction, channel handshake hash, lease generation, sequence, ID,
+type, and payload, is inside the authenticated transport plaintext. The machine
+authenticates and validates every mobile frame, rechecks the current lease,
+revocation, and policy, and reserves the frame ID before writing bytes or
+applying controls to the PTY. Duplicate, reordered, skipped, expired,
+wrong-direction, stale-generation, or unauthenticated input has no effect.
+
+Periodic machine-signed input audit batches and signed checkpoints provide
+durable attribution but never retroactively authorize input. Transfer,
+revocation, expiry, reconnect, restart uncertainty, or authentication failure
+closes the channel and requires a new lease generation or handshake as
+applicable.
+
+The complete sender predicates, processing order, artifact quarantine, lease
+state, Noise prologue, frame checks, and compromise consequences are defined by
+the C-007-R3
+[sender-authenticated content specification](../protocol/sender-authenticated-content.md).
+The C-007-R4
+[nonce and retry state specification](../protocol/nonce-and-retry-state.md)
+defines incarnation grants, transactional allocation, immutable replay,
+artifact restart, PTY outcome reconciliation, and supported restore/clone
+boundaries.
 
 ### Compression and padding
 
@@ -290,7 +386,10 @@ timing, ciphertext size, connection metadata, and traffic volume.
 
 Rotation creates a new random epoch; it never derives a replacement epoch from
 the old one. A signed manifest links to the predecessor and wraps only to the
-new authorized recipient set.
+new authorized recipient set. Routine rotation with an unchanged recipient set
+requires the current content-authority identity signature and the next machine
+commit. Any recipient change additionally requires the current authority's
+user-presence approval signature and an explicit content grant or revocation.
 
 Rotate before any new content after:
 
@@ -312,6 +411,13 @@ unavailable, the endpoint is enrolled as new through pairing or recovery; it
 does not inherit the old key identifier. Suspected compromise immediately
 revokes the old key without waiting for a graceful transition.
 
+Content-authority transfer is a separate state transition. It requires the old
+authority approval signature, the new paired device identity and approval
+signatures, and a machine commit. If the old approval key is unavailable, the
+session freezes until the explicit local-machine recovery ceremony defined by
+C-007-R2 succeeds. Account or administrator recovery cannot supply the missing
+signature.
+
 ## Recovery
 
 Identity-provider or organization-owner recovery restores account and
@@ -322,17 +428,51 @@ revocation generations.
 Historical content can be granted to a recovered device only through one of
 these explicit ceremonies:
 
-1. an existing content-authorized device signs a per-session historical grant
-   and rewraps the retained epoch secrets; or
-2. a machine that still retains those epochs receives local confirmation on
-   that machine, displays both endpoint fingerprints and the session scope, and
-   signs a per-session recovery manifest after fresh step-up authentication.
+1. the new device and current content-authority device complete a fresh
+   `XXpsk3` trusted-device ceremony, both confirm the exact recipient key,
+   session, capability, and epoch range, and the current approval key signs the
+   transcript; or
+2. the new device and already paired target machine complete a fresh `XXpsk3`
+   local-machine ceremony with physical confirmation at that machine, exact
+   scope display, new-device signatures, a fresh account proof, and a signed
+   local-machine recovery statement.
+
+Pairing, future-content access, bounded historical access, and content-authority
+transfer are separate capabilities. None implies another. Authority recovery
+forces a fresh epoch and grants no history by default. Historical recovery can
+rewrap only the displayed epoch range still retained by the authorizing
+endpoint and grants no future access by default.
 
 The ceremony is per session, visible, audited, cancellable, and never implied by
 administrator role. Alpha has no cloud escrow, organization master decryption
 key, recovery phrase, or support override. If all authorized endpoints lose an
 epoch, that ciphertext is intentionally unrecoverable. The UI must disclose
 this before device or machine revocation and before deleting the last local key.
+
+The normative semantic state machines and transcript fields are in the
+C-007-R2 [pairing and recovery specification](../protocol/pairing-and-recovery.md).
+
+## Normative byte profile
+
+Cryptographic protocol version 1 uses RFC 8949 core deterministic CBOR and the
+closed integer-labeled maps in
+[`crypto-v1.cddl`](../../packages/protocol/cddl/crypto-v1.cddl). Every received
+cryptographic object is strictly parsed, CDDL-validated, deterministically
+re-encoded, and exact-compared before cryptographic processing. Duplicate map
+keys, unknown fields, alternate tags, indefinite lengths, trailing bytes, and
+implicit defaults are rejected.
+
+Signatures use untagged detached COSE_Sign1. The only protected headers are
+ES256 `alg` and the full 32-byte key ID; the unprotected map is empty and
+`crit` is absent because version 1 defines no private header. Signatures are
+raw 64-byte `r || s` with low-S required. Hashing, key identifiers, external
+AAD, HKDF extract/expand contexts, HPKE pre-manifest and per-recipient inputs,
+recipient ordering, AEAD projections, and Noise prologue/payload bytes are
+fixed by the C-007-R5
+[cryptographic byte profile](../protocol/cryptographic-byte-profile.md).
+
+There is no version-1 algorithm negotiation or permissive decoding. A suite or
+encoding change requires a new reviewed version and vectors.
 
 ## Libraries and implementation boundary
 

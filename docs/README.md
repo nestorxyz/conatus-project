@@ -17,6 +17,13 @@ Start here:
 13. [Identity-provider decision](decisions/0007-identity-provider.md)
 14. [Proposed cryptographic architecture](decisions/0008-cryptographic-architecture.md)
 15. [Cryptographic design-review packet](cryptographic-design-review.md)
+16. [AI-assisted cryptographic pre-review](cryptographic-design-pre-review.md)
+17. [C-007 cryptographic remediation plan](cryptographic-remediation-plan.md)
+18. [Pairing and recovery ceremonies](protocol/pairing-and-recovery.md)
+19. [Sender-authenticated content and PTY channels](protocol/sender-authenticated-content.md)
+20. [Nonce, crash, restore, and retry state](protocol/nonce-and-retry-state.md)
+21. [Cryptographic byte profile v1](protocol/cryptographic-byte-profile.md)
+22. [C-007-R6 platform-boundary prototype](../apps/mobile/spikes/cryptographic-boundaries/README.md)
 
 The product, technical, and security specifications define invariants. ADRs explain durable choices. The alpha scope defines the first release boundary. The backlog orders implementation but does not override an invariant or ADR.
 

@@ -81,6 +81,24 @@ Secondary sensitive metadata:
 **S-010.** Updates execute only after signature and release-channel verification.  
 **S-011.** Terminal escape sequences and rendered Markdown cannot invoke privileged mobile behavior.  
 **S-012.** Cloud compromise alone should not reveal end-to-end encrypted payload content or create valid device approval signatures.
+**S-013.** A control-plane proof can restrict but cannot create an endpoint,
+content recipient, session epoch, content authority, recovery grant, or
+revocation replacement; those changes require signatures rooted in previously
+paired endpoints.
+**S-014.** Knowledge of shared session encryption material does not establish
+sender identity or authorize actionable terminal input.
+**S-015.** Pairing and recovery mix a full 256-bit locally transferred secret
+into the authenticated key exchange, bind both endpoint key bundles and exact
+scope into post-handshake signatures, and permit at most one local attempt per
+secret.
+**S-016.** Durable sender attribution requires an eligible endpoint signature,
+artifact plaintext remains quarantined until eligible-sender finalization, and
+actionable PTY input is authenticated through a current pairwise lease channel
+before execution.
+**S-017.** New encryption never resumes a traffic key/counter state after
+process death, restore, clone detection, or uncertainty. Counters are reserved
+transactionally, complete ciphertext is durable before transmission, and retry
+replays immutable bytes or fails closed.
 
 ## 7. Threats and controls
 
@@ -104,13 +122,21 @@ Secondary sensitive metadata:
 
 **Controls:**
 
-- High-entropy, single-use, short-lived pairing challenge
+- Full 32-byte, high-entropy, single-use, short-lived ceremony secret mixed
+  into `Noise_XXpsk3_25519_ChaChaPoly_SHA256`
 - Authenticated server context plus out-of-band visual verification
 - Display organization, user, machine, platform, and key fingerprint on both endpoints
 - Explicit confirmation at both endpoints
-- Rate limits and attempt lockout
-- Pairing transcript bound into issued credentials
+- One locally enforced attempt per secret in addition to server rate limits
+- Final Noise handshake hash, both endpoint key bundles, scope, and both
+  confirmation nonces bound into endpoint signatures and the paired record
 - Immediate notification to existing trusted devices
+
+The exact C-007-R2
+[pairing and recovery ceremonies](protocol/pairing-and-recovery.md) also apply
+to trusted-device and local-machine recovery. Account, administrator, support,
+and control-plane authority cannot select a recovery recipient or expand its
+displayed scope.
 
 ### T-03 Cross-tenant data access
 
@@ -196,6 +222,62 @@ Secondary sensitive metadata:
 - Revocation and quarantine controls
 - Machine cannot approve on behalf of a mobile user
 
+### T-08A Malicious content recipient
+
+**Attack:** A device that legitimately knows a shared session epoch secret
+forges another sender's durable event, artifact, machine output, PTY lease, or
+terminal input.
+
+**Controls:**
+
+- Eligible endpoint identity signature verified before durable decryption,
+  attribution, or action
+- Sender-signed artifact start and finalization with quarantine until the
+  complete ciphertext chain verifies
+- Device-signed PTY lease request and target-machine-signed lease grant
+- Fresh pairwise `Noise_KK` channel using dedicated pairing-pinned live keys,
+  with no session epoch input
+- Per-frame authentication, ordering, replay reservation, and current
+  lease/revocation/policy checks before PTY action
+- Machine-signed checkpoints and audit batches as durable evidence, not
+  retroactive authorization
+
+The proposed C-007-R3
+[sender-authenticated content model](protocol/sender-authenticated-content.md)
+defines the exact semantic processing order and fail-closed behavior.
+
+### T-08B Rollback, clone, and nonce reuse
+
+**Attack:** A crash, backup restore, filesystem rollback, concurrent process,
+or VM clone restores the same session secret, traffic key, and counter. A
+transport or artifact retry then encrypts changed plaintext under a repeated
+ChaCha20-Poly1305 key/nonce pair.
+
+**Controls:**
+
+- Fresh OS-CSPRNG sender incarnation on every process start
+- Target-machine challenge and signed monotonic incarnation generation for
+  mobile senders
+- Exclusive local endpoint-identity writer and simultaneous-clone detection
+- Traffic keys scoped to the complete incarnation grant and random 256-bit
+  stream or artifact attempt
+- Transactional counter reservation and complete immutable outbox commit before
+  network emission
+- Byte-for-byte ciphertext replay; never reconstruct or re-encrypt a retry
+- New attempt/key scope after unknown outcome, changed content, or incomplete
+  artifact restart
+- Memory-only Noise state and a fresh handshake on every PTY reconnect
+- Platform proof of entropy reseeding across supported VM generations;
+  quarantine, revocation, and re-pairing when restore safety is unsupported or
+  uncertain
+
+An exact live-memory clone without trusted fresh entropy or nonrollbackable
+external state cannot be made distinguishable by a software protocol. Conatus
+does not support autonomous emission from that state. The proposed C-007-R4
+[nonce and retry state model](protocol/nonce-and-retry-state.md) defines this
+boundary and the typed fail-closed behavior. Executable platform and fault
+evidence remains required before CPR-003 can close.
+
 ### T-09 Compromised control plane
 
 **Attack:** Cloud access exposes content, injects operations, rewrites routing metadata, or suppresses revocation.
@@ -210,6 +292,18 @@ Secondary sensitive metadata:
 - Immutable externalized security audit stream
 - Independent update-signing environment
 - Documented limitations: a compromised plane can deny service and expose metadata
+- Endpoint-authorized session-state proposals and target-machine-signed linear
+  commits; the control-plane proof is never sufficient to add a signer or
+  recipient
+- Fork detection when two machine-signed commits conflict or a successor does
+  not extend the locally accepted head
+
+The C-007-R1
+[authority state model](protocol/cryptographic-authority-state.md) makes the
+paired endpoint record the trust root and the target machine the unique commit
+sequencer for each of its sessions. A compromised control plane can still hide
+an unseen revocation or deny service; stronger global freshness requires gossip,
+transparency, or an external witness.
 
 ### T-10 Local privilege abuse
 

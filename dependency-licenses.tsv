@@ -9,3 +9,15 @@ tokio-tungstenite	0.27.0	MIT	C-004 WebSocket test client	https://crates.io/crate
 tokio-util	0.7.19	MIT	C-004 cancellation token	https://crates.io/crates/tokio-util	2026-08-09
 tracing	0.1.44	MIT	C-004 instrumentation	https://crates.io/crates/tracing	2026-08-09
 tracing-subscriber	0.3.23	MIT	C-004 instrumentation test	https://crates.io/crates/tracing-subscriber	2026-08-09
+chacha20poly1305	0.11.0	MIT OR Apache-2.0	C-007-R6 content AEAD prototype	https://crates.io/crates/chacha20poly1305	2026-08-13
+hex-literal	1.1.0	MIT OR Apache-2.0	C-007-R6 fixed curve constants	https://crates.io/crates/hex-literal	2026-08-13
+hkdf	0.13.0	MIT OR Apache-2.0	C-007-R6 key separation prototype	https://crates.io/crates/hkdf	2026-08-13
+hpke	0.14.0	MIT OR Apache-2.0	C-007-R6 recipient wrapping prototype	https://crates.io/crates/hpke	2026-08-13
+jni	0.22.4	MIT OR Apache-2.0	C-007-R6 Android native boundary	https://crates.io/crates/jni	2026-08-13
+minicbor	2.3.0	BlueOak-1.0.0	C-007-R6 deterministic COSE encoding prototype	https://crates.io/crates/minicbor	2026-08-13
+p256	0.14.0	MIT OR Apache-2.0	C-007-R6 ES256 validation prototype	https://crates.io/crates/p256	2026-08-13
+serde_json	1.0.151	MIT OR Apache-2.0	C-007-R6 vector reader	https://crates.io/crates/serde_json	2026-08-13
+sha2	0.11.0	MIT OR Apache-2.0	C-007-R6 SHA-256 prototype	https://crates.io/crates/sha2	2026-08-13
+snow	0.10.0	MIT OR Apache-2.0	C-007-R6 Noise feasibility prototype	https://crates.io/crates/snow	2026-08-13
+tempfile	3.27.0	MIT OR Apache-2.0	C-007-R6 storage fault tests	https://crates.io/crates/tempfile	2026-08-13
+zeroize	1.9.0	MIT OR Apache-2.0	C-007-R6 secret buffer clearing	https://crates.io/crates/zeroize	2026-08-13

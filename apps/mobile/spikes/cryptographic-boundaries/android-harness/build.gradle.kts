@@ -1,0 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Conatus contributors
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+plugins {
+    id("com.android.application") version "8.13.2" apply false
+    id("org.jetbrains.kotlin.android") version "2.3.20" apply false
+}

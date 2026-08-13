@@ -1,0 +1,188 @@
+{
+  "format": "conatus-nonce-retry-cases",
+  "version": 1,
+  "status": "semantic matrix; R5 fixes exact bytes and executable fault evidence remains required",
+  "review_gate": "does not close CPR-003 or C-007",
+  "cases": [
+    {
+      "id": "R4-001",
+      "object": "sender-incarnation",
+      "conditions": ["process start", "fresh OS CSPRNG output", "fresh machine challenge", "valid endpoint signatures", "next generation"],
+      "expected": "permit-new-encryption"
+    },
+    {
+      "id": "R4-002",
+      "object": "sender-incarnation",
+      "conditions": ["process restart", "attempt to resume prior grant for new encryption"],
+      "expected": "reject-incarnation"
+    },
+    {
+      "id": "R4-003",
+      "object": "sender-incarnation",
+      "conditions": ["target machine unavailable", "mobile has no fresh grant"],
+      "expected": "read-and-replay-only"
+    },
+    {
+      "id": "R4-004",
+      "object": "sender-incarnation",
+      "conditions": ["control plane substitutes issuer challenge", "machine signature invalid"],
+      "expected": "reject-incarnation"
+    },
+    {
+      "id": "R4-005",
+      "object": "sender-incarnation",
+      "conditions": ["same generation", "different grant bytes"],
+      "expected": "security-fork"
+    },
+    {
+      "id": "R4-006",
+      "object": "sender-incarnation",
+      "conditions": ["second local process", "exclusive identity lock held"],
+      "expected": "concurrent-sender"
+    },
+    {
+      "id": "R4-007",
+      "object": "sender-incarnation",
+      "conditions": ["same endpoint identity", "simultaneously active host generations"],
+      "expected": "clone-detected-and-quarantine"
+    },
+    {
+      "id": "R4-008",
+      "object": "sender-incarnation",
+      "conditions": ["OS CSPRNG unavailable or not ready"],
+      "expected": "rng-unavailable-no-encryption"
+    },
+    {
+      "id": "R4-009",
+      "object": "durable-envelope",
+      "conditions": ["counter atomically reserved", "crash before encryption"],
+      "expected": "burn-counter"
+    },
+    {
+      "id": "R4-010",
+      "object": "durable-envelope",
+      "conditions": ["encryption completed in memory", "crash before immutable commit"],
+      "expected": "discard-bytes-and-burn-counter"
+    },
+    {
+      "id": "R4-011",
+      "object": "durable-envelope",
+      "conditions": ["complete signed bytes durably committed", "crash before send"],
+      "expected": "replay-exact-bytes"
+    },
+    {
+      "id": "R4-012",
+      "object": "durable-envelope",
+      "conditions": ["send completed", "acknowledgement lost", "immutable outbox present"],
+      "expected": "replay-exact-bytes"
+    },
+    {
+      "id": "R4-013",
+      "object": "durable-envelope",
+      "conditions": ["atomic commit outcome cannot be proved"],
+      "expected": "storage-uncertain-no-new-encryption"
+    },
+    {
+      "id": "R4-014",
+      "object": "durable-envelope",
+      "conditions": ["two threads reserve from one stream concurrently"],
+      "expected": "distinct-counters-or-fail"
+    },
+    {
+      "id": "R4-015",
+      "object": "durable-envelope",
+      "conditions": ["reserved counter gap after crash"],
+      "expected": "accept-gap-never-reuse"
+    },
+    {
+      "id": "R4-016",
+      "object": "durable-envelope",
+      "conditions": ["counter at configured limit"],
+      "expected": "close-stream-and-create-fresh-key-scope"
+    },
+    {
+      "id": "R4-017",
+      "object": "durable-envelope",
+      "conditions": ["attempt to allocate counter 18446744073709551615"],
+      "expected": "counter-exhausted"
+    },
+    {
+      "id": "R4-018",
+      "object": "durable-envelope",
+      "conditions": ["same event ID", "different immutable envelope digest"],
+      "expected": "immutable-conflict"
+    },
+    {
+      "id": "R4-019",
+      "object": "durable-envelope",
+      "conditions": ["timeout", "authoritative absence established", "same logical operation retried"],
+      "expected": "new-event-attempt-and-key-scope-same-idempotency-key"
+    },
+    {
+      "id": "R4-020",
+      "object": "durable-envelope",
+      "conditions": ["dishonest control-plane absence claim", "old attempt outcome unknown"],
+      "expected": "never-reuse-old-event-key-or-nonce"
+    },
+    {
+      "id": "R4-021",
+      "object": "artifact",
+      "conditions": ["chunk durably committed", "upload retry"],
+      "expected": "replay-exact-chunk-bytes"
+    },
+    {
+      "id": "R4-022",
+      "object": "artifact",
+      "conditions": ["partial attempt", "process crash", "missing chunks"],
+      "expected": "abandon-and-restart-complete-artifact-under-new-attempt"
+    },
+    {
+      "id": "R4-023",
+      "object": "artifact",
+      "conditions": ["source content changes after attempt opens"],
+      "expected": "abandon-attempt"
+    },
+    {
+      "id": "R4-024",
+      "object": "artifact",
+      "conditions": ["finalization generated", "some encrypted chunk not durable"],
+      "expected": "reject-finalization"
+    },
+    {
+      "id": "R4-025",
+      "object": "pty-channel",
+      "conditions": ["network reconnect", "attempt to deserialize old Noise transport state"],
+      "expected": "close-and-fresh-handshake"
+    },
+    {
+      "id": "R4-026",
+      "object": "pty-frame",
+      "conditions": ["input frame outcome unknown", "new channel established"],
+      "expected": "no-automatic-reencryption-reconcile-first"
+    },
+    {
+      "id": "R4-027",
+      "object": "android-restore",
+      "conditions": ["application backup restored", "Keystore and crypto state excluded"],
+      "expected": "unpaired-no-decrypt-no-emit"
+    },
+    {
+      "id": "R4-028",
+      "object": "linux-vm-restore",
+      "conditions": ["supported VM Generation ID", "demonstrated kernel entropy reseed", "new boot grant"],
+      "expected": "permit-after-fresh-incarnation"
+    },
+    {
+      "id": "R4-029",
+      "object": "linux-vm-restore",
+      "conditions": ["fresh entropy or clone boundary cannot be established"],
+      "expected": "unsupported-restore-quarantine-and-repair"
+    },
+    {
+      "id": "R4-030",
+      "object": "instrumentation",
+      "conditions": ["all crash retry restore and clone scenarios", "encryption invocations separated from byte retransmissions"],
+      "expected": "zero-repeated-key-nonce-encryption-invocations"
+    }
+  ]
+}

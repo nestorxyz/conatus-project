@@ -1,0 +1,157 @@
+{
+  "format": "conatus-pairing-recovery-cases",
+  "version": 1,
+  "status": "semantic matrix; exact application encodings and Noise contexts are fixed by the R5 profile",
+  "review_gate": "does not close C-007 findings",
+  "cases": [
+    {
+      "id": "R2-001",
+      "ceremony": "initial-machine-pairing",
+      "conditions": ["Noise_XXpsk3_25519_ChaChaPoly_SHA256", "matching 32-byte secret", "matching prologue", "both local confirmations", "all endpoint signatures"],
+      "expected": "accept"
+    },
+    {
+      "id": "R2-002",
+      "ceremony": "initial-machine-pairing",
+      "conditions": ["Noise_XX_25519_ChaChaPoly_SHA256 without psk modifier", "matching public secret commitment"],
+      "expected": "reject",
+      "reason": "protocol name and secret-authentication construction are wrong"
+    },
+    {
+      "id": "R2-003",
+      "ceremony": "initial-machine-pairing",
+      "conditions": ["wrong 32-byte secret", "otherwise matching context"],
+      "expected": "reject-and-consume-secret"
+    },
+    {
+      "id": "R2-004",
+      "ceremony": "initial-machine-pairing",
+      "conditions": ["control plane runs two substituted XXpsk3 handshakes", "control plane lacks secret"],
+      "expected": "reject-and-consume-secret",
+      "reason": "control plane cannot complete the secret-authenticated transport and signed transcript"
+    },
+    {
+      "id": "R2-005",
+      "ceremony": "initial-machine-pairing",
+      "conditions": ["first attempt disconnected", "same rendezvous and secret retried"],
+      "expected": "reject",
+      "reason": "one local attempt consumes the secret"
+    },
+    {
+      "id": "R2-006",
+      "ceremony": "initial-machine-pairing",
+      "conditions": ["reflected initiator and responder roles"],
+      "expected": "reject"
+    },
+    {
+      "id": "R2-007",
+      "ceremony": "initial-machine-pairing",
+      "conditions": ["matching Noise handshake", "comparison QR mismatch"],
+      "expected": "reject-and-consume-secret"
+    },
+    {
+      "id": "R2-008",
+      "ceremony": "initial-machine-pairing",
+      "conditions": ["matching Noise handshake", "only seven of eight comparison groups checked"],
+      "expected": "reject",
+      "reason": "manual confirmation requires the complete comparison value"
+    },
+    {
+      "id": "R2-009",
+      "ceremony": "initial-machine-pairing",
+      "conditions": ["missing machine local confirmation"],
+      "expected": "reject-and-consume-secret"
+    },
+    {
+      "id": "R2-010",
+      "ceremony": "initial-machine-pairing",
+      "conditions": ["device signature covers different machine key descriptor"],
+      "expected": "reject"
+    },
+    {
+      "id": "R2-011",
+      "ceremony": "initial-machine-pairing",
+      "conditions": ["process restored from partial handshake state"],
+      "expected": "reject-and-restart-with-new-secret"
+    },
+    {
+      "id": "R2-012",
+      "ceremony": "trusted-device-recovery",
+      "conditions": ["current authority approval signature", "new device signatures", "pair-only scope", "current session head"],
+      "expected": "accept-pairing-only"
+    },
+    {
+      "id": "R2-013",
+      "ceremony": "trusted-device-recovery",
+      "conditions": ["future-content scope", "control plane substitutes recipient key after confirmation"],
+      "expected": "reject"
+    },
+    {
+      "id": "R2-014",
+      "ceremony": "trusted-device-recovery",
+      "conditions": ["historical epochs 4 through 8 displayed and signed", "request rewraps epoch 3"],
+      "expected": "reject"
+    },
+    {
+      "id": "R2-015",
+      "ceremony": "trusted-device-recovery",
+      "conditions": ["future-content grant", "request also asks for historical epoch"],
+      "expected": "reject",
+      "reason": "future and historical capabilities are separate"
+    },
+    {
+      "id": "R2-016",
+      "ceremony": "trusted-device-recovery",
+      "conditions": ["valid completed transcript", "session state head advanced before machine commit"],
+      "expected": "reject-as-stale"
+    },
+    {
+      "id": "R2-017",
+      "ceremony": "trusted-device-recovery",
+      "conditions": ["administrator role", "fresh account step-up", "no authority approval signature"],
+      "expected": "reject"
+    },
+    {
+      "id": "R2-018",
+      "ceremony": "local-machine-recovery",
+      "conditions": ["physical local confirmation", "new device signatures", "replacement authority scope", "matching machine commit"],
+      "expected": "accept-replacement-authority-with-fresh-epoch"
+    },
+    {
+      "id": "R2-019",
+      "ceremony": "local-machine-recovery",
+      "conditions": ["replacement authority displayed", "historical content not displayed", "request includes historical epochs"],
+      "expected": "reject"
+    },
+    {
+      "id": "R2-020",
+      "ceremony": "local-machine-recovery",
+      "conditions": ["identity-provider recovery", "control-plane proof", "no physical local confirmation"],
+      "expected": "reject"
+    },
+    {
+      "id": "R2-021",
+      "ceremony": "local-machine-recovery",
+      "conditions": ["machine no longer retains requested epoch"],
+      "expected": "reject-unrecoverable"
+    },
+    {
+      "id": "R2-022",
+      "ceremony": "any",
+      "conditions": ["same endpoint key descriptor reused for identity and content-recipient purposes"],
+      "expected": "reject"
+    },
+    {
+      "id": "R2-023",
+      "ceremony": "any",
+      "conditions": ["completion signatures valid", "one confirmation nonce differs"],
+      "expected": "reject"
+    },
+    {
+      "id": "R2-024",
+      "ceremony": "any",
+      "conditions": ["rendezvous expired before final durable storage"],
+      "expected": "reject-and-consume-secret"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+<!--
+SPDX-FileCopyrightText: 2026 Conatus contributors
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
+# C-007-R6 Android device-test handoff
+
+Run this only on synthetic test devices. Record device model, Android/API
+version, patch level, Keystore security level, test date, and pass/fail. Do not
+record aliases, public keys, signatures, biometric data, device identifiers, or
+screenshots containing user data.
+
+1. Build and install the debug APK from the command in `README.md`.
+2. Launch `dev.conatus.crypto.spike/.MainActivity` after configuring a secure
+   lock screen and an enrolled strong biometric.
+3. Confirm the noninteractive identity, AES wrapping, and JNI/COSE checks show
+   `PASS`.
+4. Tap **Test approval signature**. Confirm success requires a fresh biometric,
+   cancel fails closed, and a second attempt requires another biometric.
+5. Reboot, unlock, and repeat. Then enroll or remove a biometric and confirm the
+   old approval key is invalidated rather than silently regenerated during a
+   signature attempt.
+6. Exercise lockout and absent-biometric cases. Record failure class or numeric
+   biometric error only, never exception text containing application data.
+7. Attempt cloud backup/restore and OEM device-to-device transfer. Confirm no
+   app files, wrapped blobs, rollback state, or usable Keystore aliases migrate.
+8. Repeat on the supported API/security-level matrix, including software-only,
+   TEE, and StrongBox devices where those postures are claimed.
+
+The harness currently has no credential-backed approval fallback. Treat that as
+an open design issue, not a skipped test. Update `evidence/verification.md` only
+with sanitized results and retain raw device logs outside the repository.

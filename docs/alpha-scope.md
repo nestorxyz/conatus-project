@@ -41,7 +41,11 @@ A developer can pair a Linux machine, start or monitor work from an Android phon
 
 ## Alpha acceptance scenarios
 
-**A-001 Pairing:** A signed-in developer pairs a Linux machine using a short-lived challenge confirmed on both devices; replay and wrong-user attempts fail.  
+**A-001 Pairing:** A signed-in developer pairs a Linux machine using a
+short-lived 256-bit secret mixed into the authenticated key exchange, confirms
+the complete comparison context on both endpoints, and produces a mutually
+signed paired record; replay, retry with the same secret, substitution, and
+wrong-user attempts fail.
 **A-002 Structured command:** The developer submits an approved command and sees ordered stdout, stderr, exit status, timing, and working directory.  
 **A-003 Idempotency:** Repeating the submission after a simulated timeout creates one run and one process.  
 **A-004 Approval:** A mutating command waits; changing any bound operation field invalidates the approval.  
@@ -49,13 +53,21 @@ A developer can pair a Linux machine, start or monitor work from an Android phon
 **A-006 Agent:** A Codex run produces normalized lifecycle, message, command, file-change, and completion events while retaining raw provider events.  
 **A-007 Agent resume:** A follow-up resumes the exact Codex session ID or reports a recoverable provider error.  
 **A-008 Generic agent:** The developer starts Claude Code or Gemini CLI inside the PTY and can operate it without a structured adapter.  
-**A-009 Terminal:** The terminal handles UTF-8, resize, control keys, selection, bounded scrollback, cancellation, and a network interruption.  
+**A-009 Terminal:** The terminal handles UTF-8, resize, control keys, selection,
+bounded scrollback, cancellation, and a network interruption; input is accepted
+only through the current machine-granted pairwise lease channel and reconnect
+establishes a fresh authenticated channel.
 **A-010 Revocation:** Revoking the mobile device or machine prevents new operations and delayed approval consumption.  
 **A-011 Machine restart:** The Linux agent reconnects after restart and reconciles durable runs without inventing completion.  
 **A-012 Railway deploy:** A control-plane deployment interrupts connections safely; clients reconnect and resume from durable cursors.  
 **A-013 Privacy:** Commands, output, prompts, diffs, paths, and secrets do not appear in ordinary logs, analytics, push payloads, or crash reports.  
 **A-014 Restore:** The team restores PostgreSQL into an isolated environment and verifies identity, routing metadata, session envelopes, and audit integrity.  
 **A-015 Departure semantics:** Removing a member revokes access, expires approvals, applies the configured run-cancellation rule, and preserves organization records.
+**A-016 Nonce and retry safety:** Fault injection across process death,
+reservation, encryption, durable commit, retry, Android restore, Linux reboot,
+supported VM generation change, concurrent sender, counter exhaustion, and RNG
+failure records no repeated key/nonce encryption invocation; unsupported or
+uncertain restore state emits no new ciphertext.
 
 ## Exit criteria
 

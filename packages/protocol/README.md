@@ -1,13 +1,14 @@
 # Protocol package
 
 Versioned schemas and generated language bindings shared across deployables.
-The protocol baseline currently lives in `docs/protocol/` until schema ticket
-`C-010` introduces source schemas here.
+The normative C-007 cryptographic object profile is
+`cddl/crypto-v1.cddl`. Application/domain schemas remain C-010 work.
 
 ## Build entry point
 
-Run `make verify` from this directory. Schema generation and compatibility checks
-will be added without requiring consumers to invoke generators directly.
+Run `make verify` from this directory. CDDL parser validation, generated
+bindings, and compatibility checks are added by the owning implementation
+tickets without requiring deployable consumers to invoke generators directly.
 
 ## Dependency boundary
 

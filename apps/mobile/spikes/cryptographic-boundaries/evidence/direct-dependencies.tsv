@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2026 Conatus contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# crate	version	features	default-features	license	Cargo.lock checksum
+chacha20poly1305	0.11.0	alloc,getrandom	false	MIT OR Apache-2.0	9b89e1c441e926b9c82a8d023f6e1b7ae0adcfaa7d621814e4d60789bac751cb
+hex-literal	1.1.0	(default)	true	MIT OR Apache-2.0	e712f64ec3850b98572bffac52e2c6f282b29fe6c5fa6d42334b30be438d95c1
+hkdf	0.13.0	(default)	true	MIT OR Apache-2.0	4aaa26c720c68b866f2c96ef5c1264b3e6f473fe5d4ce61cd44bbe913e553018
+hpke	0.14.0	alloc,chacha,getrandom,x25519	false	MIT OR Apache-2.0	dd5130e119706b4d8c2180da6126f7e60b6c38c2d340d539219f57051f0a7af7
+jni	0.22.4	(default)	true	MIT OR Apache-2.0	5efd9a482cf3a427f00d6b35f14332adc7902ce91efb778580e180ff90fa3498
+minicbor	2.3.0	alloc,(default)	true	BlueOak-1.0.0	c12b4033ffaa92fbf9df03df38d19324f52bad130dd223f811734a8006dd2d69
+p256	0.14.0	ecdsa,std	false	MIT OR Apache-2.0	d2c9239b2dbc807adbbe147e8cf72ea7450c3a0aabe62cb8e75ff4ec22e1f72a
+serde_json	1.0.151	(default)	true	MIT OR Apache-2.0	c841b55ecdae098c80dcae9cf767f6f8a0c2cdb3416bbef72181df4d0fe73f14
+sha2	0.11.0	(default)	true	MIT OR Apache-2.0	446ba717509524cb3f22f17ecc096f10f4822d76ab5c0b9822c5f9c284e825f4
+snow	0.10.0	std,use-chacha20poly1305,use-curve25519,use-getrandom,use-sha2	false	MIT OR Apache-2.0	599b506ccc4aff8cf7844bc42cf783009a434c1e26c964432560fb6d6ad02d82
+tempfile	3.27.0	(default)	true	MIT OR Apache-2.0	32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd
+zeroize	1.9.0	derive,(default)	true	MIT OR Apache-2.0	e13c156562582aa81c60cb29407084cdb54c4164760106ab78e6c5b0858cf64e

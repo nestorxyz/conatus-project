@@ -21,6 +21,41 @@
 - Signed negotiation of compatible protocol and policy versions
 - No authoritative state held only in a WebSocket process
 
+## Cryptographic authority
+
+The proposed C-007-R1
+[authority and manifest state model](cryptographic-authority-state.md) defines
+paired endpoint trust, single-writer content authority, machine-committed
+session ordering, recipient grants, authority transitions, revocation, and fork
+behavior. It remains subject to the C-007 independent-review gate.
+
+The proposed C-007-R2
+[pairing and recovery ceremonies](pairing-and-recovery.md) fix the Noise
+`XXpsk3` construction, secret lifecycle, transcript confirmations, and narrowly
+scoped trusted-device and local-machine recovery behavior. They remain subject
+to implementation evidence and independent review.
+
+The proposed C-007-R3
+[sender-authenticated content and PTY channel model](sender-authenticated-content.md)
+separates shared-epoch confidentiality from sender identity, quarantines
+artifacts until signed finalization, and uses fresh pairwise Noise `KK` channels
+for actionable PTY traffic. It remains subject to R4/R5 evidence and independent
+review; R5 now fixes its version-1 bytes.
+
+The proposed C-007-R4
+[nonce, crash, restore, and retry state model](nonce-and-retry-state.md)
+defines signed sender incarnations, transactional counter reservation,
+persist-before-send immutable replay, artifact restart, PTY rekey, and
+fail-closed clone/restore boundaries. It remains subject to executable fault
+evidence and independent review.
+
+The proposed C-007-R5
+[cryptographic byte profile](cryptographic-byte-profile.md) fixes deterministic
+CBOR/CDDL, detached COSE_Sign1, raw low-S ES256, key descriptors and IDs,
+labeled hashes and HKDF contexts, HPKE pre-manifest binding, recipient order,
+AEAD projections, and exact Noise application contexts. It remains subject to
+cross-language implementation evidence and independent review.
+
 ## Streams
 
 ### Durable session stream

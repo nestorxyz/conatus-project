@@ -1,0 +1,114 @@
+{
+  "format": "conatus-authority-transition-cases",
+  "version": 1,
+  "status": "semantic matrix; exact encodings are fixed by crypto-byte-profile-v1.json",
+  "review_gate": "does not close C-007 findings",
+  "cases": [
+    {
+      "id": "R1-001",
+      "transition": "session_root",
+      "conditions": ["paired device identity signature", "paired device approval signature", "matching machine commit"],
+      "expected": "accept"
+    },
+    {
+      "id": "R1-002",
+      "transition": "session_root",
+      "conditions": ["control-plane proof", "unpaired creator key", "machine commit"],
+      "expected": "reject",
+      "reason": "control-plane proof cannot establish endpoint authority"
+    },
+    {
+      "id": "R1-003",
+      "transition": "routine_epoch_rotation",
+      "conditions": ["current authority identity signature", "unchanged recipient set", "matching machine commit"],
+      "expected": "accept"
+    },
+    {
+      "id": "R1-004",
+      "transition": "recipient_addition",
+      "conditions": ["current authority identity signature", "missing approval signature", "matching machine commit"],
+      "expected": "reject",
+      "reason": "recipient changes require the current approval key"
+    },
+    {
+      "id": "R1-005",
+      "transition": "recipient_addition",
+      "conditions": ["current authority identity signature", "current approval signature", "recipient bound to accepted pairing", "fresh epoch", "matching machine commit"],
+      "expected": "accept"
+    },
+    {
+      "id": "R1-006",
+      "transition": "recipient_addition",
+      "conditions": ["current authority signatures", "control-plane substituted recipient key", "matching machine commit"],
+      "expected": "reject",
+      "reason": "signed recipient key does not match an accepted paired record or recovery transcript"
+    },
+    {
+      "id": "R1-007",
+      "transition": "authority_transfer",
+      "conditions": ["old approval signature", "new identity signature", "new approval signature", "new endpoint paired", "matching machine commit"],
+      "expected": "accept"
+    },
+    {
+      "id": "R1-008",
+      "transition": "authority_transfer",
+      "conditions": ["identity-provider recovery", "control-plane proof", "matching machine commit", "missing old approval or local recovery"],
+      "expected": "reject",
+      "reason": "account recovery does not transfer content authority"
+    },
+    {
+      "id": "R1-009",
+      "transition": "revoke_current_authority",
+      "conditions": ["current approval signature", "missing replacement transition"],
+      "expected": "freeze",
+      "reason": "revocation cannot invent a replacement authority"
+    },
+    {
+      "id": "R1-010",
+      "transition": "successor_commit",
+      "conditions": ["valid proposal", "state sequence skips one", "machine signature"],
+      "expected": "reject",
+      "reason": "state sequence must increment exactly once"
+    },
+    {
+      "id": "R1-011",
+      "transition": "successor_commit",
+      "conditions": ["valid proposal", "wrong parent digest", "machine signature"],
+      "expected": "security_fork",
+      "reason": "successor is not based on the locally accepted head"
+    },
+    {
+      "id": "R1-012",
+      "transition": "concurrent_successors",
+      "conditions": ["two valid proposals share one parent", "machine durably commits proposal A first"],
+      "expected": "accept A and reject B as conflict"
+    },
+    {
+      "id": "R1-013",
+      "transition": "machine_equivocation",
+      "conditions": ["two different valid machine-signed commits share sequence and parent"],
+      "expected": "security_fork",
+      "reason": "target machine key has equivocated or is compromised"
+    },
+    {
+      "id": "R1-014",
+      "transition": "partitioned_rotation",
+      "conditions": ["valid endpoint proposal", "authorization proof outside freshness window"],
+      "expected": "reject",
+      "reason": "no state change is committed during a stale authorization partition"
+    },
+    {
+      "id": "R1-015",
+      "transition": "revocation_rollback",
+      "conditions": ["valid signatures", "revocation generation lower than accepted state"],
+      "expected": "reject"
+    },
+    {
+      "id": "R1-016",
+      "transition": "historical_content_grant",
+      "conditions": ["administrator role", "control-plane proof", "no current approval signature", "no recovery transcript"],
+      "expected": "reject",
+      "reason": "administration is not historical content authority"
+    }
+  ]
+}

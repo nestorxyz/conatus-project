@@ -1,0 +1,725 @@
+; Conatus cryptographic protocol version 1
+; Normative profile: docs/protocol/cryptographic-byte-profile.md
+; Maps are closed. Every integer label below is fixed for version 1.
+
+crypto-v1 = signed-object / artifact-chunk / pty-frame / public-key-descriptor
+          / ceremony-prologue / pty-channel-prologue / envelope-aad
+
+; A signed-object carries one deterministic body and every required detached
+; signature over those exact body bytes.
+signed-object = {
+  0: body-bstr,
+  1: [1*4 detached-signature]
+}
+
+detached-signature = {
+  0: signer-role,
+  1: cose-sign1
+}
+
+cose-sign1 = [
+  protected: bstr,
+  unprotected: {},
+  payload: nil,
+  signature: bstr .size 64
+]
+
+; The decoded protected bstr MUST equal dCBOR({1: -7, 4: key-id}).
+
+body-bstr = bstr
+
+body = paired-endpoint-record
+     / session-root-proposal
+     / epoch-manifest-proposal
+     / content-grant-proposal
+     / authority-transition-proposal
+     / revocation-transition-proposal
+     / session-state-commit
+     / authorization-proof
+     / approval-challenge
+     / approval-decision
+     / ceremony-transfer-package
+     / responder-ceremony-payload
+     / initiator-ceremony-payload
+     / responder-confirmation-intent
+     / initiator-confirmation
+     / responder-confirmation
+     / initiator-receipt
+     / trusted-device-recovery-transcript
+     / local-machine-recovery-transcript
+     / sender-incarnation-grant
+     / signed-envelope
+     / server-ordering-receipt
+     / signed-artifact-start
+     / signed-artifact-finalization
+     / pty-lease-request
+     / pty-lease-grant
+
+; Object type values
+paired-endpoint-record-type = 10
+session-root-proposal-type = 20
+epoch-manifest-proposal-type = 21
+content-grant-proposal-type = 22
+authority-transition-proposal-type = 23
+revocation-transition-proposal-type = 24
+session-state-commit-type = 25
+authorization-proof-type = 26
+approval-challenge-type = 27
+approval-decision-type = 28
+ceremony-transfer-package-type = 30
+responder-ceremony-payload-type = 31
+initiator-ceremony-payload-type = 32
+responder-confirmation-intent-type = 33
+initiator-confirmation-type = 34
+responder-confirmation-type = 35
+initiator-receipt-type = 36
+trusted-device-recovery-transcript-type = 37
+local-machine-recovery-transcript-type = 38
+sender-incarnation-grant-type = 40
+signed-envelope-type = 50
+server-ordering-receipt-type = 51
+signed-artifact-start-type = 52
+artifact-chunk-type = 53
+signed-artifact-finalization-type = 54
+pty-lease-request-type = 60
+pty-lease-grant-type = 61
+pty-frame-type = 62
+
+protocol-version = 1
+suite-id = 1
+id = bstr .size 16
+key-id = bstr .size 32
+digest = bstr .size 32
+nonce-256 = bstr .size 32
+epoch-secret = bstr .size 32
+uint64 = 0..18446744073709551615
+safe-counter = 0..18446744073709551614
+timestamp-ms = uint64
+short-text = tstr .size (1..64)
+media-type = tstr .size (1..127)
+nullable-id = id / nil
+nullable-digest = digest / nil
+nullable-uint = uint64 / nil
+endpoint-type = 1 / 2                 ; mobile / machine
+key-purpose = 1..4                    ; identity / approval / recipient / live
+signer-role = 1..8                    ; device-id, approval, machine, recovered...
+capability = 1..5
+grant-scope = 1 / 2                   ; future / historical range
+direction = 1 / 2                     ; mobile->machine / machine->mobile
+
+public-key-descriptor = es256-key-descriptor / x25519-key-descriptor
+
+es256-key-descriptor = {
+  0: protocol-version,
+  1: key-purpose,
+  2: 2,                               ; COSE kty EC2
+  3: 1,                               ; COSE crv P-256
+  4: bstr .size 32,                   ; x, unsigned big-endian
+  5: bstr .size 32                    ; y, unsigned big-endian
+}
+
+x25519-key-descriptor = {
+  0: protocol-version,
+  1: key-purpose,
+  2: 1,                               ; COSE kty OKP
+  3: 4,                               ; COSE crv X25519
+  4: bstr .size 32                    ; RFC 7748 u-coordinate
+}
+
+paired-endpoint-record = {
+  0: paired-endpoint-record-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; user
+  4: id,                              ; device
+  5: id,                              ; machine
+  6: short-text,                      ; device platform
+  7: short-text,                      ; machine platform
+  8: bstr,                            ; device identity descriptor dCBOR
+  9: bstr,                            ; device approval descriptor dCBOR
+  10: bstr,                           ; device recipient descriptor dCBOR
+  11: bstr,                           ; device live descriptor dCBOR
+  12: bstr,                           ; machine identity descriptor dCBOR
+  13: bstr,                           ; machine recipient descriptor dCBOR
+  14: bstr,                           ; machine live descriptor dCBOR
+  15: "Noise_XXpsk3_25519_ChaChaPoly_SHA256",
+  16: digest,                         ; final handshake hash
+  17: digest,                         ; pairing transcript
+  18: nonce-256,                      ; device confirmation
+  19: nonce-256,                      ; machine confirmation
+  20: timestamp-ms
+}
+
+recipient-reference = {
+  0: endpoint-type,
+  1: id,                              ; endpoint
+  2: key-id,
+  3: digest                           ; public descriptor digest
+}
+
+hpke-wrap-entry = {
+  0: endpoint-type,
+  1: id,
+  2: key-id,
+  3: digest,                          ; descriptor digest
+  4: bstr .size 32,                   ; enc
+  5: bstr .size 48                    ; 32-byte secret plus 16-byte tag
+}
+
+session-root-proposal = {
+  0: session-root-proposal-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; workspace
+  4: id,                              ; session
+  5: id,                              ; target machine
+  6: digest,                          ; paired record
+  7: id,                              ; authority device
+  8: key-id,                          ; authority identity
+  9: key-id,                          ; authority approval
+  10: [2*2 recipient-reference],
+  11: id,                             ; initial epoch identifier
+  12: [2*2 hpke-wrap-entry],
+  13: 0,                              ; authority generation
+  14: 0,                              ; content generation
+  15: digest,                         ; revocation generation
+  16: digest,                         ; authorization proof
+  17: nonce-256,
+  18: timestamp-ms
+}
+
+epoch-manifest-pre = {
+  0: protocol-version,
+  1: suite-id,
+  2: id,                              ; organization
+  3: id,                              ; session
+  4: id,                              ; target machine
+  5: digest,                          ; root commit
+  6: digest,                          ; parent state
+  7: uint64,                          ; state sequence
+  8: uint64,                          ; authority generation
+  9: uint64,                          ; content generation
+  10: uint64,                         ; epoch number
+  11: id,                             ; epoch identifier
+  12: nullable-digest,                ; previous epoch manifest
+  13: id,                             ; creator device
+  14: key-id,                         ; creator identity key
+  15: [1*32 recipient-reference],     ; canonically sorted
+  16: digest,                         ; authorization proof
+  17: nonce-256,
+  18: timestamp-ms,
+  19: 1..8                            ; rotation reason
+}
+
+epoch-manifest-proposal = {
+  0: epoch-manifest-proposal-type,
+  1: protocol-version,
+  2: bstr,                            ; exact epoch-manifest-pre dCBOR
+  3: digest,                          ; pre-manifest digest
+  4: [1*32 hpke-wrap-entry]           ; same canonical recipient order
+}
+
+content-grant-proposal = {
+  0: content-grant-proposal-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; session
+  4: digest,                          ; parent state
+  5: id,                              ; grant
+  6: key-id,                          ; granting approval key
+  7: id,                              ; recipient endpoint
+  8: key-id,                          ; recipient key
+  9: grant-scope,
+  10: nullable-uint,                  ; first epoch
+  11: nullable-uint,                  ; last epoch
+  12: nullable-digest,                ; recovery transcript
+  13: 1..8,                           ; reason
+  14: digest,                         ; authorization proof
+  15: nonce-256,
+  16: timestamp-ms
+}
+
+authority-transition-proposal = {
+  0: authority-transition-proposal-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; session
+  4: digest,                          ; parent state
+  5: uint64,                          ; next authority generation
+  6: id,                              ; old device
+  7: key-id,                          ; old approval key
+  8: id,                              ; new device
+  9: key-id,                          ; new identity key
+  10: key-id,                         ; new approval key
+  11: nonce-256,                      ; old confirmation
+  12: nonce-256,                      ; new confirmation
+  13: digest,                         ; recovery transcript or paired record
+  14: digest,                         ; authorization proof
+  15: 1..8,                           ; reason
+  16: nonce-256,
+  17: timestamp-ms
+}
+
+revocation-transition-proposal = {
+  0: revocation-transition-proposal-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; session
+  4: digest,                          ; parent state
+  5: id,                              ; revocation
+  6: 1..8,                            ; scope
+  7: id,                              ; revoked endpoint
+  8: [1*8 key-id],                    ; sorted lexically
+  9: uint64,                          ; next generation
+  10: nullable-digest,                ; replacement transition
+  11: 1..8,                           ; reason
+  12: digest,                         ; authorization proof
+  13: nonce-256,
+  14: timestamp-ms
+}
+
+session-state-commit = {
+  0: session-state-commit-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; session
+  4: id,                              ; machine
+  5: uint64,                          ; state sequence
+  6: nullable-digest,                 ; parent, nil only for genesis
+  7: 20..24,                          ; proposal object type
+  8: digest,                          ; proposal body
+  9: uint64,                          ; authority generation
+  10: uint64,                         ; content generation
+  11: digest,                         ; revocation generation
+  12: digest,                         ; epoch manifest
+  13: digest,                         ; recipient set
+  14: timestamp-ms,
+  15: nonce-256
+}
+
+authorization-proof = {
+  0: authorization-proof-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; principal
+  4: id,                              ; endpoint
+  5: nullable-id,                     ; session
+  6: id,                              ; machine
+  7: uint64,                          ; membership generation
+  8: digest,                          ; revocation generation
+  9: uint64,                          ; policy version
+  10: digest,                         ; constrained context
+  11: timestamp-ms,
+  12: timestamp-ms,
+  13: nonce-256
+}
+
+approval-challenge = {
+  0: approval-challenge-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; workspace
+  4: id,                              ; session
+  5: nullable-id,                     ; run
+  6: id,                              ; machine
+  7: id,                              ; actor endpoint
+  8: digest,                          ; canonical operation
+  9: uint64,                          ; policy version
+  10: 1..4,                           ; risk class
+  11: digest,                         ; revocation generation
+  12: nonce-256,
+  13: timestamp-ms,
+  14: timestamp-ms
+}
+
+approval-decision = {
+  0: approval-decision-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; session
+  4: id,                              ; machine
+  5: digest,                          ; challenge body
+  6: digest,                          ; canonical operation
+  7: id,                              ; device
+  8: key-id,                          ; approval key
+  9: 1 / 2,                           ; approve / reject
+  10: digest,                         ; authorization proof body
+  11: nonce-256,
+  12: timestamp-ms,
+  13: timestamp-ms
+}
+
+ceremony-transfer-package = {
+  0: ceremony-transfer-package-type,
+  1: protocol-version,
+  2: 1..3,                            ; pairing/trusted/local recovery
+  3: id,                              ; rendezvous
+  4: nonce-256,                       ; Noise PSK
+  5: digest,                          ; PSK commitment
+  6: id,                              ; organization
+  7: id,                              ; user
+  8: id,                              ; target machine
+  9: nullable-id,                     ; session
+  10: nullable-digest,                ; requested scope
+  11: timestamp-ms
+}
+
+responder-ceremony-payload = {
+  0: responder-ceremony-payload-type,
+  1: protocol-version,
+  2: 1..3,
+  3: id,
+  4: endpoint-type,
+  5: id,
+  6: short-text,
+  7: bstr,
+  8: bstr / nil,
+  9: bstr,
+  10: bstr / nil,
+  11: nonce-256,
+  12: nullable-digest
+}
+
+initiator-ceremony-payload = {
+  0: initiator-ceremony-payload-type,
+  1: protocol-version,
+  2: 1..3,
+  3: id,
+  4: endpoint-type,
+  5: id,
+  6: short-text,
+  7: bstr,
+  8: bstr,
+  9: bstr,
+  10: bstr / nil,
+  11: nonce-256,
+  12: digest,                         ; responder payload
+  13: nullable-digest
+}
+
+responder-confirmation-intent = {
+  0: responder-confirmation-intent-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: nullable-id,                     ; session
+  4: digest,                          ; handshake hash
+  5: digest,                          ; prologue
+  6: digest,                          ; responder payload
+  7: digest,                          ; initiator payload
+  8: nullable-digest,                 ; scope
+  9: nonce-256
+}
+
+initiator-confirmation = {
+  0: initiator-confirmation-type,
+  1: protocol-version,
+  2: id,
+  3: nullable-id,
+  4: digest,                          ; responder intent
+  5: nonce-256,                       ; echoed responder nonce
+  6: nonce-256,                       ; initiator nonce
+  7: digest                           ; proposed result body
+}
+
+responder-confirmation = {
+  0: responder-confirmation-type,
+  1: protocol-version,
+  2: id,
+  3: nullable-id,
+  4: digest,                          ; initiator confirmation
+  5: nonce-256,                       ; echoed initiator nonce
+  6: digest                           ; same proposed result body
+}
+
+initiator-receipt = {
+  0: initiator-receipt-type,
+  1: protocol-version,
+  2: id,
+  3: nullable-id,
+  4: digest,                          ; initiator confirmation signature
+  5: digest                           ; responder confirmation signature
+}
+
+ceremony-prologue = {
+  0: protocol-version,
+  1: suite-id,
+  2: 1..3,                            ; ceremony type
+  3: id,                              ; rendezvous
+  4: id,                              ; organization
+  5: id,                              ; user
+  6: endpoint-type,                   ; initiator role
+  7: endpoint-type,                   ; responder role
+  8: id,                              ; target machine
+  9: nullable-id,                     ; session
+  10: nullable-digest,                ; scope
+  11: timestamp-ms,
+  12: digest                          ; PSK commitment
+}
+
+trusted-device-recovery-transcript = {
+  0: trusted-device-recovery-transcript-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; session
+  4: id,                              ; machine
+  5: digest,                          ; ceremony context
+  6: digest,                          ; handshake hash
+  7: id,                              ; old device
+  8: key-id,                          ; old identity
+  9: key-id,                          ; old approval
+  10: id,                             ; new device
+  11: [3*4 bstr],                     ; new key descriptors
+  12: capability,
+  13: nullable-uint,
+  14: nullable-uint,
+  15: digest,                         ; current state
+  16: uint64,                         ; authority generation
+  17: digest,                         ; revocation generation
+  18: digest,                         ; authorization proof
+  19: digest,                         ; responder payload
+  20: digest,                         ; initiator payload
+  21: nonce-256,
+  22: nonce-256
+}
+
+local-machine-recovery-transcript = {
+  0: local-machine-recovery-transcript-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; session
+  4: id,                              ; machine
+  5: id,                              ; new device
+  6: [3*4 bstr],                      ; new key descriptors
+  7: capability,
+  8: nullable-uint,
+  9: nullable-uint,
+  10: digest,                         ; ceremony context
+  11: digest,                         ; handshake hash
+  12: digest,                         ; state head
+  13: uint64,                         ; local recovery counter
+  14: digest,                         ; authorization proof
+  15: nonce-256,
+  16: timestamp-ms
+}
+
+sender-incarnation-grant = {
+  0: sender-incarnation-grant-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; sender endpoint
+  4: key-id,                          ; sender identity
+  5: id,                              ; machine
+  6: nonce-256,                       ; process incarnation
+  7: nonce-256,                       ; issuer challenge
+  8: uint64,                          ; generation
+  9: digest,                          ; accepted state
+  10: timestamp-ms,
+  11: timestamp-ms
+}
+
+signed-envelope = {
+  0: signed-envelope-type,
+  1: protocol-version,
+  2: 1,                              ; payload version
+  3: id,                              ; organization
+  4: id,                              ; workspace
+  5: id,                              ; session
+  6: nullable-id,                     ; run
+  7: id,                              ; machine
+  8: id,                              ; event
+  9: 1..255,                          ; event type
+  10: id,                             ; sender endpoint
+  11: key-id,                         ; sender identity
+  12: digest,                         ; state commit
+  13: uint64,                         ; epoch number
+  14: id,                             ; epoch identifier
+  15: digest,                         ; incarnation grant
+  16: nonce-256,                      ; stream identifier
+  17: safe-counter,
+  18: timestamp-ms,
+  19: 0,                              ; compression none
+  20: uint64,                         ; plaintext length
+  21: uint64,                         ; ciphertext length
+  22: [* digest],                     ; artifact references
+  23: bstr .size (16..16777232)        ; ciphertext including tag
+}
+
+envelope-aad = {
+  0: protocol-version,
+  1: 1,                               ; payload version
+  2: id,                              ; organization
+  3: id,                              ; workspace
+  4: id,                              ; session
+  5: nullable-id,                     ; run
+  6: id,                              ; machine
+  7: id,                              ; event
+  8: 1..255,                          ; event type
+  9: id,                              ; sender endpoint
+  10: key-id,                         ; sender identity
+  11: digest,                         ; state commit
+  12: uint64,                         ; epoch number
+  13: id,                             ; epoch identifier
+  14: digest,                         ; incarnation grant
+  15: nonce-256,                      ; stream identifier
+  16: safe-counter,
+  17: timestamp-ms,
+  18: 0,                              ; compression none
+  19: uint64,                         ; plaintext length
+  20: uint64,                         ; ciphertext length
+  21: [* digest]                      ; artifact references
+}
+
+server-ordering-receipt = {
+  0: server-ordering-receipt-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; session
+  4: id,                              ; event
+  5: digest,                          ; envelope body
+  6: uint64,                          ; sequence
+  7: timestamp-ms,
+  8: nullable-digest,                 ; previous receipt
+  9: key-id                           ; server receipt key
+}
+
+signed-artifact-start = {
+  0: signed-artifact-start-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; workspace
+  4: id,                              ; session
+  5: nullable-id,                     ; run
+  6: id,                              ; machine
+  7: nonce-256,                       ; artifact
+  8: nonce-256,                       ; attempt
+  9: digest,                          ; incarnation grant
+  10: id,                             ; sender endpoint
+  11: key-id,
+  12: digest,                         ; state commit
+  13: uint64,
+  14: id,                             ; epoch identifier
+  15: 1..255,                         ; content class
+  16: media-type,
+  17: 0,                              ; compression none
+  18: nullable-uint,
+  19: 1..1048576,                     ; declared chunk size
+  20: nonce-256
+}
+
+artifact-chunk-aad = {
+  0: protocol-version,
+  1: digest,                          ; signed start body
+  2: nonce-256,                       ; artifact
+  3: nonce-256,
+  4: key-id,
+  5: id,                              ; epoch identifier
+  6: safe-counter,                    ; chunk index
+  7: uint64,                          ; plaintext length
+  8: uint64,                          ; ciphertext length
+  9: bool,                            ; final chunk
+  10: nullable-digest                 ; previous ciphertext
+}
+
+artifact-chunk = {
+  0: artifact-chunk-type,
+  1: bstr,                            ; artifact-chunk-aad dCBOR
+  2: bstr .size (16..1048592)         ; ciphertext including tag
+}
+
+signed-artifact-finalization = {
+  0: signed-artifact-finalization-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; session
+  4: digest,                          ; signed start body
+  5: nonce-256,                       ; artifact
+  6: nonce-256,                       ; attempt
+  7: uint64,                          ; chunk count
+  8: [1*65536 digest],
+  9: digest,                          ; final chain
+  10: uint64,                         ; total plaintext
+  11: uint64,                         ; total ciphertext
+  12: nullable-digest,                ; plaintext digest
+  13: timestamp-ms,
+  14: key-id
+}
+
+pty-lease-request = {
+  0: pty-lease-request-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; workspace
+  4: id,                              ; session
+  5: id,                              ; machine
+  6: id,                              ; PTY
+  7: id,                              ; requested lease
+  8: uint64,                          ; requested generation
+  9: id,                              ; device
+  10: key-id,                         ; identity
+  11: key-id,                         ; live channel
+  12: digest,                         ; state commit
+  13: digest,                         ; authorization proof
+  14: nonce-256,
+  15: timestamp-ms,
+  16: timestamp-ms
+}
+
+pty-lease-grant = {
+  0: pty-lease-grant-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: digest,                          ; request body
+  4: id,                              ; session
+  5: id,                              ; machine
+  6: id,                              ; PTY
+  7: id,                              ; lease
+  8: uint64,
+  9: id,                              ; holder device
+  10: key-id,                         ; holder identity
+  11: key-id,                         ; holder live channel
+  12: key-id,                         ; machine identity
+  13: key-id,                         ; machine live channel
+  14: digest,                         ; state commit
+  15: timestamp-ms,
+  16: timestamp-ms,
+  17: nonce-256
+}
+
+pty-channel-prologue = {
+  0: protocol-version,
+  1: suite-id,
+  2: id,                              ; organization
+  3: id,                              ; workspace
+  4: id,                              ; session
+  5: id,                              ; machine
+  6: id,                              ; PTY
+  7: id,                              ; lease
+  8: uint64,                          ; generation
+  9: digest,                          ; request body
+  10: digest,                         ; grant body
+  11: id,                             ; device
+  12: key-id,                         ; device identity
+  13: key-id,                         ; device live channel
+  14: key-id,                         ; machine identity
+  15: key-id,                         ; machine live channel
+  16: digest,                         ; state commit
+  17: timestamp-ms
+}
+
+pty-frame = {
+  0: pty-frame-type,
+  1: protocol-version,
+  2: id,                              ; organization
+  3: id,                              ; session
+  4: id,                              ; machine
+  5: id,                              ; PTY
+  6: id,                              ; lease
+  7: uint64,                          ; lease generation
+  8: digest,                          ; channel handshake hash
+  9: direction,
+  10: safe-counter,
+  11: id,                             ; frame
+  12: 1..16,                          ; frame type
+  13: 0..65536,
+  14: bstr .size (0..65536)
+}

@@ -1,0 +1,190 @@
+{
+  "format": "conatus-sender-channel-cases",
+  "version": 1,
+  "status": "semantic matrix; R5 fixes exact bytes and executable nonce fault evidence remains required",
+  "review_gate": "does not close C-007 findings",
+  "cases": [
+    {
+      "id": "R3-001",
+      "object": "durable-envelope",
+      "conditions": ["valid epoch AEAD", "eligible sender signature", "matching accepted state"],
+      "expected": "verify-then-decrypt-and-accept"
+    },
+    {
+      "id": "R3-002",
+      "object": "durable-envelope",
+      "conditions": ["attacker knows epoch secret", "forged ciphertext", "missing claimed sender signature"],
+      "expected": "reject-before-decryption"
+    },
+    {
+      "id": "R3-003",
+      "object": "durable-envelope",
+      "conditions": ["valid signature", "sender revoked in accepted state"],
+      "expected": "reject-before-decryption"
+    },
+    {
+      "id": "R3-004",
+      "object": "durable-envelope",
+      "conditions": ["valid sender signature", "ciphertext digest differs"],
+      "expected": "reject"
+    },
+    {
+      "id": "R3-005",
+      "object": "durable-envelope",
+      "conditions": ["same event ID", "different signed envelope digest"],
+      "expected": "security-error"
+    },
+    {
+      "id": "R3-006",
+      "object": "server-ordering-receipt",
+      "conditions": ["valid server receipt", "invalid endpoint signature"],
+      "expected": "reject",
+      "reason": "server order cannot replace sender authentication"
+    },
+    {
+      "id": "R3-007",
+      "object": "server-ordering-receipt",
+      "conditions": ["two receipts bind one event to conflicting sequences"],
+      "expected": "server-receipt-fork"
+    },
+    {
+      "id": "R3-008",
+      "object": "artifact",
+      "conditions": ["valid signed start", "all valid chunks", "valid eligible-sender finalization"],
+      "expected": "release-after-full-verification"
+    },
+    {
+      "id": "R3-009",
+      "object": "artifact",
+      "conditions": ["attacker knows epoch secret", "forged chunks", "missing finalization signature"],
+      "expected": "quarantine-then-expire"
+    },
+    {
+      "id": "R3-010",
+      "object": "artifact",
+      "conditions": ["valid finalization", "chunk gap"],
+      "expected": "reject"
+    },
+    {
+      "id": "R3-011",
+      "object": "artifact",
+      "conditions": ["valid finalization", "changed duplicate chunk index"],
+      "expected": "security-error"
+    },
+    {
+      "id": "R3-012",
+      "object": "artifact",
+      "conditions": ["chunk copied from different artifact attempt"],
+      "expected": "reject"
+    },
+    {
+      "id": "R3-013",
+      "object": "artifact",
+      "conditions": ["incomplete action-bearing artifact", "consumer requests execution or apply"],
+      "expected": "deny"
+    },
+    {
+      "id": "R3-014",
+      "object": "pty-lease",
+      "conditions": ["eligible device signed request", "fresh proof", "machine signed grant", "no conflicting lease"],
+      "expected": "grant"
+    },
+    {
+      "id": "R3-015",
+      "object": "pty-lease",
+      "conditions": ["control-plane grant", "missing machine signature"],
+      "expected": "reject"
+    },
+    {
+      "id": "R3-016",
+      "object": "pty-lease",
+      "conditions": ["content recipient knows epoch secret", "forged request as another device"],
+      "expected": "reject"
+    },
+    {
+      "id": "R3-017",
+      "object": "pty-channel",
+      "conditions": ["Noise_KK_25519_ChaChaPoly_SHA256", "pinned live-channel static keys", "matching lease prologue and payloads"],
+      "expected": "accept-channel"
+    },
+    {
+      "id": "R3-018",
+      "object": "pty-channel",
+      "conditions": ["valid Noise KK cryptography", "device static key not pinned to lease holder"],
+      "expected": "reject"
+    },
+    {
+      "id": "R3-019",
+      "object": "pty-channel",
+      "conditions": ["valid pinned keys", "stale lease generation in prologue"],
+      "expected": "reject"
+    },
+    {
+      "id": "R3-020",
+      "object": "pty-channel",
+      "conditions": ["reconnect", "attempt to resume old Noise transport state"],
+      "expected": "reject-and-perform-fresh-handshake"
+    },
+    {
+      "id": "R3-021",
+      "object": "pty-channel",
+      "conditions": ["lease transferred", "old holder sends authenticated old-channel frame"],
+      "expected": "reject-without-action"
+    },
+    {
+      "id": "R3-022",
+      "object": "pty-input-frame",
+      "conditions": ["valid current channel", "exact next sequence", "current lease and revocation checks"],
+      "expected": "authenticate-then-execute-once"
+    },
+    {
+      "id": "R3-023",
+      "object": "pty-input-frame",
+      "conditions": ["invalid Noise authentication", "payload contains terminal input"],
+      "expected": "reject-before-pty-write"
+    },
+    {
+      "id": "R3-024",
+      "object": "pty-input-frame",
+      "conditions": ["valid old channel", "device revoked before pre-action check"],
+      "expected": "reject-before-pty-write-and-close"
+    },
+    {
+      "id": "R3-025",
+      "object": "pty-input-frame",
+      "conditions": ["valid authentication", "duplicate frame ID"],
+      "expected": "reject-without-second-action"
+    },
+    {
+      "id": "R3-026",
+      "object": "pty-input-frame",
+      "conditions": ["valid authentication", "skipped or reordered frame sequence"],
+      "expected": "reject-and-close"
+    },
+    {
+      "id": "R3-027",
+      "object": "pty-output-frame",
+      "conditions": ["attacker knows session epoch", "forges machine output outside pairwise channel"],
+      "expected": "reject"
+    },
+    {
+      "id": "R3-028",
+      "object": "pty-checkpoint",
+      "conditions": ["valid pairwise channel", "missing machine checkpoint signature"],
+      "expected": "render-live-only-not-durable-authenticated-checkpoint"
+    },
+    {
+      "id": "R3-029",
+      "object": "pty-audit-batch",
+      "conditions": ["batch signature valid", "one listed frame was not authenticated before execution"],
+      "expected": "security-error",
+      "reason": "audit signature cannot retroactively authorize input"
+    },
+    {
+      "id": "R3-030",
+      "object": "any",
+      "conditions": ["eligible signature from different organization, session, machine, object type, or purpose"],
+      "expected": "reject"
+    }
+  ]
+}

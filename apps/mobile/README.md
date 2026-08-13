@@ -17,6 +17,10 @@ The terminal-renderer evaluations and physical-device procedures live under
 tracked corpora and evidence schemas. These checks do not replace either
 ticket's physical-device acceptance gate.
 
+The disposable C-007-R6 Keystore, JCA, JNI, and Linux storage feasibility work
+lives under `spikes/cryptographic-boundaries`. It is review evidence only and
+must not be imported by production components.
+
 ## Dependency boundary
 
 May depend on generated artifacts from `packages/protocol`. It must not import

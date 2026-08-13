@@ -275,6 +275,43 @@ Approval decisions are signed by the mobile device key and reference the digest.
 5. The control plane records public keys, attestable metadata when available, status, and revocation generation.
 6. Revocation updates are pushed and also checked on every reconnect and sensitive operation.
 
+Successful pairing produces an immutable, endpoint-signed
+`PairedEndpointRecord` stored by both endpoints. Later key resolution must chain
+to that local record; the control-plane key directory is not a cryptographic
+trust root.
+
+Pairing and recovery use the fixed
+`Noise_XXpsk3_25519_ChaChaPoly_SHA256` pattern with a locally transferred
+32-byte secret, a context-bound prologue, encrypted endpoint bundles, a full
+128-bit comparison value, local confirmation on both endpoints, and
+post-handshake endpoint signatures. Each endpoint permits one local attempt per
+secret and never resumes a partial handshake after restart or restore. The
+[pairing and recovery specification](protocol/pairing-and-recovery.md) defines
+the semantic transcript and failure rules. The
+[cryptographic byte profile](protocol/cryptographic-byte-profile.md) fixes the
+version-1 transcript and signature bytes.
+
+Each session uses a single mobile content authority during alpha. The authority
+signs state proposals, while the paired target machine is the unique commit
+sequencer and signs one durable `SessionStateCommit` for each state sequence.
+Recipients adopt no session root, epoch, content grant, authority transfer, or
+revocation transition without both the required mobile endpoint authorization
+and the matching machine commit. Recipient changes, historical grants,
+authority transfers, and revocation replacements require the device approval
+key; a routine same-recipient epoch rotation may use the authority identity key.
+
+The exact objects, signer predicates, canonical-successor rule, fork behavior,
+partition behavior, and compromise consequences are defined in the proposed
+[cryptographic authority state model](protocol/cryptographic-authority-state.md).
+Its byte encoding is fixed by the proposed R5 profile and remains blocked on
+cross-language implementation evidence and independent review.
+
+Account recovery creates no content capability. Trusted-device and
+local-machine recovery separately name `pair-only`, future-content, bounded
+historical-content, or replacement-authority scope. Future and historical
+access never imply one another. Replacement authority requires local endpoint
+authorization and forces a new epoch.
+
 Key rotation, account recovery, organization ownership recovery, and lost-device behavior require dedicated ceremonies and tests; recovery must not silently bypass end-to-end confidentiality.
 
 [ADR 0008](decisions/0008-cryptographic-architecture.md) proposes the exact
@@ -297,12 +334,31 @@ and high finding. Production cryptography remains blocked until then.
 ## 13. PTY design
 
 - PTY sessions have independent identifiers, leases, dimensions, and lifecycle state.
-- Raw input is sent only while the client holds an input lease; observation may be shared.
+- Raw input is sent only while the client holds a device-requested,
+  machine-granted input lease; observation may be shared.
 - Lease transfer is explicit to prevent two devices from concurrently typing unintentionally.
+- Every lease generation and reconnect establishes a fresh pairwise
+  `Noise_KK_25519_ChaChaPoly_SHA256` channel using dedicated static keys pinned
+  during pairing or recovery; session epoch keys never authenticate PTY input.
+- The machine authenticates each frame, validates its exact next sequence and
+  current lease generation, rechecks revocation and policy, and reserves its
+  frame ID before any input, resize, or signal reaches the PTY.
 - The machine retains a bounded terminal screen/scrollback representation or checkpoint stream.
 - Reconnect includes a fresh screen snapshot and subsequent frames; the UI labels unavailable history.
 - Resize operations are ordered and idempotent.
 - Sensitive-mode controls can disable cloud retention, clipboard, and screenshots where platform capabilities permit.
+
+Durable envelopes are signed by their eligible endpoint before recipients
+decrypt or act. Artifact chunks remain quarantined until a sender-signed
+finalization validates the complete ordered ciphertext chain. The proposed
+[sender-authenticated content specification](protocol/sender-authenticated-content.md)
+defines these C-007-R3 semantics. The proposed
+[nonce and retry state specification](protocol/nonce-and-retry-state.md)
+requires a fresh signed sender incarnation, transactional counter allocation,
+an immutable outbox commit before transmission, and byte-for-byte retry.
+Restarts may relay old durable bytes but cannot resume their encryption state;
+unsupported or uncertain restore/clone state is quarantined. Exact encodings
+and executable R4 fault evidence remain pending.
 
 ## 14. Agent adapter interface
 

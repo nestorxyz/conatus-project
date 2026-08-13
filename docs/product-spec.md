@@ -155,6 +155,24 @@ Every structured result offers access to relevant raw data.
 **P-053.** Users can delete sessions and account data subject to clearly disclosed security and legal retention rules.  
 **P-054.** Service degradation communicates whether actions are unsent, accepted, or of unknown outcome.  
 **P-055.** An unknown outcome is reconciled before the client offers a potentially duplicating retry.
+**P-056.** Account recovery, organization administration, identity-provider
+access, and control-plane authority do not grant session-content or historical
+decryption access without an explicit endpoint-authorized content grant.
+**P-057.** Adding a session-content recipient, transferring content authority,
+or replacing a revoked authority requires the endpoint signatures defined by
+the accepted session state; a control-plane decision cannot perform those
+changes alone.
+**P-058.** Pairing, future-content access, historical-content access, and
+content-authority transfer are separately displayed and authorized
+capabilities; granting one does not imply another.
+**P-059.** Shared session-content access does not authorize a device to
+impersonate another sender, finalize another sender's artifact, acquire another
+device's terminal lease, or submit terminal input outside its current
+machine-granted pairwise channel.
+**P-060.** A crash, retry, lifecycle restore, backup restore, concurrent sender,
+or supported clone boundary cannot cause new plaintext to be encrypted under a
+previously used AEAD key/nonce pair. Uncertain or unsupported state fails
+closed; an immutable ciphertext may only be retransmitted byte-for-byte.
 
 ## 8. Non-functional requirements
 
