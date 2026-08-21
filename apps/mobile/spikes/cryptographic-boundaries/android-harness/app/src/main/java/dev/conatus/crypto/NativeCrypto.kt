@@ -21,6 +21,12 @@ internal object NativeCrypto {
         }
     }
 
+    /** Bypasses the Kotlin size guard only for this disposable negative harness. */
+    fun rawCoseFromDerForHarness(
+        protectedHeader: ByteArray,
+        derSignature: ByteArray,
+    ): ByteArray? = nativeCoseFromDer(protectedHeader, derSignature)
+
     @JvmStatic private external fun nativeApiVersion(): Int
     @JvmStatic private external fun nativeCoseFromDer(
         protectedHeader: ByteArray,

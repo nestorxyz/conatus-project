@@ -16,7 +16,12 @@ device identifiers, or screenshots containing user data.
 2. Launch `dev.conatus.crypto.spike/dev.conatus.crypto.MainActivity` after configuring a secure
    lock screen and an enrolled strong biometric.
 3. Confirm the noninteractive identity, AES wrapping, and JNI/COSE checks show
-   `PASS`.
+   `PASS`, followed by
+   `JNI-negative=PASS: 92 rejects; 256 concurrent calls; recovery`. This uses
+   only synthetic byte arrays. It exercises malformed DER and protected
+   headers, both native oversized-input branches, Kotlin size/rejection errors,
+   Java input-copy integrity, concurrent valid/invalid calls, and recovery to a
+   valid COSE result.
 4. Tap **Arm process-death test** and confirm the screen says
    `PROCESS-DEATH ARMED`. From the attached development computer, run:
 

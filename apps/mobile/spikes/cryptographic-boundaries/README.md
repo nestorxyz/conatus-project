@@ -20,7 +20,9 @@ X25519/live private-key identifier, exact-byte signing calls, security-level
 posture reporting, complete backup/D2D exclusions, and a non-destructive
 process-death probe for wrapped-fixture continuity and native-library/JNI
 reload. The probe persists only synthetic ciphertext and sanitized comparison
-state.
+state. An automatic JNI-negative harness also crosses the real Java/native
+boundary with malformed encodings, native and Kotlin size limits, synchronized
+concurrency, input-copy integrity checks, and valid recovery.
 
 ## Important feasibility result
 

@@ -133,9 +133,16 @@ class MainActivity : Activity() {
         }
         val exactSigStructure = "C-007-R6-JCA-boundary".encodeToByteArray()
         val der = AndroidKeyStoreBoundary.signIdentity(exactSigStructure)
-        check(NativeCrypto.coseFromDer(protected, der).isNotEmpty())
-        der.fill(0)
-        exactSigStructure.fill(0)
+        var cose: ByteArray? = null
+        try {
+            cose = NativeCrypto.coseFromDer(protected, der)
+            check(cose.size == 109)
+        } finally {
+            protected.fill(0)
+            der.fill(0)
+            exactSigStructure.fill(0)
+            cose?.fill(0)
+        }
 
         val keyId = "01".repeat(32)
         val aad = "conatus-spike-wrapped-key-aad".encodeToByteArray()
@@ -148,7 +155,8 @@ class MainActivity : Activity() {
         expected.fill(0)
         recovered.fill(0)
         aad.fill(0)
-        return "identity=${identity.summary()}; approval=${approval.summary()}"
+        val jniNegative = JniNegativeBoundaryChecks.run()
+        return "identity=${identity.summary()}; approval=${approval.summary()}\n$jniNegative"
     }
 
     private fun AndroidKeyStoreBoundary.KeyPosture.summary(): String =
