@@ -3,6 +3,7 @@
 
 package dev.conatus.crypto
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.hardware.biometrics.BiometricPrompt
 import android.os.Bundle
@@ -13,14 +14,19 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import java.security.SecureRandom
 
+@SuppressLint("SetTextI18n") // Disposable diagnostics are intentionally exact and non-localized.
 class MainActivity : Activity() {
     private lateinit var status: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val lifecycle = runCatching { ProcessDeathProbe.consumeAfterRestart(this) }
+            .getOrElse { "process-death probe=FAIL: ${it.javaClass.simpleName}" }
         val result = runCatching { runNonInteractiveChecks() }
             .fold(
-                onSuccess = { "PASS: identity, AES wrapping, and JNI/COSE boundaries\n$it" },
+                onSuccess = {
+                    "PASS: identity, AES wrapping, and JNI/COSE boundaries\n$it\n$lifecycle"
+                },
                 onFailure = { "FAIL: ${it.javaClass.simpleName}" },
             )
         status = TextView(this).apply {
@@ -33,6 +39,10 @@ class MainActivity : Activity() {
             isEnabled = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P
             setOnClickListener { runApprovalCeremony() }
         }
+        val processDeath = Button(this).apply {
+            text = "Arm process-death test"
+            setOnClickListener { armProcessDeathProbe() }
+        }
         setContentView(LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             addView(status, LinearLayout.LayoutParams(
@@ -40,8 +50,24 @@ class MainActivity : Activity() {
                 0,
                 1f,
             ))
+            addView(processDeath)
             addView(approval)
         })
+    }
+
+    private fun armProcessDeathProbe() {
+        runCatching { ProcessDeathProbe.arm(this) }
+            .fold(
+                onSuccess = {
+                    status.append(
+                        "\nPROCESS-DEATH ARMED: force-stop and relaunch the app; " +
+                            "do not clear app data.",
+                    )
+                },
+                onFailure = {
+                    status.append("\nPROCESS-DEATH FAIL: ${it.javaClass.simpleName}")
+                },
+            )
     }
 
     private fun runApprovalCeremony() {

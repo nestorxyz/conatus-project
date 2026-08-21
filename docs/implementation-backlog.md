@@ -131,9 +131,11 @@ buffer boundary, including observable input clearing on every return path. The
 Android APK compiles with separate Keystore identity/approval keys, per-use
 biometric approval, per-private-key AES-GCM wrapping keys, bounded
 panic-contained JNI, security-posture reporting, and backup/D2D exclusions.
-Physical-device, credential-fallback, lifecycle, backup, actual JVM/JNI
-process-death testing, and non-ext4 filesystem evidence remains open, so C-007-R6
-is not closed and C-007-R7 is still blocked.
+A non-destructive wrapped-fixture/JNI reload process-death probe also compiles,
+but has not yet been run on a physical device. Physical-device,
+credential-fallback, lifecycle, backup, actual JVM/JNI process-death testing,
+and non-ext4 filesystem evidence remains open, so C-007-R6 is not closed and
+C-007-R7 is still blocked.
 
 ### C-008 Select Android terminal rendering approach
 

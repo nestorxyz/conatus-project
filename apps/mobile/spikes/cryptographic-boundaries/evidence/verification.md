@@ -17,6 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 | Rust clippy | all host targets, warnings denied | Pass |
 | Android Rust build | `aarch64-linux-android`, API 26 clang, NDK 27.0.12077973, release | Pass |
 | Android APK build | compile/target SDK 36, min SDK 26, AGP 8.13.2, Kotlin 2.3.20, JDK 17 | Pass |
+| Android debug lint | AGP lint on the disposable arm64-only harness | Pass: 0 errors; expected prototype warnings for the omitted app icon and ChromeOS x86-64 ABI |
 | R5 ES256 boundary vector | deterministic public key, exact Sig_structure, DER-to-raw, low-S and COSE_Sign1 | Pass |
 | DER negative corpus | malformed lengths 0 through 80 plus non-minimal integer | Pass; no panic |
 | Native DER boundary fuzzing | nightly Rust 1.100.0, cargo-fuzz 0.13.2/libFuzzer, AddressSanitizer | Pass: 2,545,986 executions in 16 seconds; no crash or timeout |
@@ -41,7 +42,7 @@ packages; the local prototype package has no registry checksum.
 | Device credential alternative | determine whether any supported API can preserve one-signature authorization without an authentication window | Design gap; not validated |
 | Android backup and D2D | cloud backup, `adb`/transport restore where supported, and OEM device transfer | Not run |
 | Rust/JCA on-device vector | capture only pass/fail and security level; no key or signature material | Pass on hardware-backed Moto G6 Plus running Android 9/API 28; remaining matrix open |
-| JNI robustness | coverage-guided fuzzing under sanitizers and Android process-death/restart | Platform-neutral owned boundary passed AddressSanitizer fuzzing; actual JVM/JNI arrays and Android process-death/restart remain open |
+| JNI robustness | coverage-guided fuzzing under sanitizers and Android process-death/restart | Platform-neutral owned boundary passed AddressSanitizer fuzzing; a sanitized wrapped-fixture/JNI reload probe now compiles, but its physical-device process-death run and sudden death during JNI remain open |
 | Linux storage | ext4 complete; XFS and any other claimed production filesystem | XFS and other claims not run |
 | Linux key deletion | verify key/blob unlink and application-level cryptographic erasure workflow | Prototype unlink only; production evidence not run |
 
@@ -65,6 +66,16 @@ failed at shutdown for that environmental reason; it is not counted as a pass.
 This evidence does not exercise `JNIEnv`, Java array allocation, Android vendor
 runtimes, or process death, so those portions of the acceptance row remain
 open.
+
+The Android harness now includes a separately armed, non-destructive
+process-death probe. It commits only a synthetic AES-GCM ciphertext, expected
+digest, format number, and random process marker to backup-excluded private
+preferences. After an operator force-stops and relaunches the application, a
+new process must unwrap the fixture with the existing Keystore alias, match its
+digest, reload the Rust library, cross Java/JNI arrays, and produce the exact
+COSE boundary length. The debug APK containing this path builds successfully,
+but no physical-device result is claimed until the documented two-command
+ceremony is run.
 
 ## Device observation and correction
 

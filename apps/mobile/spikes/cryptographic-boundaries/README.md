@@ -17,7 +17,10 @@ single-writer/immutable-publication storage with injected crash points. The
 Android harness demonstrates separate non-exportable P-256 aliases, a
 per-operation biometric approval key, one AES-256-GCM Keystore wrapping key per
 X25519/live private-key identifier, exact-byte signing calls, security-level
-posture reporting, and complete backup/D2D exclusions.
+posture reporting, complete backup/D2D exclusions, and a non-destructive
+process-death probe for wrapped-fixture continuity and native-library/JNI
+reload. The probe persists only synthetic ciphertext and sanitized comparison
+state.
 
 ## Important feasibility result
 

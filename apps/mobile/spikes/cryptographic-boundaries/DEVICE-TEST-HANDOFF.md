@@ -5,26 +5,41 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # C-007-R6 Android device-test handoff
 
-Run this only on synthetic test devices. Record device model, Android/API
-version, patch level, Keystore security level, test date, and pass/fail. Do not
-record aliases, public keys, signatures, biometric data, device identifiers, or
-screenshots containing user data.
+The process-death probe below is non-destructive and does not alter lock-screen
+or biometric enrollment. Run the enrollment, lockout, backup/restore, and
+device-transfer cases only on disposable test devices. Record device model,
+Android/API version, patch level, Keystore security level, test date, and
+pass/fail. Do not record aliases, public keys, signatures, biometric data,
+device identifiers, or screenshots containing user data.
 
 1. Build and install the debug APK from the command in `README.md`.
-2. Launch `dev.conatus.crypto.spike/.MainActivity` after configuring a secure
+2. Launch `dev.conatus.crypto.spike/dev.conatus.crypto.MainActivity` after configuring a secure
    lock screen and an enrolled strong biometric.
 3. Confirm the noninteractive identity, AES wrapping, and JNI/COSE checks show
    `PASS`.
-4. Tap **Test approval signature**. Confirm success requires a fresh biometric,
+4. Tap **Arm process-death test** and confirm the screen says
+   `PROCESS-DEATH ARMED`. From the attached development computer, run:
+
+   ```sh
+   adb shell am force-stop dev.conatus.crypto.spike
+   adb shell am start -n dev.conatus.crypto.spike/dev.conatus.crypto.MainActivity
+   ```
+
+   Confirm the relaunched screen says `process-death probe=PASS: wrapped fixture
+   and JNI reload`. Do not clear app data between the two commands. This checks
+   a persisted synthetic AES-GCM-wrapped fixture, Keystore alias continuity,
+   native-library reload, Java-to-JNI array conversion, and COSE output in a new
+   application process. It does not simulate sudden death during a JNI call.
+5. Tap **Test approval signature**. Confirm success requires a fresh biometric,
    cancel fails closed, and a second attempt requires another biometric.
-5. Reboot, unlock, and repeat. Then enroll or remove a biometric and confirm the
+6. Reboot, unlock, and repeat. Then enroll or remove a biometric and confirm the
    old approval key is invalidated rather than silently regenerated during a
    signature attempt.
-6. Exercise lockout and absent-biometric cases. Record failure class or numeric
+7. Exercise lockout and absent-biometric cases. Record failure class or numeric
    biometric error only, never exception text containing application data.
-7. Attempt cloud backup/restore and OEM device-to-device transfer. Confirm no
+8. Attempt cloud backup/restore and OEM device-to-device transfer. Confirm no
    app files, wrapped blobs, rollback state, or usable Keystore aliases migrate.
-8. Repeat on the supported API/security-level matrix, including software-only,
+9. Repeat on the supported API/security-level matrix, including software-only,
    TEE, and StrongBox devices where those postures are claimed.
 
 The harness currently has no credential-backed approval fallback. Treat that as
