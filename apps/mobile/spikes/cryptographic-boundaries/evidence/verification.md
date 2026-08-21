@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # C-007-R6 verification record
 
-**Recorded:** 2026-08-13
+**Recorded:** 2026-08-21
 **Status:** Partial prototype evidence; physical-device and multi-filesystem rows remain open
 
 ## Completed locally
@@ -34,11 +34,11 @@ packages; the local prototype package has no registry checksum.
 
 | Evidence | Required matrix | State |
 | --- | --- | --- |
-| Android Keystore lifecycle | at least API 28, API 30, and current supported API; software/TEE/StrongBox posture where available | Not run |
-| Approval user presence | enroll/change biometric, success, cancel, lockout, reboot, and invalidation | Not run |
+| Android Keystore lifecycle | at least API 28, API 30, and current supported API; software/TEE/StrongBox posture where available | API 28 hardware-backed Moto G6 Plus passes reboot persistence; enrollment invalidation was safely deferred on a personal device; API 30 and current supported API remain open |
+| Approval user presence | enroll/change biometric, success, cancel, lockout, reboot, and invalidation | Success, user cancellation, fresh-authentication repeat, and post-reboot fresh authentication pass on Moto G6 Plus; lockout and enrollment invalidation were safely deferred on a personal device |
 | Device credential alternative | determine whether any supported API can preserve one-signature authorization without an authentication window | Design gap; not validated |
 | Android backup and D2D | cloud backup, `adb`/transport restore where supported, and OEM device transfer | Not run |
-| Rust/JCA on-device vector | capture only pass/fail and security level; no key or signature material | Not run |
+| Rust/JCA on-device vector | capture only pass/fail and security level; no key or signature material | Pass on hardware-backed Moto G6 Plus running Android 9/API 28; remaining matrix open |
 | JNI robustness | coverage-guided fuzzing under sanitizers and Android process-death/restart | Not run; deterministic malformed host corpus only |
 | Linux storage | ext4 complete; XFS and any other claimed production filesystem | XFS and other claims not run |
 | Linux key deletion | verify key/blob unlink and application-level cryptographic erasure workflow | Prototype unlink only; production evidence not run |
@@ -56,3 +56,23 @@ exceptions. The manifest and failure boundaries were corrected after review
 commit `1badec51d86ada020fa6b642dacd964762546183`. This attempt is a failed test,
 not approval evidence; the complete device matrix must be rerun against a new
 immutable commit.
+
+The corrected build at commit
+`4de4839053144e776adcef2af847bc1235197baf` was then exercised on a Motorola
+Moto G6 Plus. A sanitized screenshot and operator report show that the identity,
+AES-wrapping, JNI/COSE boundary checks passed; both identity and approval keys
+reported hardware-backed posture; and one authenticated approval signature
+completed. A second ceremony canceled by the operator returned Android
+`BIOMETRIC_ERROR_USER_CANCELED` (code 10), left the application running, and
+did not report a successful signature. A subsequent ceremony required fresh
+authentication and completed exactly one additional approval signature. The
+device was then rebooted without uninstalling or clearing application data.
+After first unlock, the automatic boundaries passed, both keys still reported
+hardware-backed posture, and another approval required fresh authentication
+before completing. The screenshot contains no key or signature material. The
+device reports Android 9, API 28, and security patch level 2020-07-01. This
+supplies legacy API-28 compatibility evidence, but its old security patch cannot
+establish current production-device posture. The remaining negative and
+lifecycle cases and newer API rows remain open. Enrollment-change invalidation
+and biometric lockout were intentionally not exercised because this is the
+operator's personal phone; they require a disposable test device.
