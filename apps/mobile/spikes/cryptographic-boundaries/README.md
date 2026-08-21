@@ -44,6 +44,11 @@ cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 ```
 
+The [`native-core/fuzz`](native-core/fuzz/README.md) workspace contains bounded
+coverage-guided targets for strict DER parsing and the owned JNI/COSE buffer
+boundary. It requires a nightly Rust toolchain and `cargo-fuzz`; generated
+corpora and artifacts stay outside the repository.
+
 ## Reproduce Android build
 
 Use the repository-pinned SDK, NDK, JDK, and Gradle cache. The build invokes

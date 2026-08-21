@@ -6,19 +6,21 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 # C-007-R6 verification record
 
 **Recorded:** 2026-08-21
-**Status:** Partial prototype evidence; physical-device and multi-filesystem rows remain open
+**Status:** Partial prototype evidence; Android lifecycle/JNI and multi-filesystem rows remain open
 
 ## Completed locally
 
 | Check | Environment | Result |
 | --- | --- | --- |
 | Rust format | `rustfmt 1.8.0-stable` through Rust 1.97.1 | Pass after formatting |
-| Rust unit/integration tests | Linux 6.8, x86-64, ext4 | Pass: 11 tests, 0 failed |
+| Rust unit/integration tests | Linux 6.8, x86-64, ext4 | Pass: 12 tests, 0 failed |
 | Rust clippy | all host targets, warnings denied | Pass |
 | Android Rust build | `aarch64-linux-android`, API 26 clang, NDK 27.0.12077973, release | Pass |
 | Android APK build | compile/target SDK 36, min SDK 26, AGP 8.13.2, Kotlin 2.3.20, JDK 17 | Pass |
 | R5 ES256 boundary vector | deterministic public key, exact Sig_structure, DER-to-raw, low-S and COSE_Sign1 | Pass |
 | DER negative corpus | malformed lengths 0 through 80 plus non-minimal integer | Pass; no panic |
+| Native DER boundary fuzzing | nightly Rust 1.100.0, cargo-fuzz 0.13.2/libFuzzer, AddressSanitizer | Pass: 2,545,986 executions in 16 seconds; no crash or timeout |
+| Owned JNI/COSE boundary fuzzing | nightly Rust 1.100.0, cargo-fuzz 0.13.2/libFuzzer, AddressSanitizer | Pass: 835,393 executions in 16 seconds; 3 new corpus units, no crash or timeout; success/rejection input zeroization asserted |
 | Linux crash/storage corpus | create, write, file-sync, publish-link, duplicate, ownership, mode, restore and delete | Pass on ext4 |
 | Dependency license inventory | repository policy check | Pass |
 | RustSec scan | `cargo-audit 0.22.2`, 133 locked dependencies | No vulnerabilities reported |
@@ -39,12 +41,30 @@ packages; the local prototype package has no registry checksum.
 | Device credential alternative | determine whether any supported API can preserve one-signature authorization without an authentication window | Design gap; not validated |
 | Android backup and D2D | cloud backup, `adb`/transport restore where supported, and OEM device transfer | Not run |
 | Rust/JCA on-device vector | capture only pass/fail and security level; no key or signature material | Pass on hardware-backed Moto G6 Plus running Android 9/API 28; remaining matrix open |
-| JNI robustness | coverage-guided fuzzing under sanitizers and Android process-death/restart | Not run; deterministic malformed host corpus only |
+| JNI robustness | coverage-guided fuzzing under sanitizers and Android process-death/restart | Platform-neutral owned boundary passed AddressSanitizer fuzzing; actual JVM/JNI arrays and Android process-death/restart remain open |
 | Linux storage | ext4 complete; XFS and any other claimed production filesystem | XFS and other claims not run |
 | Linux key deletion | verify key/blob unlink and application-level cryptographic erasure workflow | Prototype unlink only; production evidence not run |
 
 These open rows prevent C-007-R6 closure and do not authorize production
 cryptographic implementation.
+
+## Native fuzzing qualification
+
+Both fuzz targets used generated corpora and synthetic minimal DER values under
+`/tmp`; no private key, device signature, repository content, or user data was
+used or retained. The DER run used `-max_len=4096 -timeout=5` and the owned
+COSE run used `-max_len=8192 -timeout=5`. The owned-boundary target verifies
+exact successful COSE structure and that every byte in both owned input copies
+is overwritten on success and rejection.
+
+AddressSanitizer remained enabled. LeakSanitizer was disabled for the counted
+runs with `ASAN_OPTIONS=detect_leaks=0` because its end-of-process leak check
+cannot use `ptrace` in the workspace sandbox. A preliminary DER run completed
+5,081,100 target executions without a target crash before LeakSanitizer itself
+failed at shutdown for that environmental reason; it is not counted as a pass.
+This evidence does not exercise `JNIEnv`, Java array allocation, Android vendor
+runtimes, or process death, so those portions of the acceptance row remain
+open.
 
 ## Device observation and correction
 

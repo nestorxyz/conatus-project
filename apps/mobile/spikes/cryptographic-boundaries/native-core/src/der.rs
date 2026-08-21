@@ -4,6 +4,8 @@
 use minicbor::Encoder;
 use zeroize::Zeroize;
 
+use crate::{MAX_JNI_INPUT, MAX_JNI_OUTPUT};
+
 const P256_ORDER: [u8; 32] =
     hex_literal::hex!("ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551");
 const P256_HALF_ORDER: [u8; 32] =
@@ -130,6 +132,33 @@ pub fn cose_sign1_from_android_der(
     result
 }
 
+/// Models ownership at the JNI boundary without requiring a JVM. Both Java
+/// input copies are cleared on every return path. The JNI adapter additionally
+/// clears the output copy after constructing the Java byte array.
+pub fn jni_owned_cose_boundary(
+    protected: &mut Vec<u8>,
+    der_signature: &mut Vec<u8>,
+) -> Result<Vec<u8>, BoundaryError> {
+    let result = if protected.len() > MAX_JNI_INPUT || der_signature.len() > MAX_JNI_INPUT {
+        Err(BoundaryError::InputTooLarge)
+    } else {
+        cose_sign1_from_android_der(protected, der_signature)
+    };
+    // Keep the allocations' lengths intact so tests and fuzz targets can
+    // observe that every byte was overwritten before the JNI adapter drops
+    // the owned copies.
+    protected.as_mut_slice().zeroize();
+    der_signature.as_mut_slice().zeroize();
+
+    match result {
+        Ok(mut output) if output.len() > MAX_JNI_OUTPUT => {
+            output.as_mut_slice().zeroize();
+            Err(BoundaryError::InputTooLarge)
+        }
+        other => other,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -149,5 +178,23 @@ mod tests {
         let raw = der_to_raw_low_s(&der).unwrap();
         assert_eq!(raw[31], 1);
         assert_eq!(raw[63], 1);
+    }
+
+    #[test]
+    fn owned_boundary_clears_inputs_on_success_and_rejection() {
+        let mut protected = vec![0xa2, 0x01, 0x26, 0x04, 0x58, 0x20];
+        protected.resize(38, 0x11);
+        let mut signature = vec![0x30, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01];
+        assert!(jni_owned_cose_boundary(&mut protected, &mut signature).is_ok());
+        assert!(protected.iter().all(|byte| *byte == 0));
+        assert!(signature.iter().all(|byte| *byte == 0));
+
+        let mut oversized = vec![0x55; MAX_JNI_INPUT + 1];
+        let mut empty = Vec::new();
+        assert_eq!(
+            jni_owned_cose_boundary(&mut oversized, &mut empty),
+            Err(BoundaryError::InputTooLarge)
+        );
+        assert!(oversized.iter().all(|byte| *byte == 0));
     }
 }

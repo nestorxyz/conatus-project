@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2026 Conatus contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+[package]
+name = "conatus-crypto-boundary-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+license = "AGPL-3.0-or-later"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+hex-literal = "=1.1.0"
+libfuzzer-sys = "=0.4.13"
+conatus-crypto-boundary-spike = { path = ".." }
+
+[[bin]]
+name = "der_boundary"
+path = "fuzz_targets/der_boundary.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "owned_cose_boundary"
+path = "fuzz_targets/owned_cose_boundary.rs"
+test = false
+doc = false
+bench = false
+
+[workspace]
+members = ["."]

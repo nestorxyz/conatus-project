@@ -125,12 +125,15 @@ Linux and Android arm64; the direct dependency/license inventory and a current
 RustSec scan are recorded. Host tests cover the R5 ES256/JCA boundary, strict
 DER and low-S handling, COSE output, malformed inputs, Linux single-writer
 locking, atomic immutable publication, injected crashes, ownership, modes,
-restore, and idempotent unlink on ext4. The Android APK compiles with separate
-Keystore identity/approval keys, per-use biometric approval, per-private-key
-AES-GCM wrapping keys, bounded panic-contained JNI, security-posture reporting,
-and backup/D2D exclusions. Physical-device, credential-fallback, lifecycle,
-backup, sanitizer fuzzing, and non-ext4 filesystem evidence remains open, so
-C-007-R6 is not closed and C-007-R7 is still blocked.
+restore, and idempotent unlink on ext4. AddressSanitizer coverage-guided fuzzing
+also passes for strict DER parsing and the platform-neutral owned JNI/COSE
+buffer boundary, including observable input clearing on every return path. The
+Android APK compiles with separate Keystore identity/approval keys, per-use
+biometric approval, per-private-key AES-GCM wrapping keys, bounded
+panic-contained JNI, security-posture reporting, and backup/D2D exclusions.
+Physical-device, credential-fallback, lifecycle, backup, actual JVM/JNI
+process-death testing, and non-ext4 filesystem evidence remains open, so C-007-R6
+is not closed and C-007-R7 is still blocked.
 
 ### C-008 Select Android terminal rendering approach
 

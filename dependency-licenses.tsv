@@ -14,6 +14,7 @@ hex-literal	1.1.0	MIT OR Apache-2.0	C-007-R6 fixed curve constants	https://crate
 hkdf	0.13.0	MIT OR Apache-2.0	C-007-R6 key separation prototype	https://crates.io/crates/hkdf	2026-08-13
 hpke	0.14.0	MIT OR Apache-2.0	C-007-R6 recipient wrapping prototype	https://crates.io/crates/hpke	2026-08-13
 jni	0.22.4	MIT OR Apache-2.0	C-007-R6 Android native boundary	https://crates.io/crates/jni	2026-08-13
+libfuzzer-sys	0.4.13	MIT OR Apache-2.0	C-007-R6 disposable native-boundary fuzz targets	https://crates.io/crates/libfuzzer-sys	2026-08-21
 minicbor	2.3.0	BlueOak-1.0.0	C-007-R6 deterministic COSE encoding prototype	https://crates.io/crates/minicbor	2026-08-13
 p256	0.14.0	MIT OR Apache-2.0	C-007-R6 ES256 validation prototype	https://crates.io/crates/p256	2026-08-13
 serde_json	1.0.151	MIT OR Apache-2.0	C-007-R6 vector reader	https://crates.io/crates/serde_json	2026-08-13

@@ -6,7 +6,7 @@ use jni::sys::{JNI_VERSION_1_6, jbyteArray, jint};
 use jni::{EnvUnowned, Outcome};
 use zeroize::Zeroize;
 
-use crate::{MAX_JNI_INPUT, MAX_JNI_OUTPUT, NATIVE_API_VERSION, cose_sign1_from_android_der};
+use crate::{MAX_JNI_INPUT, MAX_JNI_OUTPUT, NATIVE_API_VERSION, jni_owned_cose_boundary};
 
 #[unsafe(no_mangle)]
 pub extern "system" fn JNI_OnLoad(
@@ -45,9 +45,7 @@ pub extern "system" fn Java_dev_conatus_crypto_NativeCrypto_nativeCoseFromDer<'l
                 return Err(error);
             }
         };
-        let result = cose_sign1_from_android_der(&protected, &signature);
-        protected.zeroize();
-        signature.zeroize();
+        let result = jni_owned_cose_boundary(&mut protected, &mut signature);
         let Ok(mut output) = result else {
             return Ok(core::ptr::null_mut());
         };
