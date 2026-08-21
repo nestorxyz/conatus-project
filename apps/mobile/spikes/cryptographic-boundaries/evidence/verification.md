@@ -42,7 +42,7 @@ packages; the local prototype package has no registry checksum.
 | Device credential alternative | determine whether any supported API can preserve one-signature authorization without an authentication window | Design gap; not validated |
 | Android backup and D2D | cloud backup, `adb`/transport restore where supported, and OEM device transfer | Not run |
 | Rust/JCA on-device vector | capture only pass/fail and security level; no key or signature material | Pass on hardware-backed Moto G6 Plus running Android 9/API 28; remaining matrix open |
-| JNI robustness | coverage-guided fuzzing under sanitizers and Android process-death/restart | Platform-neutral owned boundary passed AddressSanitizer fuzzing; a sanitized wrapped-fixture/JNI reload probe now compiles, but its physical-device process-death run and sudden death during JNI remain open |
+| JNI robustness | coverage-guided fuzzing under sanitizers and Android process-death/restart | Platform-neutral owned boundary passed AddressSanitizer fuzzing; wrapped-fixture/JNI reload after force-stop passes on the API 28 Moto G6 Plus; sudden death during JNI and newer-device coverage remain open |
 | Linux storage | ext4 complete; XFS and any other claimed production filesystem | XFS and other claims not run |
 | Linux key deletion | verify key/blob unlink and application-level cryptographic erasure workflow | Prototype unlink only; production evidence not run |
 
@@ -63,9 +63,10 @@ runs with `ASAN_OPTIONS=detect_leaks=0` because its end-of-process leak check
 cannot use `ptrace` in the workspace sandbox. A preliminary DER run completed
 5,081,100 target executions without a target crash before LeakSanitizer itself
 failed at shutdown for that environmental reason; it is not counted as a pass.
-This evidence does not exercise `JNIEnv`, Java array allocation, Android vendor
-runtimes, or process death, so those portions of the acceptance row remain
-open.
+The host fuzzing evidence alone does not exercise `JNIEnv`, Java array
+allocation, Android vendor runtimes, or process death. The physical-device
+probe below covers clean JNI reload after process death, but not sudden death
+during an active JNI call.
 
 The Android harness now includes a separately armed, non-destructive
 process-death probe. It commits only a synthetic AES-GCM ciphertext, expected
@@ -73,9 +74,13 @@ digest, format number, and random process marker to backup-excluded private
 preferences. After an operator force-stops and relaunches the application, a
 new process must unwrap the fixture with the existing Keystore alias, match its
 digest, reload the Rust library, cross Java/JNI arrays, and produce the exact
-COSE boundary length. The debug APK containing this path builds successfully,
-but no physical-device result is claimed until the documented two-command
-ceremony is run.
+COSE boundary length. The debug APK containing this path builds successfully.
+On 2026-08-21, the operator armed the probe from build commit
+`82af39e39b4fbe76cf38fcabb62bb3a7e2239fc4`, force-stopped the package, and
+relaunched its activity without clearing application data. The Moto G6 Plus
+reported `process-death probe=PASS: wrapped fixture and JNI reload`. This is
+sanitized API-28 evidence; no ciphertext, digest, key material, process marker,
+device identifier, or raw log was recorded.
 
 ## Device observation and correction
 
