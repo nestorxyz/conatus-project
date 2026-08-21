@@ -51,32 +51,46 @@ class MainActivity : Activity() {
                 status.append("\nAPPROVAL FAIL: ${it.javaClass.simpleName}")
                 return
             }
-        BiometricPrompt.Builder(this)
-            .setTitle("Authorize synthetic C-007-R6 test")
-            .setDescription("No command or repository data is signed.")
-            .setNegativeButton("Cancel", mainExecutor) { _, _ ->
-                status.append("\nAPPROVAL CANCELLED")
-            }
-            .build()
-            .authenticate(
-                BiometricPrompt.CryptoObject(signature),
-                CancellationSignal(),
-                mainExecutor,
-                object : BiometricPrompt.AuthenticationCallback() {
-                    override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                        val authenticated = checkNotNull(result.cryptoObject?.signature)
-                        val input = "C-007-R6-user-presence".encodeToByteArray()
-                        val der = AndroidKeyStoreBoundary.finishSignature(authenticated, input)
-                        input.fill(0)
-                        der.fill(0)
-                        status.append("\nAPPROVAL PASS: one authenticated signature")
-                    }
+        runCatching {
+            BiometricPrompt.Builder(this)
+                .setTitle("Authorize synthetic C-007-R6 test")
+                .setDescription("No command or repository data is signed.")
+                .setNegativeButton("Cancel", mainExecutor) { _, _ ->
+                    status.append("\nAPPROVAL CANCELLED")
+                }
+                .build()
+                .authenticate(
+                    BiometricPrompt.CryptoObject(signature),
+                    CancellationSignal(),
+                    mainExecutor,
+                    object : BiometricPrompt.AuthenticationCallback() {
+                        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                            runCatching {
+                                val authenticated = checkNotNull(result.cryptoObject?.signature)
+                                val input = "C-007-R6-user-presence".encodeToByteArray()
+                                try {
+                                    AndroidKeyStoreBoundary.finishSignature(authenticated, input).fill(0)
+                                } finally {
+                                    input.fill(0)
+                                }
+                            }.fold(
+                                onSuccess = {
+                                    status.append("\nAPPROVAL PASS: one authenticated signature")
+                                },
+                                onFailure = {
+                                    status.append("\nAPPROVAL FAIL: ${it.javaClass.simpleName}")
+                                },
+                            )
+                        }
 
-                    override fun onAuthenticationError(code: Int, message: CharSequence) {
-                        status.append("\nAPPROVAL ERROR: code $code")
-                    }
-                },
-            )
+                        override fun onAuthenticationError(code: Int, message: CharSequence) {
+                            status.append("\nAPPROVAL ERROR: code $code")
+                        }
+                    },
+                )
+        }.onFailure {
+            status.append("\nAPPROVAL FAIL: ${it.javaClass.simpleName}")
+        }
     }
 
     private fun runNonInteractiveChecks(): String {

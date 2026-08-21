@@ -45,3 +45,14 @@ packages; the local prototype package has no registry checksum.
 
 These open rows prevent C-007-R6 closure and do not authorize production
 cryptographic implementation.
+
+## Device observation and correction
+
+On 2026-08-21, the first physical-device attempt terminated the application
+when **Test approval signature** was tapped. Inspection found that the harness
+used `BiometricPrompt` without declaring Android's `USE_BIOMETRIC` permission,
+and the prompt-launch and post-authentication paths did not contain all platform
+exceptions. The manifest and failure boundaries were corrected after review
+commit `1badec51d86ada020fa6b642dacd964762546183`. This attempt is a failed test,
+not approval evidence; the complete device matrix must be rerun against a new
+immutable commit.
