@@ -7,16 +7,22 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.Typeface
+import android.os.Bundle
 import android.text.InputType
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
+import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityManager
+import android.view.accessibility.AccessibilityNodeInfo
+import android.view.accessibility.AccessibilityNodeProvider
 import android.view.inputmethod.BaseInputConnection
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
+import android.widget.TextView
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -37,7 +43,9 @@ internal class TerminalView @JvmOverloads constructor(
     private var selectedRow: Int? = null
     private var lastGestureY = 0f
     private var gestureMoved = false
+    private var accessibilityFocusedRow: Int? = null
     private val accessibilityManager = context.getSystemService(AccessibilityManager::class.java)
+    private val terminalNodeProvider = TerminalNodeProvider()
     var onTextInput: ((String) -> Unit)? = null
     var onScrollLines: ((Int) -> TerminalSnapshot?)? = null
 
@@ -52,10 +60,11 @@ internal class TerminalView @JvmOverloads constructor(
         val previous = snapshot
         if (previous != null && value.generation < previous.generation) return
         if (previous?.generation != value.generation) selectedRow = null
+        accessibilityFocusedRow = null
         snapshot = value
-        contentDescription = accessibleText(value)
+        contentDescription = null
         invalidate()
-        sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED)
+        sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED)
     }
 
     fun replace(value: TerminalSnapshot) {
@@ -119,6 +128,8 @@ internal class TerminalView @JvmOverloads constructor(
 
     override fun performClick(): Boolean = super.performClick()
 
+    override fun getAccessibilityNodeProvider(): AccessibilityNodeProvider = terminalNodeProvider
+
     @Suppress("DEPRECATION") // Required for the API-26 baseline; guarded and verified with TalkBack.
     private fun announceSelectionForAccessibility() {
         if (!accessibilityManager.isEnabled) return
@@ -144,7 +155,129 @@ internal class TerminalView @JvmOverloads constructor(
         ?.trimEnd()
         .orEmpty()
 
-    private fun accessibleText(value: TerminalSnapshot): String = value.rows
-        .joinToString(separator = "\n") { row -> row.logicalText().trimEnd() }
-        .trimEnd()
+    private fun rowText(row: Int): String? = snapshot
+        ?.rows
+        ?.getOrNull(row)
+        ?.logicalText()
+        ?.trimEnd()
+        ?.takeIf(String::isNotEmpty)
+
+    private fun visibleRowIds(): List<Int> = snapshot
+        ?.rows
+        ?.indices
+        ?.filter { rowText(it) != null }
+        .orEmpty()
+
+    private fun rowBounds(row: Int): Rect {
+        val lineHeight = paint.fontMetrics.run { descent - ascent }
+        return Rect(0, (row * lineHeight).toInt(), width, ((row + 1) * lineHeight).toInt())
+    }
+
+    @Suppress("DEPRECATION") // AccessibilityEvent.obtain is required on the API-26 baseline.
+    private fun sendVirtualEvent(row: Int, type: Int) {
+        val text = rowText(row) ?: return
+        if (!accessibilityManager.isEnabled) return
+        runCatching {
+            val event = AccessibilityEvent.obtain(type).apply {
+                packageName = context.packageName
+                className = TextView::class.java.name
+                this.text.add(text)
+                setSource(this@TerminalView, row)
+            }
+            parent?.requestSendAccessibilityEvent(this, event)
+        }
+    }
+
+    @Suppress("DEPRECATION") // API-26 node factories/actions remain required for the supported baseline.
+    private inner class TerminalNodeProvider : AccessibilityNodeProvider() {
+        override fun createAccessibilityNodeInfo(virtualViewId: Int): AccessibilityNodeInfo? =
+            if (virtualViewId == AccessibilityNodeProvider.HOST_VIEW_ID) {
+                hostNode()
+            } else {
+                rowNode(virtualViewId)
+            }
+
+        override fun findAccessibilityNodeInfosByText(
+            searched: String,
+            virtualViewId: Int,
+        ): List<AccessibilityNodeInfo> = visibleRowIds()
+            .filter { rowText(it)?.contains(searched, ignoreCase = true) == true }
+            .mapNotNull(::rowNode)
+
+        override fun findFocus(focus: Int): AccessibilityNodeInfo? =
+            if (focus == AccessibilityNodeInfo.FOCUS_ACCESSIBILITY) {
+                accessibilityFocusedRow?.let(::rowNode)
+            } else {
+                null
+            }
+
+        override fun performAction(virtualViewId: Int, action: Int, arguments: Bundle?): Boolean {
+            if (virtualViewId == AccessibilityNodeProvider.HOST_VIEW_ID) return false
+            if (rowText(virtualViewId) == null) return false
+            return when (action) {
+                AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS -> {
+                    accessibilityFocusedRow?.takeIf { it != virtualViewId }?.let {
+                        sendVirtualEvent(it, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED)
+                    }
+                    accessibilityFocusedRow = virtualViewId
+                    sendVirtualEvent(virtualViewId, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED)
+                    true
+                }
+                AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS -> {
+                    if (accessibilityFocusedRow != virtualViewId) return false
+                    accessibilityFocusedRow = null
+                    sendVirtualEvent(virtualViewId, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED)
+                    true
+                }
+                AccessibilityNodeInfo.ACTION_CLICK -> {
+                    selectedRow = virtualViewId
+                    invalidate()
+                    sendVirtualEvent(virtualViewId, AccessibilityEvent.TYPE_VIEW_SELECTED)
+                    true
+                }
+                else -> false
+            }
+        }
+
+        private fun hostNode(): AccessibilityNodeInfo =
+            AccessibilityNodeInfo.obtain(this@TerminalView).apply {
+                className = TerminalView::class.java.name
+                contentDescription = null
+                isFocusable = false
+                visibleRowIds().forEach { addChild(this@TerminalView, it) }
+            }
+
+        private fun rowNode(row: Int): AccessibilityNodeInfo? {
+            val text = rowText(row) ?: return null
+            val parentBounds = rowBounds(row)
+            val screenBounds = Rect(parentBounds)
+            val location = IntArray(2)
+            getLocationOnScreen(location)
+            screenBounds.offset(location[0], location[1])
+
+            return AccessibilityNodeInfo.obtain().apply {
+                packageName = context.packageName
+                className = TextView::class.java.name
+                setSource(this@TerminalView, row)
+                setParent(this@TerminalView)
+                this.text = text
+                isEnabled = true
+                isFocusable = true
+                isClickable = true
+                isVisibleToUser = this@TerminalView.visibility == VISIBLE && this@TerminalView.isShown
+                isAccessibilityFocused = accessibilityFocusedRow == row
+                isSelected = selectedRow == row
+                setBoundsInParent(parentBounds)
+                setBoundsInScreen(screenBounds)
+                addAction(
+                    if (accessibilityFocusedRow == row) {
+                        AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS
+                    } else {
+                        AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS
+                    },
+                )
+                addAction(AccessibilityNodeInfo.ACTION_CLICK)
+            }
+        }
+    }
 }

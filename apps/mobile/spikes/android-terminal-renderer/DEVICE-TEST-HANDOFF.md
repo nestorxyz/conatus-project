@@ -41,6 +41,13 @@ rendering and is not TalkBack evidence. The cell-by-cell Canvas renderer was
 replaced with logical-row shaping after removing only parser-marked wide-cell
 spacers; the corrected sample must be visually rerun before TalkBack is enabled.
 
+The corrected visual sample passed, but TalkBack exposed the terminal as one
+large block. This fails the required per-line virtual-node model and is not
+accessibility acceptance evidence. The next build exposes one bounded virtual
+text node per non-empty visible logical row, maintains stable row order,
+supports accessibility focus, and maps virtual-node click to sanitized line
+selection. It awaits a TalkBack-only rerun.
+
 ## Build and transfer
 
 Build the current checkout on the VPS using the pinned repository-local
