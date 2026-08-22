@@ -360,6 +360,24 @@ mod tests {
     }
 
     #[test]
+    fn preserves_emoji_modifier_for_logical_row_shaping() {
+        let mut terminal = TerminalCore::new(80, 25).expect("terminal");
+        terminal
+            .feed("Emoji wave 👋🏿\r\n".as_bytes())
+            .expect("bounded input");
+
+        let snapshot = terminal.snapshot();
+        let logical_text = snapshot.rows[0]
+            .iter()
+            .filter(|cell| cell.flags & Flags::WIDE_CHAR_SPACER.bits() == 0)
+            .flat_map(|cell| std::iter::once(cell.character).chain(cell.combining.chars()))
+            .collect::<String>()
+            .trim_end()
+            .to_owned();
+        assert_eq!(logical_text, "Emoji wave 👋🏿");
+    }
+
+    #[test]
     fn scrolls_bounded_history_and_changes_the_snapshot() {
         let mut terminal = TerminalCore::new(80, 5).expect("terminal");
         let input = (0..20)

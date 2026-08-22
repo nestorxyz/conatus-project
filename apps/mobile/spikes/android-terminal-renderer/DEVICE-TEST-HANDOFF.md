@@ -35,6 +35,12 @@ evidence. The subsequent correction uses the platform's guarded announcement
 path only while accessibility is enabled; selection without TalkBack must be
 rerun before enabling TalkBack for its separate ceremony.
 
+The first visual accessibility sample then exposed the emoji skin-tone modifier
+as a separate square and disconnected Arabic shaping. This fails Unicode
+rendering and is not TalkBack evidence. The cell-by-cell Canvas renderer was
+replaced with logical-row shaping after removing only parser-marked wide-cell
+spacers; the corrected sample must be visually rerun before TalkBack is enabled.
+
 ## Build and transfer
 
 Build the current checkout on the VPS using the pinned repository-local

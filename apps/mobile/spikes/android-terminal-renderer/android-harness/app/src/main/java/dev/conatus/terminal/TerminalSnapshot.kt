@@ -81,9 +81,21 @@ internal data class TerminalCell(
     val background: TerminalColor,
     val flags: Int,
 ) {
+    val isWideCharacterSpacer: Boolean
+        get() = flags.and(WIDE_CHARACTER_SPACER) != 0
+
     val text: String
         get() = String(Character.toChars(codePoint)) + combining
+
+    private companion object {
+        const val WIDE_CHARACTER_SPACER = 0x40
+    }
 }
+
+internal fun List<TerminalCell>.logicalText(): String =
+    asSequence()
+        .filterNot(TerminalCell::isWideCharacterSpacer)
+        .joinToString(separator = "", transform = TerminalCell::text)
 
 internal sealed interface TerminalColor {
     data class Named(val value: Int) : TerminalColor

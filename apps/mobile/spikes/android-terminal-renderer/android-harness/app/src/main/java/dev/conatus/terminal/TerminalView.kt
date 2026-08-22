@@ -76,9 +76,7 @@ internal class TerminalView @JvmOverloads constructor(
             }
             paint.color = Color.rgb(232, 238, 242)
             val baseline = rowIndex * lineHeight - metrics.ascent
-            row.forEachIndexed { column, cell ->
-                canvas.drawText(cell.text, column * paint.measureText("M"), baseline, paint)
-            }
+            canvas.drawText(row.logicalText(), 0f, baseline, paint)
         }
     }
 
@@ -142,11 +140,11 @@ internal class TerminalView @JvmOverloads constructor(
 
     fun selectedText(): String = selectedRow
         ?.let { snapshot?.rows?.getOrNull(it) }
-        ?.joinToString(separator = "") { it.text }
+        ?.logicalText()
         ?.trimEnd()
         .orEmpty()
 
     private fun accessibleText(value: TerminalSnapshot): String = value.rows
-        .joinToString(separator = "\n") { row -> row.joinToString(separator = "") { it.text }.trimEnd() }
+        .joinToString(separator = "\n") { row -> row.logicalText().trimEnd() }
         .trimEnd()
 }
