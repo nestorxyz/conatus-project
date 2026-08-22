@@ -26,6 +26,16 @@ reload. The probe persists only synthetic ciphertext and sanitized comparison
 state. An automatic JNI-negative harness also crosses the real Java/native
 boundary with malformed encodings, native and Kotlin size limits, synchronized
 concurrency, input-copy integrity checks, and valid recovery.
+An explicit button launches a private same-UID Android subprocess which records
+only a one-byte synthetic marker and invokes a no-input native abort. The main
+activity must survive and report the subprocess loss. This is a disposable
+fault probe, not a production isolation design and not evidence that a fatal
+fault in the main application process can be caught.
+
+Linux deletion tests remove and directory-sync the sole wrapped content-key
+object before removing ciphertext, then retry successfully from every injected
+stage. This models application-level cryptographic erasure only: live memory,
+backups, replicas, snapshots, and physical-media overwrite remain separate.
 
 ## Important feasibility result
 
@@ -74,4 +84,6 @@ GRADLE_USER_HOME="$HOME/.gradle" \
 ```
 
 See [the verification record](evidence/verification.md) for completed and open
-evidence. Build output remains ignored and must not be committed.
+evidence and the
+[dependency/platform audit](evidence/platform-assumptions.md) for the exact
+support assumptions. Build output remains ignored and must not be committed.

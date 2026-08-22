@@ -1,7 +1,9 @@
 // SPDX-FileCopyrightText: 2026 Conatus contributors
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-use conatus_crypto_boundary_spike::{AtomicOutbox, FailurePoint, IdentityLock, StoreError};
+use conatus_crypto_boundary_spike::{
+    AtomicOutbox, DeletionFailurePoint, FailurePoint, IdentityLock, StoreError,
+};
 use std::fs;
 use std::os::unix::fs::{MetadataExt, PermissionsExt};
 
@@ -135,4 +137,42 @@ fn startup_removes_only_well_formed_pending_artifacts() {
     AtomicOutbox::open(temporary.path(), owner(temporary.path())).unwrap();
     assert!(!temporary.path().join(".abcdef.pending").exists());
     assert!(temporary.path().join("operator-note.pending").exists());
+}
+
+#[test]
+fn key_first_cryptographic_deletion_is_crash_safe_and_retryable() {
+    for failure in [
+        DeletionFailurePoint::AfterKeyUnlink,
+        DeletionFailurePoint::AfterKeyDirectorySync,
+        DeletionFailurePoint::AfterCiphertextUnlink,
+    ] {
+        let temporary = tempfile::tempdir().unwrap();
+        let outbox = AtomicOutbox::open(temporary.path(), owner(temporary.path())).unwrap();
+        let mut key = b"synthetic wrapped content key".to_vec();
+        let mut ciphertext = b"synthetic encrypted artifact".to_vec();
+        outbox
+            .commit_immutable("1111", &mut key, FailurePoint::None)
+            .unwrap();
+        outbox
+            .commit_immutable("2222", &mut ciphertext, FailurePoint::None)
+            .unwrap();
+
+        assert!(matches!(
+            outbox.delete_key_then_ciphertext("1111", "2222", failure),
+            Err(StoreError::InjectedDeletion(actual)) if actual == failure
+        ));
+        assert!(!temporary.path().join("1111").exists());
+        if failure != DeletionFailurePoint::AfterCiphertextUnlink {
+            assert!(temporary.path().join("2222").exists());
+        }
+
+        outbox
+            .delete_key_then_ciphertext("1111", "2222", DeletionFailurePoint::None)
+            .unwrap();
+        outbox
+            .delete_key_then_ciphertext("1111", "2222", DeletionFailurePoint::None)
+            .unwrap();
+        assert!(!temporary.path().join("1111").exists());
+        assert!(!temporary.path().join("2222").exists());
+    }
 }

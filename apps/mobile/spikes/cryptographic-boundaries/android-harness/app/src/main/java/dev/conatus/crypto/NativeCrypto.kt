@@ -27,9 +27,16 @@ internal object NativeCrypto {
         derSignature: ByteArray,
     ): ByteArray? = nativeCoseFromDer(protectedHeader, derSignature)
 
+    /** Terminates only the explicitly isolated disposable probe process. */
+    fun abortIsolatedProcessForHarness(): Nothing {
+        nativeAbortForHarness()
+        error("native abort harness unexpectedly returned")
+    }
+
     @JvmStatic private external fun nativeApiVersion(): Int
     @JvmStatic private external fun nativeCoseFromDer(
         protectedHeader: ByteArray,
         derSignature: ByteArray,
     ): ByteArray?
+    @JvmStatic private external fun nativeAbortForHarness()
 }

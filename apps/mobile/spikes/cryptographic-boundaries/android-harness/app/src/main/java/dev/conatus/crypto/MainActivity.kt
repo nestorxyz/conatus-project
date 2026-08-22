@@ -5,6 +5,7 @@ package dev.conatus.crypto
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Intent
 import android.hardware.biometrics.BiometricPrompt
 import android.os.Bundle
 import android.os.CancellationSignal
@@ -17,6 +18,7 @@ import java.security.SecureRandom
 @SuppressLint("SetTextI18n") // Disposable diagnostics are intentionally exact and non-localized.
 class MainActivity : Activity() {
     private lateinit var status: TextView
+    private var crashProbeLaunched = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +45,10 @@ class MainActivity : Activity() {
             text = "Arm process-death test"
             setOnClickListener { armProcessDeathProbe() }
         }
+        val jniCrash = Button(this).apply {
+            text = "Test isolated JNI crash"
+            setOnClickListener { runIsolatedJniCrashProbe() }
+        }
         setContentView(LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             addView(status, LinearLayout.LayoutParams(
@@ -50,9 +56,42 @@ class MainActivity : Activity() {
                 0,
                 1f,
             ))
+            addView(jniCrash)
             addView(processDeath)
             addView(approval)
         })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!crashProbeLaunched || !::status.isInitialized) return
+        val result = runCatching { JniCrashProbe.consume(this) }.getOrElse {
+            crashProbeLaunched = false
+            status.append("\nJNI-CRASH FAIL: ${it.javaClass.simpleName}")
+            return
+        }
+        when (result) {
+            JniCrashProbe.Result.Pending -> Unit
+            JniCrashProbe.Result.Passed -> {
+                crashProbeLaunched = false
+                status.append("\nJNI-CRASH PASS: isolated process aborted; UI process survived")
+            }
+            JniCrashProbe.Result.Failed -> {
+                crashProbeLaunched = false
+                status.append("\nJNI-CRASH FAIL: native abort returned or linkage failed")
+            }
+        }
+    }
+
+    private fun runIsolatedJniCrashProbe() {
+        runCatching {
+            JniCrashProbe.reset(this)
+            crashProbeLaunched = true
+            startActivity(Intent(this, JniCrashProbeActivity::class.java))
+        }.onFailure {
+            crashProbeLaunched = false
+            status.append("\nJNI-CRASH FAIL: ${it.javaClass.simpleName}")
+        }
     }
 
     private fun armProcessDeathProbe() {

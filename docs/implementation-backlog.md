@@ -139,7 +139,12 @@ ext4-only alpha scope and fail closed pending separate evidence. The actual
 Java/JNI negative and concurrency harness
 passes 92 rejection cases, 256 synchronized calls, and valid recovery on the
 same API-28 device; sudden-death-during-JNI remains open. C-007-R6 is not closed
-and C-007-R7 is still blocked.
+and C-007-R7 is still blocked. Local key-first cryptographic-deletion tests pass
+three injected failure stages and idempotent retry. A private same-UID Android
+subprocess native-abort probe compiles but awaits device execution; it is fault
+evidence only, not a production isolation architecture. The dependency and
+platform assumption audit is recorded with the remaining production-selection
+gaps.
 
 ### C-008 Select Android terminal rendering approach
 

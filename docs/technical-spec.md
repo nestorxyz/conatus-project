@@ -393,7 +393,11 @@ Requirements:
 - Append and sequence assignment occur in one database transaction.
 - Approval decision and single-winner conflict handling are transactional.
 - Payload ciphertext is immutable.
-- Deletion uses a documented tombstone and asynchronous encrypted-artifact purge process.
+- Deletion uses a documented tombstone and asynchronous encrypted-artifact
+  purge process. Where an artifact has a sole local wrapped content-key object,
+  purge unlinks and directory-syncs that key object before ciphertext removal;
+  this is application-level cryptographic erasure, not physical-media overwrite
+  and not deletion of backup or replica copies.
 - Backups are encrypted, access-audited, restored regularly, and covered by retention policy.
 - Every schema migration has forward validation and a tested recovery strategy.
 

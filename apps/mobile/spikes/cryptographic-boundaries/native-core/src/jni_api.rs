@@ -68,3 +68,16 @@ pub extern "system" fn Java_dev_conatus_crypto_NativeCrypto_nativeCoseFromDer<'l
         Outcome::Err(_) | Outcome::Panic(_) => core::ptr::null_mut(),
     }
 }
+
+/// Deliberate process-fatal fault for the disposable isolated-process Android
+/// harness. It accepts no application input and must never be linked from
+/// production code. Unlike the normal boundary, this intentionally bypasses
+/// panic/error containment to prove an auxiliary process failure does not kill
+/// the harness UI process.
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_dev_conatus_crypto_NativeCrypto_nativeAbortForHarness(
+    _environment: EnvUnowned,
+    _class: JClass,
+) {
+    std::process::abort();
+}

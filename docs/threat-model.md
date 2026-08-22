@@ -355,6 +355,9 @@ transparency, or an external witness.
 - Encrypted local cache and platform backup exclusions where needed
 - Screenshot and clipboard protections for sensitive views where supported
 - Access-controlled encrypted backups and tested deletion workflow
+- Key-first cryptographic deletion: durably remove the sole wrapped content-key
+  object before ciphertext reclamation, with separate backup/replica deletion
+  and no claim of physical-media overwrite
 - Synthetic secret canaries and automated log scans
 - User-visible retention and export settings
 

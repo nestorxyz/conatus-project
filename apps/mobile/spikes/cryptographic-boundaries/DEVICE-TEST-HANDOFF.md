@@ -35,16 +35,23 @@ device identifiers, or screenshots containing user data.
    a persisted synthetic AES-GCM-wrapped fixture, Keystore alias continuity,
    native-library reload, Java-to-JNI array conversion, and COSE output in a new
    application process. It does not simulate sudden death during a JNI call.
-5. Tap **Test approval signature**. Confirm success requires a fresh biometric,
+5. Tap **Test isolated JNI crash**. The OS may briefly show a crash notice for
+   the auxiliary package process. Confirm the original harness screen returns
+   and displays
+   `JNI-CRASH PASS: isolated process aborted; UI process survived`. This sends
+   no application input to native code and records only a one-byte synthetic
+   marker. It proves the disposable auxiliary process boundary, not survival of
+   a native abort in the production/main process.
+6. Tap **Test approval signature**. Confirm success requires a fresh biometric,
    cancel fails closed, and a second attempt requires another biometric.
-6. Reboot, unlock, and repeat. Then enroll or remove a biometric and confirm the
+7. Reboot, unlock, and repeat. Then enroll or remove a biometric and confirm the
    old approval key is invalidated rather than silently regenerated during a
    signature attempt.
-7. Exercise lockout and absent-biometric cases. Record failure class or numeric
+8. Exercise lockout and absent-biometric cases. Record failure class or numeric
    biometric error only, never exception text containing application data.
-8. Attempt cloud backup/restore and OEM device-to-device transfer. Confirm no
+9. Attempt cloud backup/restore and OEM device-to-device transfer. Confirm no
    app files, wrapped blobs, rollback state, or usable Keystore aliases migrate.
-9. Repeat on the supported API/security-level matrix, including software-only,
+10. Repeat on the supported API/security-level matrix, including software-only,
    TEE, and StrongBox devices where those postures are claimed.
 
 The harness currently has no credential-backed approval fallback. Treat that as

@@ -24,6 +24,14 @@ pub enum FailurePoint {
     AfterLink,
 }
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum DeletionFailurePoint {
+    None,
+    AfterKeyUnlink,
+    AfterKeyDirectorySync,
+    AfterCiphertextUnlink,
+}
+
 #[derive(Debug)]
 pub enum StoreError {
     Io(io::Error),
@@ -32,6 +40,7 @@ pub enum StoreError {
     WrongOwner,
     UnsupportedFilesystem { actual: Option<String> },
     Injected(FailurePoint),
+    InjectedDeletion(DeletionFailurePoint),
 }
 
 impl From<io::Error> for StoreError {
@@ -143,13 +152,47 @@ impl AtomicOutbox {
                 "invalid opaque object name",
             )));
         }
-        match fs::remove_file(self.directory.join(object_name)) {
-            Ok(()) => File::open(&self.directory)?
-                .sync_all()
-                .map_err(StoreError::Io),
-            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(()),
-            Err(error) => Err(StoreError::Io(error)),
+        unlink_if_present(&self.directory.join(object_name))?;
+        File::open(&self.directory)?
+            .sync_all()
+            .map_err(StoreError::Io)
+    }
+
+    /// Deletes the only local wrapped content-key blob before its ciphertext.
+    /// A successful key-directory sync is the cryptographic-erasure boundary;
+    /// ciphertext removal is space reclamation. This does not erase backups,
+    /// replicas, unwrapped keys still in memory, or physical flash blocks.
+    pub fn delete_key_then_ciphertext(
+        &self,
+        key_object_name: &str,
+        ciphertext_object_name: &str,
+        failure: DeletionFailurePoint,
+    ) -> Result<(), StoreError> {
+        if !valid_object_name(key_object_name)
+            || !valid_object_name(ciphertext_object_name)
+            || key_object_name == ciphertext_object_name
+        {
+            return Err(StoreError::Io(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "invalid or overlapping deletion object names",
+            )));
         }
+
+        unlink_if_present(&self.directory.join(key_object_name))?;
+        if failure == DeletionFailurePoint::AfterKeyUnlink {
+            return Err(StoreError::InjectedDeletion(failure));
+        }
+        File::open(&self.directory)?.sync_all()?;
+        if failure == DeletionFailurePoint::AfterKeyDirectorySync {
+            return Err(StoreError::InjectedDeletion(failure));
+        }
+
+        unlink_if_present(&self.directory.join(ciphertext_object_name))?;
+        if failure == DeletionFailurePoint::AfterCiphertextUnlink {
+            return Err(StoreError::InjectedDeletion(failure));
+        }
+        File::open(&self.directory)?.sync_all()?;
+        Ok(())
     }
 
     fn recover_pending(&self) -> Result<(), StoreError> {
@@ -173,6 +216,14 @@ impl AtomicOutbox {
             File::open(&self.directory)?.sync_all()?;
         }
         Ok(())
+    }
+}
+
+fn unlink_if_present(path: &Path) -> Result<(), StoreError> {
+    match fs::remove_file(path) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(StoreError::Io(error)),
     }
 }
 
