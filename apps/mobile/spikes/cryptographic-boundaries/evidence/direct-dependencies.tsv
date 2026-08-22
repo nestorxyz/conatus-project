@@ -9,6 +9,7 @@ jni	0.22.4	(default)	true	MIT OR Apache-2.0	5efd9a482cf3a427f00d6b35f14332adc790
 libfuzzer-sys	0.4.13	(default)	true	MIT OR Apache-2.0	a9fd2f41a1cba099f79a0b6b6c35656cf7c03351a7bae8ff0f28f25270f929d2
 minicbor	2.3.0	alloc,(default)	true	BlueOak-1.0.0	c12b4033ffaa92fbf9df03df38d19324f52bad130dd223f811734a8006dd2d69
 p256	0.14.0	ecdsa,std	false	MIT OR Apache-2.0	d2c9239b2dbc807adbbe147e8cf72ea7450c3a0aabe62cb8e75ff4ec22e1f72a
+rustix	1.1.4	fs,std	false	MIT OR Apache-2.0	b6fe4565b9518b83ef4f91bb47ce29620ca828bd32cb7e408f0062e9930ba190
 serde_json	1.0.151	(default)	true	MIT OR Apache-2.0	c841b55ecdae098c80dcae9cf767f6f8a0c2cdb3416bbef72181df4d0fe73f14
 sha2	0.11.0	(default)	true	MIT OR Apache-2.0	446ba717509524cb3f22f17ecc096f10f4822d76ab5c0b9822c5f9c284e825f4
 snow	0.10.0	std,use-chacha20poly1305,use-curve25519,use-getrandom,use-sha2	false	MIT OR Apache-2.0	599b506ccc4aff8cf7844bc42cf783009a434c1e26c964432560fb6d6ad02d82

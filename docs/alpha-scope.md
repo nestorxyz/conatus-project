@@ -1,7 +1,7 @@
 # Alpha Scope and Acceptance
 
 **Status:** Approved implementation target  
-**Platforms:** Android internal build, Linux machine agent, Railway control plane
+**Platforms:** Android internal build, Linux machine agent with an ext4 durable-security-state directory, Railway control plane
 
 ## Goal
 
@@ -13,6 +13,9 @@ A developer can pair a Linux machine, start or monitor work from an Android phon
 - Organization-ready authorization and identifiers
 - One user in the alpha UI, with schema support for multiple memberships
 - Linux machine registration, pairing, presence, and revocation
+- An ext4-only machine-agent directory for identity, nonce, encrypted outbox,
+  and other durable security state; startup fails closed when the exact
+  filesystem type cannot be established
 - Workspace selection by canonical Linux directory
 - Session creation and history
 - Structured process execution
@@ -37,6 +40,9 @@ A developer can pair a Linux machine, start or monitor work from an Android phon
 - Organization compliance decryption or escrow
 - Billing
 - Production multi-region operation
+- XFS, Btrfs, ZFS, NFS, overlay, ext2, ext3, and other filesystems for the
+  machine-agent durable security-state directory; broader support requires its
+  own crash-consistency evidence
 - Finance, calendar, email, deployment fleet management, and remote desktop
 
 ## Alpha acceptance scenarios

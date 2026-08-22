@@ -191,6 +191,7 @@ dependencies = [
  "jni",
  "minicbor",
  "p256",
+ "rustix",
  "serde_json",
  "sha2 0.11.0",
  "snow",

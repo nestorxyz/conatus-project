@@ -274,6 +274,11 @@ Guardrail measures:
 - The customer can be an individual developer or an organization.
 - Accounts may belong to multiple organizations; personal and company workspaces remain separate.
 - Linux is the only machine-agent platform in the initial product.
+- Alpha machine-agent identity, nonce, and encrypted-outbox state is supported
+  only when its dedicated local state directory is on ext4. Other workspace
+  filesystems are not thereby prohibited, but the agent must fail closed before
+  creating durable security state on an unsupported or unidentifiable state
+  filesystem.
 - Android is the only mobile platform in alpha and is distributed through internal builds.
 - iOS implementation resumes after alpha when physical-device validation is available.
 - Monitoring existing work and starting new work have equal product priority.

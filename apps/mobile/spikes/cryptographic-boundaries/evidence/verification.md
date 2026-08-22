@@ -6,14 +6,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 # C-007-R6 verification record
 
 **Recorded:** 2026-08-22
-**Status:** Partial prototype evidence; Android lifecycle/JNI and multi-filesystem rows remain open
+**Status:** Partial prototype evidence; Android lifecycle/JNI rows remain open
 
 ## Completed locally
 
 | Check | Environment | Result |
 | --- | --- | --- |
 | Rust format | `rustfmt 1.8.0-stable` through Rust 1.97.1 | Pass after formatting |
-| Rust unit/integration tests | Linux 6.8, x86-64, ext4 | Pass: 12 tests, 0 failed |
+| Rust unit/integration tests | Linux 6.8, x86-64, ext4 | Pass: 14 tests, 0 failed |
 | Rust clippy | all host targets, warnings denied | Pass |
 | Android Rust build | `aarch64-linux-android`, API 26 clang, NDK 27.0.12077973, release | Pass |
 | Android APK build | compile/target SDK 36, min SDK 26, AGP 8.13.2, Kotlin 2.3.20, JDK 17 | Pass |
@@ -22,7 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 | DER negative corpus | malformed lengths 0 through 80 plus non-minimal integer | Pass; no panic |
 | Native DER boundary fuzzing | nightly Rust 1.100.0, cargo-fuzz 0.13.2/libFuzzer, AddressSanitizer | Pass: 2,545,986 executions in 16 seconds; no crash or timeout |
 | Owned JNI/COSE boundary fuzzing | nightly Rust 1.100.0, cargo-fuzz 0.13.2/libFuzzer, AddressSanitizer | Pass: 835,393 executions in 16 seconds; 3 new corpus units, no crash or timeout; success/rejection input zeroization asserted |
-| Linux crash/storage corpus | create, write, file-sync, publish-link, duplicate, ownership, mode, restore and delete | Pass on ext4 |
+| Linux crash/storage corpus | exact-filesystem probe, create, write, file-sync, publish-link, duplicate, ownership, mode, restore and delete | Pass on ext4; exact `ext4` accepted and ext2/ext3/XFS/unknown types rejected |
 | Dependency license inventory | repository policy check | Pass |
 | RustSec scan | `cargo-audit 0.22.2`, 133 locked dependencies | No vulnerabilities reported |
 
@@ -43,11 +43,23 @@ packages; the local prototype package has no registry checksum.
 | Android backup and D2D | cloud backup, `adb`/transport restore where supported, and OEM device transfer | Not run |
 | Rust/JCA on-device vector | capture only pass/fail and security level; no key or signature material | Pass on hardware-backed Moto G6 Plus running Android 9/API 28; remaining matrix open |
 | JNI robustness | coverage-guided fuzzing under sanitizers and Android process-death/restart | Platform-neutral owned boundary passed AddressSanitizer fuzzing; wrapped-fixture/JNI reload after force-stop and the 92-rejection/256-concurrent-call Java/JNI negative harness pass on the API 28 Moto G6 Plus; sudden death during JNI and newer-device coverage remain open |
-| Linux storage | ext4 complete; XFS and any other claimed production filesystem | XFS and other claims not run |
+| Linux storage | every claimed alpha filesystem for the durable security-state directory | Complete for the narrowed alpha scope: ext4 only; broader filesystems are explicitly unsupported pending separate evidence |
 | Linux key deletion | verify key/blob unlink and application-level cryptographic erasure workflow | Prototype unlink only; production evidence not run |
 
 These open rows prevent C-007-R6 closure and do not authorize production
 cryptographic implementation.
+
+## Linux filesystem scope
+
+The approved alpha scope is exact ext4 only for the machine-agent directory
+holding identity, nonce, encrypted outbox, and related durable security state.
+Workspace repositories are a separate boundary. The prototype queries the
+kernel mount ID and parses at most 1 MiB of `/proc/self/mountinfo`; it does not
+use the shared `0xef53` ext2/ext3/ext4 magic as proof of ext4. It probes the
+nearest existing ancestor before directory creation and probes the created
+directory again. An absent mount ID, missing or oversized mount information,
+non-UTF-8 input, unknown mount, ext2, ext3, XFS, or any other filesystem returns
+a typed unsupported/error state before the outbox or identity lock opens.
 
 ## Native fuzzing qualification
 

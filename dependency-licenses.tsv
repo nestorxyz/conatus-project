@@ -17,6 +17,7 @@ jni	0.22.4	MIT OR Apache-2.0	C-007-R6 Android native boundary	https://crates.io/
 libfuzzer-sys	0.4.13	MIT OR Apache-2.0	C-007-R6 disposable native-boundary fuzz targets	https://crates.io/crates/libfuzzer-sys	2026-08-21
 minicbor	2.3.0	BlueOak-1.0.0	C-007-R6 deterministic COSE encoding prototype	https://crates.io/crates/minicbor	2026-08-13
 p256	0.14.0	MIT OR Apache-2.0	C-007-R6 ES256 validation prototype	https://crates.io/crates/p256	2026-08-13
+rustix	1.1.4	MIT OR Apache-2.0	C-007-R6 exact Linux filesystem probe	https://crates.io/crates/rustix	2026-08-22
 serde_json	1.0.151	MIT OR Apache-2.0	C-007-R6 vector reader	https://crates.io/crates/serde_json	2026-08-13
 sha2	0.11.0	MIT OR Apache-2.0	C-007-R6 SHA-256 prototype	https://crates.io/crates/sha2	2026-08-13
 snow	0.10.0	MIT OR Apache-2.0	C-007-R6 Noise feasibility prototype	https://crates.io/crates/snow	2026-08-13

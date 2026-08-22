@@ -40,6 +40,10 @@ Secondary sensitive metadata:
 - Coding agents and their outputs are untrusted, even when produced by a reputable provider.
 - Repository content, command output, filenames, terminal escape sequences, and tool responses are attacker-controlled input.
 - TLS libraries, cryptographic primitives, and identity providers are used through supported, reviewed configurations.
+- Alpha durable machine-agent security state resides on exact ext4 in a Linux
+  mount namespace exposing bounded `/proc/self/mountinfo`; unavailable or
+  unidentifiable filesystem evidence is an unsupported state, not permission
+  to continue.
 
 ## 4. Adversaries
 
@@ -263,6 +267,10 @@ ChaCha20-Poly1305 key/nonce pair.
   stream or artifact attempt
 - Transactional counter reservation and complete immutable outbox commit before
   network emission
+- Exact-ext4 startup enforcement for the alpha identity, nonce, and encrypted
+  outbox directory, using the kernel mount ID rather than the ext2/ext3/ext4
+  shared filesystem magic; unsupported or unknown filesystems fail before
+  durable security state is created
 - Byte-for-byte ciphertext replay; never reconstruct or re-encrypt a retry
 - New attempt/key scope after unknown outcome, changed content, or incomplete
   artifact restart

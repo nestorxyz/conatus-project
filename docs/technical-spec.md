@@ -58,6 +58,12 @@ The cloud authenticates routing metadata and authorization but should not requir
 
 - Rust with Tokio.
 - Linux is the only supported machine platform for alpha and the initial public product. Portability must not complicate the Linux implementation prematurely.
+- The alpha machine-agent durable security-state directory must be on exact
+  `ext4`. Startup probes the directory's kernel mount ID and bounded
+  `/proc/self/mountinfo` entry before creating identity, nonce, or encrypted
+  outbox state. Missing, ambiguous, or non-`ext4` results fail closed with an
+  actionable compatibility error. This constraint does not by itself prohibit
+  workspaces on other filesystems.
 - Separate modules for connection, cryptography, policy, process execution, PTY, filesystem, Git, agent adapters, updates, and audit.
 - Least-privileged execution as the logged-in user. Elevation is outside v1.
 

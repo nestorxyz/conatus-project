@@ -133,8 +133,10 @@ biometric approval, per-private-key AES-GCM wrapping keys, bounded
 panic-contained JNI, security-posture reporting, and backup/D2D exclusions.
 A non-destructive wrapped-fixture/JNI reload process-death probe also passes on
 the API-28 Moto G6 Plus after an operator force-stop and relaunch. Newer-device,
-credential-fallback, remaining lifecycle, backup, and non-ext4 filesystem
-evidence remains open. The actual Java/JNI negative and concurrency harness
+credential-fallback, remaining lifecycle, and backup evidence remains open.
+Non-ext4 durable-security-state filesystems are outside the now-explicit
+ext4-only alpha scope and fail closed pending separate evidence. The actual
+Java/JNI negative and concurrency harness
 passes 92 rejection cases, 256 synchronized calls, and valid recovery on the
 same API-28 device; sudden-death-during-JNI remains open. C-007-R6 is not closed
 and C-007-R7 is still blocked.

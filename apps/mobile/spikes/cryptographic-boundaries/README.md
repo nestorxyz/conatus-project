@@ -14,6 +14,9 @@ The Rust crate demonstrates strict Android/JCA ECDSA-DER parsing, scalar-range
 checks, low-S normalization, deterministic untagged detached COSE_Sign1 output,
 bounded JNI copies, native zeroization, an FFI panic boundary, and Linux
 single-writer/immutable-publication storage with injected crash points. The
+Linux storage prototype now fails closed unless its durable security-state
+directory resolves to exact ext4 through the kernel mount ID and bounded
+mountinfo parsing; ext2/ext3 are not accepted via their shared magic value. The
 Android harness demonstrates separate non-exportable P-256 aliases, a
 per-operation biometric approval key, one AES-256-GCM Keystore wrapping key per
 X25519/live private-key identifier, exact-byte signing calls, security-level
