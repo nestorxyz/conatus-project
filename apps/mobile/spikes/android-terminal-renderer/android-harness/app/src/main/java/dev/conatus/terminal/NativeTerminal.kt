@@ -13,6 +13,8 @@ internal class NativeTerminal(columns: Int, screenLines: Int) : Closeable {
     fun resize(columns: Int, screenLines: Int): Long =
         nativeResize(currentHandle(), columns, screenLines).requireSuccess("resize")
 
+    fun scroll(delta: Int): Long = nativeScroll(currentHandle(), delta).requireSuccess("scroll")
+
     fun snapshot(): TerminalSnapshot =
         TerminalSnapshot.decode(checkNotNull(nativeSnapshot(currentHandle())) { "snapshot failed" })
 
@@ -38,6 +40,7 @@ internal class NativeTerminal(columns: Int, screenLines: Int) : Closeable {
         @JvmStatic external fun nativeDestroy(handle: Long): Long
         @JvmStatic external fun nativeFeed(handle: Long, bytes: ByteArray): Long
         @JvmStatic external fun nativeResize(handle: Long, columns: Int, screenLines: Int): Long
+        @JvmStatic external fun nativeScroll(handle: Long, delta: Int): Long
         @JvmStatic external fun nativeSnapshot(handle: Long): ByteArray?
     }
 }

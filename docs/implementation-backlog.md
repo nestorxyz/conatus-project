@@ -159,9 +159,11 @@ and production-implementation authorization.
 **Status:** In progress; ADR 0005, candidate comparison, malicious corpus,
 evidence validator, pinned Rust parser/grid core, bounded JNI surface, and host
 corpus tests are complete. The Android release harness builds successfully;
-physical-device validation was deferred by the founder on 2026-08-11 and is
-documented in the spike handoff. Device evidence remains required before
-selection.
+the first physical run completed 21 cases in 640 ms but failed the interaction
+gate because the harness had discarded the native terminal and exposed no live
+scrollback. A corrected bounded JNI scroll path and retained-handle lifecycle
+build successfully and await device rerun. Device evidence remains required
+before selection.
 **Outcome:** Evaluate established permissively licensed Android terminal parser/renderers and a native Kotlin renderer backed by a Rust parser for UTF-8, ANSI/OSC safety, TalkBack, performance, selection, Compose/View hosting, and JNI integration; record ADR.
 **Acceptance:** Prototype renders the malicious-terminal corpus and a 10,000-line scrollback trace on a physical Android phone without unsafe side effects. Record device, Android/Gradle/JDK versions, duration, peak memory, lifecycle, selection, largest-font-scale, and TalkBack evidence.
 

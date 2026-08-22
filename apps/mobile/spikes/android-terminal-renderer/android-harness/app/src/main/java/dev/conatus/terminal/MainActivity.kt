@@ -28,6 +28,8 @@ import kotlin.concurrent.thread
 import kotlin.system.measureTimeMillis
 
 class MainActivity : ComponentActivity() {
+    private var interactiveTerminal: NativeTerminal? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -53,7 +55,15 @@ class MainActivity : ComponentActivity() {
                     AndroidView(
                         modifier = Modifier.fillMaxWidth().weight(1f),
                         factory = { context ->
-                            TerminalView(context).also { terminalView = it }
+                            TerminalView(context).also { view ->
+                                view.onScrollLines = { delta ->
+                                    interactiveTerminal?.run {
+                                        scroll(delta)
+                                        snapshot()
+                                    }
+                                }
+                                terminalView = view
+                            }
                         },
                     )
                 }
@@ -67,25 +77,52 @@ class MainActivity : ComponentActivity() {
                 reader.lineSequence().drop(1).map { it.split('\t') }.toList()
             }
             var lastSnapshot: TerminalSnapshot? = null
+            var retainedTerminal: NativeTerminal? = null
             var cases = 0
-            val duration = measureTimeMillis {
-                rows.forEach { fields ->
-                    NativeTerminal(80, 25).use { terminal ->
-                        when (fields[2]) {
-                            "hex" -> terminal.feed(fields[3].hexToBytes())
-                            "generated" -> feedLongTrace(terminal)
-                            else -> error("unknown encoding")
+            runCatching {
+                val duration = measureTimeMillis {
+                    rows.forEach { fields ->
+                        val terminal = NativeTerminal(80, 25)
+                        try {
+                            when (fields[2]) {
+                                "hex" -> terminal.feed(fields[3].hexToBytes())
+                                "generated" -> feedLongTrace(terminal)
+                                else -> error("unknown encoding")
+                            }
+                            lastSnapshot = terminal.snapshot()
+                            if (fields[0] == "long-scrollback") {
+                                retainedTerminal = terminal
+                            } else {
+                                terminal.close()
+                            }
+                            cases += 1
+                        } catch (failure: Throwable) {
+                            terminal.close()
+                            throw failure
                         }
-                        lastSnapshot = terminal.snapshot()
-                        cases += 1
                     }
                 }
-            }
-            runOnUiThread {
-                lastSnapshot?.let { view?.show(it) }
-                report("$cases cases in $duration ms; no Android permissions requested")
+                runOnUiThread {
+                    if (isDestroyed) {
+                        retainedTerminal?.close()
+                    } else {
+                        interactiveTerminal?.close()
+                        interactiveTerminal = retainedTerminal
+                        lastSnapshot?.let { view?.show(it) }
+                        report("$cases cases in $duration ms; no Android permissions requested")
+                    }
+                }
+            }.onFailure { failure ->
+                retainedTerminal?.close()
+                runOnUiThread { report("FAIL: ${failure.javaClass.simpleName}") }
             }
         }
+    }
+
+    override fun onDestroy() {
+        interactiveTerminal?.close()
+        interactiveTerminal = null
+        super.onDestroy()
     }
 
     private fun feedLongTrace(terminal: NativeTerminal) {

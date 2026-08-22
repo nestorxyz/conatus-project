@@ -1,13 +1,29 @@
 # C-008 physical Android test handoff
 
-**Status:** Deferred by the founder on 2026-08-11; physical-device evidence is
-still required before C-008 can be completed or ADR 0005 can be accepted.
+**Status:** Corrected scrolling build awaits physical-device rerun; complete
+device evidence is still required before C-008 or ADR 0005 can be accepted.
 
 The host corpus, Rust tests, formatting, Clippy, repository bootstrap, Android
 release compilation, release lint, and APK assembly passed on 2026-08-10. The
 Android project currently has no JVM unit-test sources; Gradle reports
 `testReleaseUnitTest NO-SOURCE`. These results do not substitute for the device
 gate.
+
+## First device attempt
+
+On 2026-08-22, the operator ran the release harness on the API-28 Moto G6 Plus.
+All 21 cases completed in 640 ms without an immediate crash, hang, permission
+prompt, or observed external side effect. A later targeted memory reading was
+64,432 KiB total PSS. When the operator attempted to scroll, the visible task
+closed but the package process remained alive.
+
+Code review found that the harness had destroyed every native terminal after
+capturing only the final 25-row snapshot, so no live scrollback path existed.
+The run therefore fails the scroll/selection gate and is not C-008 acceptance
+evidence. The corrected harness retains exactly one bounded long-trace handle,
+adds a bounded JNI display-offset operation, refreshes immutable snapshots
+after touch scrolling, and closes the handle on activity destruction. It must
+be rerun from the beginning.
 
 ## Build and transfer
 

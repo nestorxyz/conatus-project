@@ -4,13 +4,14 @@ This directory contains the synthetic inputs and evidence contract for the
 C-008 physical-Android comparison. It contains no production mobile code, real
 terminal output, or claim that the device gate has passed.
 
-Physical-phone validation was deferred by the founder on 2026-08-11. Follow
-[DEVICE-TEST-HANDOFF.md](DEVICE-TEST-HANDOFF.md) when hardware is available;
-C-008 remains incomplete until that evidence passes validation.
+Physical-phone validation began on 2026-08-22. The first run exposed a missing
+live-scrollback path; follow
+[DEVICE-TEST-HANDOFF.md](DEVICE-TEST-HANDOFF.md) for the corrected-build rerun.
+C-008 remains incomplete until all device evidence passes validation.
 
 `native-core` is the platform-neutral Rust parser/grid prototype. It is built
-as both an `rlib` for host corpus tests and a `cdylib` for the later Android JNI
-wrapper. `android-harness` is the disposable no-permission Kotlin/Compose
+as both an `rlib` for host corpus tests and a `cdylib` for the Android JNI
+wrapper. `android-harness` is the disposable no-sensitive-permission Kotlin/Compose
 application and custom terminal `View`; it is not production mobile code.
 
 Run its locked tests directly with:
@@ -24,7 +25,10 @@ The core parses every tracked corpus case, enforces input and dimension bounds,
 disables OSC 52, strips hyperlink targets from screen snapshots, records only
 aggregate parser-event counters, and exports opaque-handle JNI functions. Its
 binary snapshot starts with the versioned `CTRM` header; Kotlin must reject
-unknown versions and stale generations.
+unknown versions and stale generations. After the corpus, the harness retains
+exactly one bounded native terminal handle for scrollback interaction; gestures
+request bounded display-offset changes and fresh immutable snapshots. Activity
+destruction closes the retained handle.
 
 ## Validate tracked evidence
 

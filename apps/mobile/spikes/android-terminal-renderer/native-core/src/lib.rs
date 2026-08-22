@@ -11,7 +11,7 @@ use std::sync::{Arc, Mutex};
 
 use alacritty_terminal::Term;
 use alacritty_terminal::event::{Event, EventListener};
-use alacritty_terminal::grid::Dimensions;
+use alacritty_terminal::grid::{Dimensions, Scroll};
 use alacritty_terminal::term::cell::Flags;
 use alacritty_terminal::term::{Config, Osc52};
 use alacritty_terminal::vte::ansi::{Color, Processor};
@@ -35,6 +35,7 @@ pub enum TerminalError {
     EmptyDimensions,
     DimensionsTooLarge,
     InputTooLarge,
+    ScrollDeltaTooLarge,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -211,6 +212,15 @@ impl TerminalCore {
         Ok(self.generation)
     }
 
+    pub fn scroll_display(&mut self, delta: i32) -> Result<u64, TerminalError> {
+        if delta.unsigned_abs() as usize > MAX_SCROLLBACK_LINES {
+            return Err(TerminalError::ScrollDeltaTooLarge);
+        }
+        self.terminal.scroll_display(Scroll::Delta(delta));
+        self.generation = self.generation.wrapping_add(1);
+        Ok(self.generation)
+    }
+
     pub fn event_audit(&self) -> EventAudit {
         self.listener.snapshot()
     }
@@ -347,6 +357,25 @@ mod tests {
             .expect("bounded input");
 
         assert_eq!(visible_text(&terminal.snapshot()), "Cafe\u{301} 🏿");
+    }
+
+    #[test]
+    fn scrolls_bounded_history_and_changes_the_snapshot() {
+        let mut terminal = TerminalCore::new(80, 5).expect("terminal");
+        let input = (0..20)
+            .map(|index| format!("line-{index:02}\r\n"))
+            .collect::<String>();
+        terminal.feed(input.as_bytes()).expect("bounded input");
+        let bottom = terminal.snapshot();
+
+        let generation = terminal.scroll_display(5).expect("bounded scroll");
+        let history = terminal.snapshot();
+        assert_eq!(history.generation, generation);
+        assert_ne!(history.rows, bottom.rows);
+        assert_eq!(
+            terminal.scroll_display((MAX_SCROLLBACK_LINES + 1) as i32),
+            Err(TerminalError::ScrollDeltaTooLarge),
+        );
     }
 
     #[test]

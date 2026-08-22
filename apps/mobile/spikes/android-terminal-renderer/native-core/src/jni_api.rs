@@ -42,9 +42,9 @@ fn with_terminal(function: impl FnOnce(&mut TerminalCore) -> jlong, handle: jlon
 fn error_code(error: TerminalError) -> jlong {
     match error {
         TerminalError::InputTooLarge => ERROR_INPUT_TOO_LARGE,
-        TerminalError::EmptyDimensions | TerminalError::DimensionsTooLarge => {
-            ERROR_INVALID_ARGUMENT
-        }
+        TerminalError::EmptyDimensions
+        | TerminalError::DimensionsTooLarge
+        | TerminalError::ScrollDeltaTooLarge => ERROR_INVALID_ARGUMENT,
     }
 }
 
@@ -143,6 +143,24 @@ pub extern "system" fn Java_dev_conatus_terminal_NativeTerminal_nativeResize(
         |terminal| {
             terminal
                 .resize(columns, screen_lines)
+                .map(|generation| generation as jlong)
+                .unwrap_or_else(error_code)
+        },
+        handle,
+    )
+}
+
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_dev_conatus_terminal_NativeTerminal_nativeScroll(
+    _environment: JNIEnv,
+    _class: JClass,
+    handle: jlong,
+    delta: jint,
+) -> jlong {
+    with_terminal(
+        |terminal| {
+            terminal
+                .scroll_display(delta)
                 .map(|generation| generation as jlong)
                 .unwrap_or_else(error_code)
         },

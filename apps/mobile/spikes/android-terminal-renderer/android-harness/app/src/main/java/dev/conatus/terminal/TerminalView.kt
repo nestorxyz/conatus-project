@@ -17,6 +17,7 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.inputmethod.BaseInputConnection
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
+import kotlin.math.abs
 import kotlin.math.floor
 
 internal class TerminalView @JvmOverloads constructor(
@@ -34,7 +35,10 @@ internal class TerminalView @JvmOverloads constructor(
     }
     private var snapshot: TerminalSnapshot? = null
     private var selectedRow: Int? = null
+    private var lastGestureY = 0f
+    private var gestureMoved = false
     var onTextInput: ((String) -> Unit)? = null
+    var onScrollLines: ((Int) -> TerminalSnapshot?)? = null
 
     init {
         isFocusable = true
@@ -71,20 +75,49 @@ internal class TerminalView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (event.action != MotionEvent.ACTION_UP) return true
-        requestFocus()
         val lineHeight = paint.fontMetrics.run { descent - ascent }
-        selectedRow = floor(event.y / lineHeight).toInt().coerceIn(0, (snapshot?.screenLines ?: 1) - 1)
-        sendAccessibilityEventUnchecked(
-            AccessibilityEvent.obtain(AccessibilityEvent.TYPE_ANNOUNCEMENT).apply {
-                text.add(selectedText())
-                className = TerminalView::class.java.name
-                packageName = context.packageName
-            },
-        )
-        invalidate()
-        return true
+        return when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                requestFocus()
+                lastGestureY = event.y
+                gestureMoved = false
+                true
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val lineDelta = ((event.y - lastGestureY) / lineHeight).toInt()
+                if (lineDelta != 0) {
+                    gestureMoved = true
+                    lastGestureY += lineDelta * lineHeight
+                    onScrollLines?.invoke(lineDelta)?.let(::show)
+                }
+                true
+            }
+            MotionEvent.ACTION_UP -> {
+                if (!gestureMoved && abs(event.y - lastGestureY) < lineHeight) {
+                    selectedRow = floor(event.y / lineHeight)
+                        .toInt()
+                        .coerceIn(0, (snapshot?.screenLines ?: 1) - 1)
+                    sendAccessibilityEventUnchecked(
+                        AccessibilityEvent.obtain(AccessibilityEvent.TYPE_ANNOUNCEMENT).apply {
+                            text.add(selectedText())
+                            className = TerminalView::class.java.name
+                            packageName = context.packageName
+                        },
+                    )
+                    invalidate()
+                }
+                performClick()
+                true
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                gestureMoved = false
+                true
+            }
+            else -> true
+        }
     }
+
+    override fun performClick(): Boolean = super.performClick()
 
     override fun onCheckIsTextEditor(): Boolean = true
 
