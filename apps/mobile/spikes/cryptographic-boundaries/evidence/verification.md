@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # C-007-R6 verification record
 
-**Recorded:** 2026-08-21
+**Recorded:** 2026-08-22
 **Status:** Partial prototype evidence; Android lifecycle/JNI and multi-filesystem rows remain open
 
 ## Completed locally
@@ -42,7 +42,7 @@ packages; the local prototype package has no registry checksum.
 | Device credential alternative | determine whether any supported API can preserve one-signature authorization without an authentication window | Design gap; not validated |
 | Android backup and D2D | cloud backup, `adb`/transport restore where supported, and OEM device transfer | Not run |
 | Rust/JCA on-device vector | capture only pass/fail and security level; no key or signature material | Pass on hardware-backed Moto G6 Plus running Android 9/API 28; remaining matrix open |
-| JNI robustness | coverage-guided fuzzing under sanitizers and Android process-death/restart | Platform-neutral owned boundary passed AddressSanitizer fuzzing; wrapped-fixture/JNI reload after force-stop passes on the API 28 Moto G6 Plus; a 92-rejection/256-concurrent-call Java/JNI negative harness compiles but awaits a device run; sudden death during JNI and newer-device coverage remain open |
+| JNI robustness | coverage-guided fuzzing under sanitizers and Android process-death/restart | Platform-neutral owned boundary passed AddressSanitizer fuzzing; wrapped-fixture/JNI reload after force-stop and the 92-rejection/256-concurrent-call Java/JNI negative harness pass on the API 28 Moto G6 Plus; sudden death during JNI and newer-device coverage remain open |
 | Linux storage | ext4 complete; XFS and any other claimed production filesystem | XFS and other claims not run |
 | Linux key deletion | verify key/blob unlink and application-level cryptographic erasure workflow | Prototype unlink only; production evidence not run |
 
@@ -88,8 +88,13 @@ checks stable Kotlin size/rejection errors, synchronizes four threads for 256
 mixed valid and invalid calls, and requires a valid COSE call to recover after
 the failures. The oversized cases bypass the Kotlin guard only through an
 explicit disposable-harness method so the native 1 MiB bounds are exercised.
-The APK builds and lints with zero errors, but this paragraph records no device
-pass until the exact sanitized success line is observed.
+The APK builds and lints with zero errors. On 2026-08-22, the operator ran build
+commit `7dab09e4468a88fbbc2f4e5ff749b1f3ae862060` on the same hardware-backed
+Moto G6 Plus and observed
+`JNI-negative=PASS: 92 rejects; 256 concurrent calls; recovery`. The surrounding
+automatic identity, AES-wrapping, and JNI/COSE checks also passed. Only this
+sanitized result is retained; the supplied personal-device screenshot is not
+committed.
 
 ## Device observation and correction
 
