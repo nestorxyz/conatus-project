@@ -143,8 +143,10 @@ and C-007-R7 is still blocked. Local key-first cryptographic-deletion tests pass
 three injected failure stages and idempotent retry. A private same-UID Android
 subprocess reached native abort without returning on its first device run, but
 the volatile observer left UI survival inconclusive. A corrected parent-PID and
-polling build awaits rerun; it is fault evidence only, not a production
-isolation architecture. The dependency and
+polling build then passed on API 28: the original main process displayed PASS
+and remained alive after Android removed the visible task, while the probe
+process was absent. Remaining device-matrix coverage is still open. This is
+fault evidence only, not a production isolation architecture. The dependency and
 platform assumption audit is recorded with the remaining production-selection
 gaps. The final current-state R6 gap report, pinned to implementation commit
 `1e4ab9c9004a59e0ea4517ba1d477a6fb2762fe4`, assigns the remaining findings,

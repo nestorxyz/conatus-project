@@ -47,7 +47,7 @@ packages; the local prototype package has no registry checksum.
 | Device credential alternative | determine whether any supported API can preserve one-signature authorization without an authentication window | Design gap; not validated |
 | Android backup and D2D | cloud backup, `adb`/transport restore where supported, and OEM device transfer | Not run |
 | Rust/JCA on-device vector | capture only pass/fail and security level; no key or signature material | Pass on hardware-backed Moto G6 Plus running Android 9/API 28; remaining matrix open |
-| JNI robustness | coverage-guided fuzzing under sanitizers and Android process-death/restart | Platform-neutral owned boundary passed AddressSanitizer fuzzing; wrapped-fixture/JNI reload after force-stop and the 92-rejection/256-concurrent-call Java/JNI negative harness pass on the API 28 Moto G6 Plus; a no-input native-abort subprocess probe compiles but awaits a device run; main-process fatal faults and newer-device coverage remain open |
+| JNI robustness | coverage-guided fuzzing under sanitizers and Android process-death/restart | Platform-neutral owned boundary passed AddressSanitizer fuzzing; wrapped-fixture/JNI reload, the 92-rejection/256-concurrent-call Java/JNI negative harness, and the corrected no-input native-abort subprocess probe pass on the API-28 Moto G6 Plus; main-process fatal faults and newer-device coverage remain open |
 | Linux storage | every claimed alpha filesystem for the durable security-state directory | Complete for the narrowed alpha scope: ext4 only; broader filesystems are explicitly unsupported pending separate evidence |
 | Linux key deletion | verify key/blob unlink and application-level cryptographic erasure workflow | Prototype passes key-first unlink, directory-sync boundary, ciphertext reclamation, three injected failures, and idempotent retry; production key-store/backup integration remains open |
 
@@ -89,8 +89,7 @@ the armed PID. A new UI process reports failure rather than converting the
 persisted child marker into a pass.
 The auxiliary process retains the application UID; this is not Android's
 `isolatedProcess` facility, is not production architecture, and cannot show
-that a fatal native fault in the main application process is catchable. No
-physical-device pass is claimed until the explicit button ceremony is run.
+that a fatal native fault in the main application process is catchable.
 
 On 2026-08-22, the first physical run against commit
 `bb0aa5954b299322a0a39e86ccb15959bbc521a1` left the one-byte invoked marker,
@@ -100,7 +99,17 @@ path and did not return, but it does not prove that the original UI process
 survived. The run is therefore **inconclusive**, not passing evidence. Review
 found that the first harness relied on a volatile launch flag and one
 `onResume` callback. The corrected build persists the parent PID and polls for
-the result; it still awaits a physical-device run.
+the result.
+
+The operator then ran corrected implementation commit
+`1e4ab9c9004a59e0ea4517ba1d477a6fb2762fe4` on the same API-28 Moto G6 Plus.
+The original main process displayed
+`JNI-CRASH PASS: isolated process aborted; UI process survived`. Android later
+removed the visible activity/task, but a targeted `pidof` check showed the main
+package process still alive and the `:jni_crash_probe` process absent. The
+ephemeral PID is not retained. This is a sanitized **pass** for auxiliary-
+process loss on API 28, with task-removal behavior noted; API 30 and current-
+supported-API coverage remain open.
 
 ## Native fuzzing qualification
 

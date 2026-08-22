@@ -42,7 +42,11 @@ device identifiers, or screenshots containing user data.
    no application input to native code and records only a synthetic parent PID
    plus one-byte invoked/returned markers. `UI process restarted after isolated
    abort` is a failure, not a pass. This proves the disposable auxiliary process
-   boundary, not survival of a native abort in the production/main process.
+   boundary, not survival of a native abort in the production/main process. If
+   Android subsequently removes the activity/task, run `adb shell pidof
+   dev.conatus.crypto.spike` and `adb shell pidof
+   dev.conatus.crypto.spike:jni_crash_probe`: the first must still return a PID
+   and the second must return nothing. Record only that outcome, not the PID.
 6. Tap **Test approval signature**. Confirm success requires a fresh biometric,
    cancel fails closed, and a second attempt requires another biometric.
 7. Reboot, unlock, and repeat. Then enroll or remove a biometric and confirm the
