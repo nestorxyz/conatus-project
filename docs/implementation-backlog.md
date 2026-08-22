@@ -144,7 +144,10 @@ three injected failure stages and idempotent retry. A private same-UID Android
 subprocess native-abort probe compiles but awaits device execution; it is fault
 evidence only, not a production isolation architecture. The dependency and
 platform assumption audit is recorded with the remaining production-selection
-gaps.
+gaps. The final current-state R6 gap report, pinned to implementation commit
+`bb0aa5954b299322a0a39e86ccb15959bbc521a1`, assigns the remaining findings,
+validation evidence, owners, and gate dates. It explicitly withholds R6 closure
+and production-implementation authorization.
 
 ### C-008 Select Android terminal rendering approach
 

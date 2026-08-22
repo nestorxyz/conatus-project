@@ -8,6 +8,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 **Recorded:** 2026-08-22
 **Status:** Partial prototype evidence; Android lifecycle/JNI rows remain open
 
+The [final current-state gap report](r6-gap-report.md) assigns severity, owner,
+validation evidence, and gate dates to every remaining item. It is pinned to
+implementation commit `bb0aa5954b299322a0a39e86ccb15959bbc521a1`; it does not
+close R6 or authorize production implementation.
+
 ## Completed locally
 
 | Check | Environment | Result |
