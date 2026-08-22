@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 The [final current-state gap report](r6-gap-report.md) assigns severity, owner,
 validation evidence, and gate dates to every remaining item. It is pinned to
-implementation commit `bb0aa5954b299322a0a39e86ccb15959bbc521a1`; it does not
+implementation commit `1e4ab9c9004a59e0ea4517ba1d477a6fb2762fe4`; it does not
 close R6 or authorize production implementation.
 
 ## Completed locally

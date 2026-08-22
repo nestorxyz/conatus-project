@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 # C-007-R6 final gap report
 
 **Report date:** 2026-08-22  
-**Evidence implementation commit:** `bb0aa5954b299322a0a39e86ccb15959bbc521a1`  
+**Evidence implementation commit:** `1e4ab9c9004a59e0ea4517ba1d477a6fb2762fe4`
 **Status:** Locally executable R6 work complete; C-007-R6 remains open  
 **Next dependency:** C-007-R7 remains blocked until every R6 closure item below
 is evidenced or the governing backlog is formally changed
@@ -46,8 +46,10 @@ cannot close them.
   three injected failure points. It makes no physical-erasure, backup, replica,
   snapshot, or live-memory claim.
 - A private same-UID Android subprocess fatal-JNI probe is compiled into the
-  harness. It uses a no-input native abort and a one-byte synthetic marker; it
-  is diagnostic evidence, not a production isolation design.
+  harness. It uses a no-input native abort, synthetic parent PID, and one-byte
+  invoked/returned markers; it is diagnostic evidence, not a production
+  isolation design. The first device run reached abort but was inconclusive;
+  the corrected durable-result build awaits rerun.
 - The exact prototype platform, toolchain, ABI, dependency, sanitizer, and
   filesystem assumptions are inventoried in
   [`platform-assumptions.md`](platform-assumptions.md).
@@ -63,7 +65,7 @@ An owner must schedule each item before beginning the named gate.
 | R6-G02 | Medium | Enrollment invalidation, biometric lockout, and absent-biometric behavior were intentionally not tested on the operator's personal phone. Run destructive lifecycle ceremonies on disposable devices and confirm fail-closed behavior with no approval signature. | Sanitized ceremony matrix, exact build commit, expected/actual result, and post-failure recovery result. | Mobile security/test | Before C-007-R6 closure |
 | R6-G03 | Medium | Manifest backup exclusions compile, but cloud restore and OEM device-transfer behavior are unevidenced. Exercise supported backup/D2D paths on disposable devices and show that private keys and synthetic wrapped fixtures do not migrate into an authorized state. | Sanitized source/destination matrix and post-transfer key/fixture state tied to a commit. | Mobile security/test | Before C-007-R6 closure |
 | R6-G04 | Medium | A device-credential alternative that preserves one authorization per signature is undecided. Either specify and validate an API-specific construction or normatively exclude credential fallback and expose an explicit unsupported state. | Governing ADR/spec update plus device tests for every supported authentication mode. | Crypto architecture and product security | Before C-007-R6 closure |
-| R6-G05 | Medium | The same-UID fatal-JNI subprocess probe compiles but has not run on a physical device. Run it on the R6 device matrix and document that a fatal fault in the main process remains process-fatal; do not claim the subprocess as a production containment boundary. | Exact `JNI-CRASH PASS: isolated process aborted; UI process survived` observation or failure details, tied to the implementation commit. | Mobile/native | Before C-007-R6 closure |
+| R6-G05 | Medium | The first physical run proved that the child reached abort and did not return, but the original volatile observer produced no survival result. Rerun the corrected parent-PID/polling probe on the R6 device matrix and document that a fatal fault in the main process remains process-fatal; do not claim the subprocess as a production containment boundary. | Exact `JNI-CRASH PASS: isolated process aborted; UI process survived` observation or explicit parent-restart/failure details, tied to the implementation commit. | Mobile/native | Before C-007-R6 closure |
 | R6-G06 | Medium | The prototype dependency graph contains duplicate generations of AEAD, digest, and Curve25519 stacks through `snow` and the newer HPKE/P-256 crates. Converge or justify the production graph during library/protocol selection and perform dependency API/unsafe/advisory review. | Approved dependency inventory, current advisory scan, release SBOM, and review record. | Crypto/Rust | Before production dependency selection; carry into R7 if R6 only establishes feasibility |
 | R6-G07 | Low | The crate declares Rust 1.89 as its MSRV, while automated evidence used Rust 1.97.1. Test 1.89 or raise the declared MSRV. | Locked format, build, test, and clippy results on the declared MSRV. | Rust build | Before production crate adoption |
 | R6-G08 | Low | Counted fuzz runs used AddressSanitizer with leak detection disabled because the workspace blocks LeakSanitizer shutdown tracing. Repeat the targets with leak detection in an unrestricted CI worker. | Retained CI summary with toolchain, sanitizer configuration, duration/executions, and zero target failures. | Native CI | Before production native implementation |

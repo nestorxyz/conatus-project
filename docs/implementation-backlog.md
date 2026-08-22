@@ -141,11 +141,13 @@ passes 92 rejection cases, 256 synchronized calls, and valid recovery on the
 same API-28 device; sudden-death-during-JNI remains open. C-007-R6 is not closed
 and C-007-R7 is still blocked. Local key-first cryptographic-deletion tests pass
 three injected failure stages and idempotent retry. A private same-UID Android
-subprocess native-abort probe compiles but awaits device execution; it is fault
-evidence only, not a production isolation architecture. The dependency and
+subprocess reached native abort without returning on its first device run, but
+the volatile observer left UI survival inconclusive. A corrected parent-PID and
+polling build awaits rerun; it is fault evidence only, not a production
+isolation architecture. The dependency and
 platform assumption audit is recorded with the remaining production-selection
 gaps. The final current-state R6 gap report, pinned to implementation commit
-`bb0aa5954b299322a0a39e86ccb15959bbc521a1`, assigns the remaining findings,
+`1e4ab9c9004a59e0ea4517ba1d477a6fb2762fe4`, assigns the remaining findings,
 validation evidence, owners, and gate dates. It explicitly withholds R6 closure
 and production-implementation authorization.
 
