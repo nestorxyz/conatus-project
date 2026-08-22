@@ -1,0 +1,28 @@
+field	value
+status	pass
+device_model	Motorola Moto G6 Plus
+android_version	9
+android_api_level	28
+renderer	alacritty-terminal-kotlin-view
+renderer_revision	alacritty_terminal 0.26.0; Conatus harness 8e4f9644712e6f819619f754e198c8bbf7ca888b
+renderer_checksum	bda177466b9524d59f1b12f0dd30b68696788e9992a7e959021c4a0ed96fcf59
+build_mode	release
+android_gradle_plugin_version	8.13.2
+gradle_version	8.13
+jdk_version	Temurin 17.0.19+10
+rust_version	1.97.1
+cargo_version	1.97.1
+android_ndk_version	27.0.12077973
+trace_duration_ms	505
+peak_pss_mib	113.1
+pss_delta_after_destroy_mib	9.7
+crash_anr_or_hang	pass: final build completed and remained usable; precursor failures are documented in the handoff
+external_side_effect	pass: no sensitive permission prompt or external effect observed; source manifest requests no Android capability permission
+lifecycle_result	pass: background and foreground, rotation, and same-process activity recreation preserved bounded state without duplicate or fabricated history
+selection_result	pass: scrolling exposed older rows; touch and TalkBack activation selected the exact displayed logical line
+largest_font_scale_result	pass: viewport, scrolling, selection, and controls remained usable; device font scale was restored to 1.0
+talkback_version	17.0.1.926549743
+talkback_result	pass: nonempty rows were read separately in stable order; ASCII, combining text, emoji, CJK, Arabic, ANSI-safe text, and exact-line selection passed without duplicate nodes or raw controls
+operator	founder
+run_date	2026-08-23
+notes	Sanitized staged physical evidence. Final release APK checksum 51badcbeae437c24788c0a5e8c40bd7e2c04aa3807ed1af61e2b9d6c4170fe1a. Peak uses the highest observed PSS; raw logs, screenshots, device identifier, and user data remain outside Git.

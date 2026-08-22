@@ -1,7 +1,7 @@
 # C-008 physical Android test handoff
 
-**Status:** Corrected scrolling build awaits physical-device rerun; complete
-device evidence is still required before C-008 or ADR 0005 can be accepted.
+**Status:** Complete. The corrected release harness passed the physical-device
+gate on 2026-08-23, ADR 0005 is accepted, and C-008 is closed.
 
 The host corpus, Rust tests, formatting, Clippy, repository bootstrap, Android
 release compilation, release lint, and APK assembly passed on 2026-08-10. The
@@ -46,7 +46,24 @@ large block. This fails the required per-line virtual-node model and is not
 accessibility acceptance evidence. The next build exposes one bounded virtual
 text node per non-empty visible logical row, maintains stable row order,
 supports accessibility focus, and maps virtual-node click to sanitized line
-selection. It awaits a TalkBack-only rerun.
+selection.
+
+## Final accepted run
+
+The operator reran the corrected release harness at commit
+`8e4f9644712e6f819619f754e198c8bbf7ca888b`. All 21 cases completed in 505 ms,
+with no sensitive Android permission prompt or observed external side effect.
+Scrollback, touch selection, background and foreground transitions, rotation,
+same-process activity recreation, and the largest font scale remained usable
+without duplicate or fabricated history. TalkBack 17.0.1 read each nonempty
+terminal row separately in stable order and activated exact-line selection;
+ASCII, combining text, emoji, CJK, Arabic, and ANSI-safe text passed.
+
+The highest observed PSS across the staged device run was recorded
+conservatively as 113.1 MiB. The measured post-destroy delta was 9.7 MiB. The
+tracked [sanitized report](report.tsv) contains the aggregate acceptance
+evidence. Raw profiler output, logs, screenshots, device identifiers, and user
+data remain outside Git.
 
 ## Build and transfer
 
@@ -73,7 +90,8 @@ control plane, and production application state.
 
 ## Test procedure
 
-1. Copy `report.template.tsv` to the Git-ignored local file `report.tsv`.
+1. Copy `report.template.tsv` to a local `report.tsv`; commit it only after all
+   fields are sanitized and every acceptance gate passes.
 2. Record the device model, Android version and API level, TalkBack version,
    operator, run date, renderer revision and checksum, and every pinned
    toolchain version before testing.

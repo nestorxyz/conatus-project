@@ -156,20 +156,15 @@ and production-implementation authorization.
 ### C-008 Select Android terminal rendering approach
 
 **Depends on:** C-001, C-002
-**Status:** In progress; ADR 0005, candidate comparison, malicious corpus,
-evidence validator, pinned Rust parser/grid core, bounded JNI surface, and host
-corpus tests are complete. The Android release harness builds successfully;
-the first physical run completed 21 cases in 640 ms but failed the interaction
-gate because the harness had discarded the native terminal and exposed no live
-scrollback. A corrected bounded JNI scroll path and retained-handle lifecycle
-then completed 21 cases in 614 ms and scrolled, but API 28 threw when selection
-sent an unchecked accessibility event while accessibility was disabled. The
-selection path now uses a guarded platform announcement. The first multilingual
-sample then exposed broken emoji-modifier and Arabic shaping from cell-by-cell
-Canvas drawing. Logical-row shaping now preserves grapheme sequences and passes
-the visual rerun, but TalkBack exposed the terminal as one block. Per-line
-virtual accessibility nodes now build and await a TalkBack-only rerun. Device
-evidence remains required before selection.
+**Status:** Complete 2026-08-23. ADR 0005 accepts the Conatus-owned Kotlin view
+backed by `alacritty_terminal` 0.26.0. The final API-28 physical-device release
+run completed all 21 cases in 505 ms without a sensitive permission prompt or
+observed external side effect. Peak PSS was conservatively recorded as 113.1
+MiB and the post-destroy delta as 9.7 MiB. Scrollback, exact-line selection,
+lifecycle recreation, rotation, largest-font-scale usability, and per-line
+TalkBack traversal passed. The tracked sanitized report records the toolchain,
+revision, checksum, and aggregate evidence; the device handoff retains the
+failed precursor runs and their remediations.
 **Outcome:** Evaluate established permissively licensed Android terminal parser/renderers and a native Kotlin renderer backed by a Rust parser for UTF-8, ANSI/OSC safety, TalkBack, performance, selection, Compose/View hosting, and JNI integration; record ADR.
 **Acceptance:** Prototype renders the malicious-terminal corpus and a 10,000-line scrollback trace on a physical Android phone without unsafe side effects. Record device, Android/Gradle/JDK versions, duration, peak memory, lifecycle, selection, largest-font-scale, and TalkBack evidence.
 

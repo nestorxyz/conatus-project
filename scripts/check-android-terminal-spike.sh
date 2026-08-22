@@ -121,13 +121,44 @@ if test -f "$base/report.tsv"; then
   cmp -s "$template" "$base/report.tsv" &&
     fail 'report.tsv is still the blank template and is not device evidence'
   awk -F '\t' '
-    NR == 1 { next }
+    NR == 1 {
+      if ($0 != "field\tvalue") exit 40
+      next
+    }
     NF != 2 || $2 == "" || $2 == "pending" { exit 40 }
-    $1 == "status" && $2 != "pass" && $2 != "fail" { exit 41 }
-    $1 == "trace_duration_ms" && $2 !~ /^[0-9]+$/ { exit 42 }
-    $1 == "peak_pss_mib" && $2 !~ /^[0-9]+([.][0-9]+)?$/ { exit 43 }
-    $1 == "pss_delta_after_destroy_mib" && $2 !~ /^[0-9]+([.][0-9]+)?$/ { exit 44 }
+    seen[$1]++ { exit 41 }
+    $1 == "status" && $2 != "pass" { exit 42 }
+    $1 == "build_mode" && $2 != "release" { exit 43 }
+    $1 == "android_api_level" && $2 !~ /^[0-9]+$/ { exit 44 }
+    $1 == "trace_duration_ms" {
+      if ($2 !~ /^[0-9]+$/ || $2 + 0 > 2000) exit 45
+    }
+    $1 == "peak_pss_mib" {
+      if ($2 !~ /^[0-9]+([.][0-9]+)?$/ || $2 + 0 >= 180) exit 46
+    }
+    $1 == "pss_delta_after_destroy_mib" {
+      if ($2 !~ /^[0-9]+([.][0-9]+)?$/ || $2 + 0 > 30) exit 47
+    }
+    $1 ~ /^(crash_anr_or_hang|external_side_effect|lifecycle_result|selection_result|largest_font_scale_result|talkback_result)$/ &&
+      $2 !~ /^pass([:;]|$)/ { exit 48 }
+    END {
+      required["status"] = 1
+      required["build_mode"] = 1
+      required["android_api_level"] = 1
+      required["trace_duration_ms"] = 1
+      required["peak_pss_mib"] = 1
+      required["pss_delta_after_destroy_mib"] = 1
+      required["crash_anr_or_hang"] = 1
+      required["external_side_effect"] = 1
+      required["lifecycle_result"] = 1
+      required["selection_result"] = 1
+      required["largest_font_scale_result"] = 1
+      required["talkback_result"] = 1
+      for (field in required) if (!seen[field]) exit 49
+    }
   ' "$base/report.tsv" || fail 'report.tsv is incomplete or invalid'
+  printf 'Android terminal spike: sanitized physical-device evidence passes enforced gates\n'
+  exit 0
 fi
 
 printf 'Android terminal spike: tracked evidence valid (physical-device run still required)\n'

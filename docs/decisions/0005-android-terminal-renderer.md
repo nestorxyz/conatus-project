@@ -1,7 +1,8 @@
 # ADR 0005: Android terminal renderer evaluation
 
-**Status:** Proposed; physical-device acceptance pending
+**Status:** Accepted
 **Date:** 2026-08-10
+**Accepted:** 2026-08-23
 **Ticket:** C-008
 
 ## Context
@@ -21,7 +22,7 @@ The spike compares these implementation families:
 The comparison uses upstream documentation and source reviewed on 2026-08-10.
 It is not a substitute for the required physical-device run.
 
-## Provisional decision
+## Decision
 
 Build a Conatus-owned native Kotlin terminal view backed by the Rust
 `alacritty_terminal` parser. This deliberately optimizes for the long-term
@@ -32,11 +33,11 @@ semantics, font scaling, and Android lifecycle behavior. A narrow JNI boundary
 passes bounded byte chunks into Rust and immutable, generation-tagged screen
 snapshots or dirty-row updates back to Kotlin.
 
-This decision remains proposed until a release build passes the corpus and
-10,000-line trace on a physical Android phone. xterm.js in a locked-down local
-`WebView` is the fallback if the native prototype cannot meet terminal
-correctness, TalkBack, lifecycle, selection, or performance gates within the
-C-008 spike. Termux remains rejected on licensing-boundary grounds.
+The native prototype passed the release corpus and 10,000-line trace on a
+physical Android phone. xterm.js in a locked-down local `WebView` remains the
+fallback if later production integration cannot preserve terminal correctness,
+TalkBack, lifecycle, selection, performance, or the side-effect boundary.
+Termux remains rejected on licensing-boundary grounds.
 
 The native choice does not authorize a reduced emulator. Before C-042, the
 prototype must demonstrate the terminal behavior needed for Bash, tmux, and
@@ -164,6 +165,22 @@ The repository tracks the synthetic corpus, harness contract, blank report
 template, validator, and final sanitized result only. A pending report is not
 acceptance evidence. Raw device and profiler artifacts remain outside Git.
 
+## Physical-device result
+
+The sanitized [C-008 report](../../apps/mobile/spikes/android-terminal-renderer/report.tsv)
+records the accepted physical-device run against harness commit
+`8e4f9644712e6f819619f754e198c8bbf7ca888b`. The API-28 Motorola Moto G6 Plus
+completed all 21 cases in 505 ms without a sensitive permission prompt or
+observed external side effect. The highest observed proportional-set memory was
+113.1 MiB, and the measured post-destroy delta was 9.7 MiB. Scrollback,
+selection, lifecycle recreation, rotation, largest-font-scale usability, and
+TalkBack's per-line traversal and selection passed.
+
+The staged run intentionally found and corrected missing live scrollback, an
+accessibility-disabled selection exception, cell-by-cell Unicode shaping, and
+one-block TalkBack exposure before acceptance. Those failed precursor builds
+are retained in the device handoff and are not represented as passing evidence.
+
 ## Consequences
 
 - C-042 may integrate only the renderer and revision accepted after this ADR's
@@ -172,5 +189,6 @@ acceptance evidence. Raw device and profiler artifacts remain outside Git.
 - C-043 owns explicit paste consent and user-initiated link behavior; terminal
   escape sequences cannot bypass those controls.
 - Terminal parser fuzzing remains required before alpha security review.
-- C-008 remains incomplete and C-042 remains blocked until this ADR is accepted
-  with a validated, sanitized physical-device report.
+- C-008 is complete. C-042 may use this accepted renderer decision only after
+  its other dependency, C-041, is complete and must still satisfy its own
+  production integration and security acceptance criteria.

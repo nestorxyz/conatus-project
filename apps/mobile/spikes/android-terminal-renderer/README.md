@@ -1,13 +1,10 @@
 # C-008 Android terminal-renderer spike
 
-This directory contains the synthetic inputs and evidence contract for the
-C-008 physical-Android comparison. It contains no production mobile code, real
-terminal output, or claim that the device gate has passed.
-
-Physical-phone validation began on 2026-08-22. The first run exposed a missing
-live-scrollback path; follow
-[DEVICE-TEST-HANDOFF.md](DEVICE-TEST-HANDOFF.md) for the corrected-build rerun.
-C-008 remains incomplete until all device evidence passes validation.
+This directory contains the synthetic inputs, disposable harness, and sanitized
+physical-device evidence for C-008. It contains no production mobile code or
+real terminal output. The physical-device gate passed on 2026-08-23; see
+[report.tsv](report.tsv) for the accepted aggregate result and
+[DEVICE-TEST-HANDOFF.md](DEVICE-TEST-HANDOFF.md) for the remediation history.
 
 `native-core` is the platform-neutral Rust parser/grid prototype. It is built
 as both an `rlib` for host corpus tests and a `cdylib` for the Android JNI
@@ -38,9 +35,9 @@ From the repository root:
 make -C apps/mobile android-spike
 ```
 
-The check validates the corpus, candidate record, and blank report schema. It
-does not compile an Android application or substitute for the physical-phone
-run required by ADR 0005.
+The check validates the corpus, candidate record, completed report schema, and
+the numeric and pass/fail gates from ADR 0005. It does not compile an Android
+application or reproduce the physical-phone run.
 
 ## Device harness contract
 
@@ -65,11 +62,10 @@ run required by ADR 0005.
    scale, rotation, background/foreground, activity recreation, and terminal
    view destruction.
 7. Measure a release build with Android Studio's profiler or `dumpsys meminfo`.
-   Keep raw output and captures outside Git; transfer aggregate measurements
-   only into a local `report.tsv`.
-8. Copy `report.template.tsv` to `report.tsv`, complete every field, then run
-   the validator. Change ADR 0005 to Accepted and mark C-008 complete only if
-   every gate passes.
+   Keep raw output and captures outside Git; transfer only sanitized aggregate
+   measurements into `report.tsv`.
+8. Complete every report field and run the validator. ADR 0005 may be accepted
+   and C-008 completed only if every gate passes.
 
 The harness must request no network, notification, storage, media, contacts,
 location, accessibility-service, overlay, or package-install permission. It
