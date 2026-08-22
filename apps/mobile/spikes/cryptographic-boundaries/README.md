@@ -27,10 +27,11 @@ state. An automatic JNI-negative harness also crosses the real Java/native
 boundary with malformed encodings, native and Kotlin size limits, synchronized
 concurrency, input-copy integrity checks, and valid recovery.
 An explicit button launches a private same-UID Android subprocess which records
-only a one-byte synthetic marker and invokes a no-input native abort. The main
-activity must survive and report the subprocess loss. This is a disposable
-fault probe, not a production isolation design and not evidence that a fatal
-fault in the main application process can be caught.
+a synthetic parent PID plus one-byte invoked/returned markers and invokes a
+no-input native abort. The main process polls the result and reports success
+only when its PID is unchanged; a restarted UI is an explicit failure. This is
+a disposable fault probe, not a production isolation design and not evidence
+that a fatal fault in the main application process can be caught.
 
 Linux deletion tests remove and directory-sync the sole wrapped content-key
 object before removing ciphertext, then retry successfully from every injected

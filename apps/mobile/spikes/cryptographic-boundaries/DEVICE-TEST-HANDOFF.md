@@ -39,9 +39,10 @@ device identifiers, or screenshots containing user data.
    the auxiliary package process. Confirm the original harness screen returns
    and displays
    `JNI-CRASH PASS: isolated process aborted; UI process survived`. This sends
-   no application input to native code and records only a one-byte synthetic
-   marker. It proves the disposable auxiliary process boundary, not survival of
-   a native abort in the production/main process.
+   no application input to native code and records only a synthetic parent PID
+   plus one-byte invoked/returned markers. `UI process restarted after isolated
+   abort` is a failure, not a pass. This proves the disposable auxiliary process
+   boundary, not survival of a native abort in the production/main process.
 6. Tap **Test approval signature**. Confirm success requires a fresh biometric,
    cancel fails closed, and a second attempt requires another biometric.
 7. Reboot, unlock, and repeat. Then enroll or remove a biometric and confirm the

@@ -80,14 +80,27 @@ flash translation layers, or physical-media overwrite.
 ## Isolated JNI fatal-fault probe
 
 The APK now contains a private, non-exported activity in the dedicated
-`:jni_crash_probe` package process. It writes only a one-byte synthetic invoked
-marker, calls a no-input Rust function that deliberately aborts, and must never
-write the unexpected-return marker. Resumption of the original activity can
-therefore report that the auxiliary process died while the UI process survived.
+`:jni_crash_probe` package process. Before launch, the main process syncs its
+synthetic PID marker. The child writes a one-byte invoked marker, calls a
+no-input Rust function that deliberately aborts, and must never write the
+one-byte unexpected-return marker. The main process polls independently of
+activity-resume delivery and reports success only if its current PID matches
+the armed PID. A new UI process reports failure rather than converting the
+persisted child marker into a pass.
 The auxiliary process retains the application UID; this is not Android's
 `isolatedProcess` facility, is not production architecture, and cannot show
 that a fatal native fault in the main application process is catchable. No
 physical-device pass is claimed until the explicit button ceremony is run.
+
+On 2026-08-22, the first physical run against commit
+`bb0aa5954b299322a0a39e86ccb15959bbc521a1` left the one-byte invoked marker,
+did not leave the unexpected-return marker, and showed no PASS after the
+operator reopened the harness. This proves that the child reached the abort
+path and did not return, but it does not prove that the original UI process
+survived. The run is therefore **inconclusive**, not passing evidence. Review
+found that the first harness relied on a volatile launch flag and one
+`onResume` callback. The corrected build persists the parent PID and polls for
+the result; it still awaits a physical-device run.
 
 ## Native fuzzing qualification
 

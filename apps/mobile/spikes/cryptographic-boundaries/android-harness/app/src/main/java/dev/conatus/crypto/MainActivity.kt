@@ -17,8 +17,15 @@ import java.security.SecureRandom
 
 @SuppressLint("SetTextI18n") // Disposable diagnostics are intentionally exact and non-localized.
 class MainActivity : Activity() {
+    private companion object {
+        const val CRASH_PROBE_POLL_LIMIT = 40
+        const val CRASH_PROBE_POLL_MILLIS = 250L
+    }
+
     private lateinit var status: TextView
     private var crashProbeLaunched = false
+    private var crashProbePollsRemaining = 0
+    private val crashProbePoll = Runnable { observeCrashProbe() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,37 +67,56 @@ class MainActivity : Activity() {
             addView(processDeath)
             addView(approval)
         })
+        observeCrashProbe()
     }
 
     override fun onResume() {
         super.onResume()
-        if (!crashProbeLaunched || !::status.isInitialized) return
-        val result = runCatching { JniCrashProbe.consume(this) }.getOrElse {
-            crashProbeLaunched = false
-            status.append("\nJNI-CRASH FAIL: ${it.javaClass.simpleName}")
+        if (::status.isInitialized) observeCrashProbe()
+    }
+
+    private fun observeCrashProbe() {
+        val result = runCatching { JniCrashProbe.observe(this) }.getOrElse {
+            finishCrashProbe("JNI-CRASH FAIL: ${it.javaClass.simpleName}")
             return
         }
         when (result) {
-            JniCrashProbe.Result.Pending -> Unit
-            JniCrashProbe.Result.Passed -> {
-                crashProbeLaunched = false
-                status.append("\nJNI-CRASH PASS: isolated process aborted; UI process survived")
+            JniCrashProbe.Result.NotArmed -> Unit
+            JniCrashProbe.Result.Pending -> {
+                if (crashProbeLaunched && crashProbePollsRemaining > 0) {
+                    crashProbePollsRemaining -= 1
+                    status.postDelayed(crashProbePoll, CRASH_PROBE_POLL_MILLIS)
+                } else if (crashProbeLaunched) {
+                    finishCrashProbe("JNI-CRASH FAIL: isolated process did not invoke abort")
+                }
             }
-            JniCrashProbe.Result.Failed -> {
-                crashProbeLaunched = false
-                status.append("\nJNI-CRASH FAIL: native abort returned or linkage failed")
-            }
+            JniCrashProbe.Result.Passed ->
+                finishCrashProbe("JNI-CRASH PASS: isolated process aborted; UI process survived")
+            JniCrashProbe.Result.NativeReturned ->
+                finishCrashProbe("JNI-CRASH FAIL: native abort returned or linkage failed")
+            JniCrashProbe.Result.ParentRestarted ->
+                finishCrashProbe("JNI-CRASH FAIL: UI process restarted after isolated abort")
+            JniCrashProbe.Result.InvalidState ->
+                finishCrashProbe("JNI-CRASH INCONCLUSIVE: result lacks parent-process marker")
         }
+    }
+
+    private fun finishCrashProbe(message: String) {
+        crashProbeLaunched = false
+        crashProbePollsRemaining = 0
+        status.removeCallbacks(crashProbePoll)
+        status.append("\n$message")
     }
 
     private fun runIsolatedJniCrashProbe() {
         runCatching {
-            JniCrashProbe.reset(this)
+            JniCrashProbe.arm(this)
             crashProbeLaunched = true
+            crashProbePollsRemaining = CRASH_PROBE_POLL_LIMIT
             startActivity(Intent(this, JniCrashProbeActivity::class.java))
+            status.postDelayed(crashProbePoll, CRASH_PROBE_POLL_MILLIS)
         }.onFailure {
-            crashProbeLaunched = false
-            status.append("\nJNI-CRASH FAIL: ${it.javaClass.simpleName}")
+            finishCrashProbe("JNI-CRASH FAIL: ${it.javaClass.simpleName}")
         }
     }
 
