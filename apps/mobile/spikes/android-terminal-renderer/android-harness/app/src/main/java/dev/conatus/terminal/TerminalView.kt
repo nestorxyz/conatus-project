@@ -51,10 +51,17 @@ internal class TerminalView @JvmOverloads constructor(
     fun show(value: TerminalSnapshot) {
         val previous = snapshot
         if (previous != null && value.generation < previous.generation) return
+        if (previous?.generation != value.generation) selectedRow = null
         snapshot = value
         contentDescription = accessibleText(value)
         invalidate()
         sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED)
+    }
+
+    fun replace(value: TerminalSnapshot) {
+        snapshot = null
+        selectedRow = null
+        show(value)
     }
 
     override fun onDraw(canvas: Canvas) {

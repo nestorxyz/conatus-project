@@ -51,6 +51,11 @@ class MainActivity : ComponentActivity() {
                             Text("Inspect selection")
                         }
                     }
+                    Button(
+                        onClick = {
+                            showAccessibilitySample(terminalView) { status = it }
+                        },
+                    ) { Text("Show accessibility sample") }
                     Text(status, color = Color.White)
                     AndroidView(
                         modifier = Modifier.fillMaxWidth().weight(1f),
@@ -108,7 +113,7 @@ class MainActivity : ComponentActivity() {
                     } else {
                         interactiveTerminal?.close()
                         interactiveTerminal = retainedTerminal
-                        lastSnapshot?.let { view?.show(it) }
+                        lastSnapshot?.let { view?.replace(it) }
                         report("$cases cases in $duration ms; no Android permissions requested")
                     }
                 }
@@ -117,6 +122,36 @@ class MainActivity : ComponentActivity() {
                 runOnUiThread { report("FAIL: ${failure.javaClass.simpleName}") }
             }
         }
+    }
+
+    private fun showAccessibilitySample(view: TerminalView?, report: (String) -> Unit) {
+        val replacement = runCatching {
+            NativeTerminal(80, 25).also { terminal ->
+                try {
+                    terminal.feed(
+                        (
+                            "ASCII terminal ready\r\n" +
+                                "Cafe\u0301 combining\r\n" +
+                                "Emoji wave 👋🏿\r\n" +
+                                "CJK 終端測試\r\n" +
+                                "Arabic مرحبا\r\n" +
+                                "\u001b[31mANSI red without escape bytes\u001b[0m\r\n"
+                        ).encodeToByteArray(),
+                    )
+                } catch (failure: Throwable) {
+                    terminal.close()
+                    throw failure
+                }
+            }
+        }.getOrElse { failure ->
+            report("FAIL: ${failure.javaClass.simpleName}")
+            return
+        }
+
+        interactiveTerminal?.close()
+        interactiveTerminal = replacement
+        view?.replace(replacement.snapshot())
+        report("Accessibility sample ready: ASCII, combining, emoji, CJK, Arabic, ANSI")
     }
 
     override fun onDestroy() {

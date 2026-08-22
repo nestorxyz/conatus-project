@@ -83,8 +83,10 @@ control plane, and production application state.
 8. At the largest Android font scale, confirm the viewport, selection, and
    terminal controls remain usable.
 9. With TalkBack enabled, verify stable reading order for ASCII, combining
-   characters, emoji, CJK, Arabic, and a selected line. Escape bytes and
-   duplicate accessibility nodes must not be announced.
+   characters, emoji, CJK, Arabic, and a selected line using **Show
+   accessibility sample**. TalkBack may speak the rendered words `ANSI red
+   without escape bytes`, but must not announce raw escape/control bytes or
+   duplicate the sample.
 10. Keep profiler output, logcat, screenshots, and accessibility captures
     outside Git. Put only aggregate, sanitized results in `report.tsv`.
 
