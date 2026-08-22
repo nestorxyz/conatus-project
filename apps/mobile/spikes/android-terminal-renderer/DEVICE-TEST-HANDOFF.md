@@ -25,6 +25,16 @@ adds a bounded JNI display-offset operation, refreshes immutable snapshots
 after touch scrolling, and closes the handle on activity destruction. It must
 be rerun from the beginning.
 
+The corrected scrolling build at commit
+`804bb0816d2ca6465a4d58523f248f94a0584437` then completed all 21 cases in
+614 ms and rendered live scrollback. Tapping a row crashed the process on the
+API-28 device. A filtered application-only trace identified
+`IllegalStateException: Accessibility off` at the view's unchecked
+accessibility-event call. This is a failed selection attempt, not acceptance
+evidence. The subsequent correction uses the platform's guarded announcement
+path only while accessibility is enabled; selection without TalkBack must be
+rerun before enabling TalkBack for its separate ceremony.
+
 ## Build and transfer
 
 Build the current checkout on the VPS using the pinned repository-local

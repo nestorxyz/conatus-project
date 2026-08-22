@@ -13,7 +13,7 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
-import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityManager
 import android.view.inputmethod.BaseInputConnection
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
@@ -37,6 +37,7 @@ internal class TerminalView @JvmOverloads constructor(
     private var selectedRow: Int? = null
     private var lastGestureY = 0f
     private var gestureMoved = false
+    private val accessibilityManager = context.getSystemService(AccessibilityManager::class.java)
     var onTextInput: ((String) -> Unit)? = null
     var onScrollLines: ((Int) -> TerminalSnapshot?)? = null
 
@@ -97,13 +98,7 @@ internal class TerminalView @JvmOverloads constructor(
                     selectedRow = floor(event.y / lineHeight)
                         .toInt()
                         .coerceIn(0, (snapshot?.screenLines ?: 1) - 1)
-                    sendAccessibilityEventUnchecked(
-                        AccessibilityEvent.obtain(AccessibilityEvent.TYPE_ANNOUNCEMENT).apply {
-                            text.add(selectedText())
-                            className = TerminalView::class.java.name
-                            packageName = context.packageName
-                        },
-                    )
+                    announceSelectionForAccessibility()
                     invalidate()
                 }
                 performClick()
@@ -118,6 +113,12 @@ internal class TerminalView @JvmOverloads constructor(
     }
 
     override fun performClick(): Boolean = super.performClick()
+
+    @Suppress("DEPRECATION") // Required for the API-26 baseline; guarded and verified with TalkBack.
+    private fun announceSelectionForAccessibility() {
+        if (!accessibilityManager.isEnabled) return
+        runCatching { announceForAccessibility(selectedText()) }
+    }
 
     override fun onCheckIsTextEditor(): Boolean = true
 

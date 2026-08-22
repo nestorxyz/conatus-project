@@ -162,8 +162,10 @@ corpus tests are complete. The Android release harness builds successfully;
 the first physical run completed 21 cases in 640 ms but failed the interaction
 gate because the harness had discarded the native terminal and exposed no live
 scrollback. A corrected bounded JNI scroll path and retained-handle lifecycle
-build successfully and await device rerun. Device evidence remains required
-before selection.
+then completed 21 cases in 614 ms and scrolled, but API 28 threw when selection
+sent an unchecked accessibility event while accessibility was disabled. The
+selection path now uses a guarded platform announcement and awaits rerun.
+Device evidence remains required before selection.
 **Outcome:** Evaluate established permissively licensed Android terminal parser/renderers and a native Kotlin renderer backed by a Rust parser for UTF-8, ANSI/OSC safety, TalkBack, performance, selection, Compose/View hosting, and JNI integration; record ADR.
 **Acceptance:** Prototype renders the malicious-terminal corpus and a 10,000-line scrollback trace on a physical Android phone without unsafe side effects. Record device, Android/Gradle/JDK versions, duration, peak memory, lifecycle, selection, largest-font-scale, and TalkBack evidence.
 
