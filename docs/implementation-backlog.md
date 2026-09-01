@@ -64,6 +64,53 @@ or private provider reference. Hosted CI must pass before merge, external
 contribution acceptance, or release. Signing and actual Codex execution remain
 blocked.
 
+### M1 Owned portfolio and task execution
+
+**Depends on:** F03
+
+**Status:** In progress; M1-01 selected
+
+**User-visible outcome:** The Mac command center shows named projects, tasks,
+blockers, and results. A user can create or resume a Conatus-owned Codex task
+without remembering a repository path or provider task identifier.
+
+M1 is delivered through the following dependency-ordered slices:
+
+1. **M1-01 Codex compatibility pin:** exact non-experimental App Server schema
+   digest, stable method allowlist, and Swift read-only request vectors.
+2. **M1-02 Registered workspace and portfolio projection:** account-scoped
+   workspace handles, names and aliases, deterministic ambiguity behavior, and
+   a Core projection for Products, Projects, Tasks, blockers, and results.
+3. **M1-03 Durable Codex binding and writer lease:** Conatus-owned opaque
+   binding IDs, provider references behind the Gateway, local receipts, fencing,
+   idempotent create/resume, and restart reconciliation.
+4. **M1-04 Bounded real read-only lifecycle:** one approved account-backed
+   create/resume fixture survives Gateway restart with exact identity and no
+   duplicate turn.
+5. **M1-05 Mac command center integration:** native portfolio/task UI routes by
+   names and stable IDs, displays honest lifecycle/error state, and demonstrates
+   the complete create/resume journey without path entry.
+
+**Milestone acceptance:** An authenticated local development identity sees a
+persistent named portfolio and registered workspace handles. The Gateway uses a
+reviewed Codex schema pin and local receipts. A bounded read-only Conatus-owned
+task survives restart with the same binding and provider identity, and a retry
+does not create a duplicate turn. Provider references and absolute paths never
+enter Core or client payloads. Effectful work remains blocked until trusted
+approvals exist.
+
+#### M1-01 Codex compatibility pin
+
+**Depends on:** F03
+
+**Status:** In progress
+
+**Acceptance:** The exact Codex CLI version and generated non-experimental
+schema digest are checked reproducibly; every allowlisted request/notification
+is present; Swift emits stable initialize and task-lifecycle requests; thread
+creation is structurally limited to read-only sandbox and approval policy
+`never`; no provider process, account usage, or persistent Codex task is used.
+
 ## How to use this backlog
 
 - One ticket should produce one reviewable change or a deliberately small series of linked changes.
