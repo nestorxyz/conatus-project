@@ -19,8 +19,39 @@ F01 Mac/Core/contracts foundation
 F01 must contain no live provider command, account creation, deployment, or
 production credential. Android-specific tickets below are deferred, not passed.
 
-**Status:** Initial execution plan  
+**Status:** Initial execution plan
+
 **Rule:** A ticket starts only when its dependencies and acceptance evidence are complete
+
+### F01 Mac/Core/contracts foundation
+
+**Status:** Complete on 2026-09-01. See `RESULT.md` and ADR 0009.
+
+### F02 Durable domain kernel and failure tests
+
+**Depends on:** F01
+
+**Status:** Complete on 2026-09-01. See `RESULT.md` and ADR 0010.
+
+**Outcome:** Implement the account-scoped PostgreSQL kernel defined by ADR 0010,
+including the minimum identity, portfolio, orchestration, execution, event,
+idempotency, and outbox records needed by M1. No public product endpoint, live
+Codex command, provider account, deployment, or production data is included.
+
+**Acceptance:** A disposable real-PostgreSQL check proves atomic aggregate/event/
+outbox writes, cross-account negative reads and mutations, matching and
+conflicting idempotent retries, exactly one optimistic-version winner, rollback
+without fragments, and restart recovery through a fresh database connection.
+
+### F03 CI and local supervision boundary
+
+**Depends on:** F02
+
+**Status:** Unblocked; not started
+
+**Outcome:** Run the Mac, Core, database migrations, and local Gateway boundary
+through reproducible development supervision and CI without adding production
+credentials or a public service binding.
 
 ## How to use this backlog
 

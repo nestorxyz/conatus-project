@@ -16,7 +16,7 @@ services:
       timeout: 3s
       retries: 20
     volumes:
-      - conatus-postgres:/var/lib/postgresql/data
+      - conatus-postgres:/var/lib/postgresql
 
 volumes:
   conatus-postgres:

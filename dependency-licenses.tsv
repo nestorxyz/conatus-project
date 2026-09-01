@@ -24,6 +24,8 @@ snow	0.10.0	MIT OR Apache-2.0	C-007-R6 Noise feasibility prototype	https://crate
 tempfile	3.27.0	MIT OR Apache-2.0	C-007-R6 storage fault tests	https://crates.io/crates/tempfile	2026-08-13
 zeroize	1.9.0	MIT OR Apache-2.0	C-007-R6 secret buffer clearing	https://crates.io/crates/zeroize	2026-08-13
 @types/node	24.3.0	MIT	F01 TypeScript Node declarations	https://www.npmjs.com/package/@types/node	2026-09-01
+@types/pg	8.23.1	MIT	F02 PostgreSQL TypeScript declarations	https://www.npmjs.com/package/@types/pg	2026-09-01
 fastify	5.8.5	MIT	F01 Executive Core HTTP boundary	https://www.npmjs.com/package/fastify	2026-09-01
+pg	8.23.0	MIT	F02 PostgreSQL client	https://www.npmjs.com/package/pg	2026-09-01
 tsx	4.20.5	MIT	F01 TypeScript test runner	https://www.npmjs.com/package/tsx	2026-09-01
 typescript	5.9.2	Apache-2.0	F01 strict TypeScript compiler	https://www.npmjs.com/package/typescript	2026-09-01

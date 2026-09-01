@@ -7,14 +7,16 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch src/main.ts",
     "start": "node dist/main.js",
-    "test": "tsx --test src/*.test.ts"
+    "test": "tsx --test src/*.test.ts src/domain/*.test.ts src/persistence/*.test.ts"
   },
   "dependencies": {
     "@conatus/contracts": "workspace:*",
-    "fastify": "5.8.5"
+    "fastify": "5.8.5",
+    "pg": "8.23.0"
   },
   "devDependencies": {
     "@types/node": "24.3.0",
+    "@types/pg": "8.23.1",
     "tsx": "4.20.5",
     "typescript": "5.9.2"
   }

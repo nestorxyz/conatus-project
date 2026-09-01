@@ -11,9 +11,11 @@ are deferred; their existing research remains preserved as future evidence.
 ## Implementation status
 
 [ADR 0009](docs/decisions/0009-mac-v1-foundation.md) supersedes the earlier
-mobile/Linux launch direction. F01 now provides the Mac/Core/contracts
-foundation without live providers, accounts, deployment, or Codex execution.
-See the verified result and remaining toolchain limits in [RESULT.md](RESULT.md).
+mobile/Linux launch direction. F01 provides the Mac/Core/contracts foundation,
+and F02 adds the account-scoped durable PostgreSQL kernel specified by
+[ADR 0010](docs/decisions/0010-durable-domain-kernel.md). Neither ticket adds
+live providers, authentication, deployment, voice, or Codex execution. See the
+verified results and remaining toolchain limits in [RESULT.md](RESULT.md).
 
 ### Preserved pre-pivot evidence
 
@@ -63,7 +65,7 @@ host system. Component-specific build tools are introduced by later tickets.
 1. Read the documents above before changing files.
 2. Inspect Git status and preserve unrelated user work.
 3. Work on one backlog ticket at a time and honor its dependencies.
-4. Continue with F02 from the current sequence in
+4. Continue with F03 from the current sequence in
    [the implementation backlog](docs/implementation-backlog.md); do not resume a
    legacy mobile ticket merely because it was previously dependency-unblocked.
 5. Update or add an ADR before implementation diverges from an accepted decision.
