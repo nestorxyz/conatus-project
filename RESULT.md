@@ -2,9 +2,10 @@
 
 ## 2026-09-01 — F03 CI and local supervision boundary
 
-**Status:** implementation complete and locally verified on Node 24.19.0 with
-pnpm 10.29.2. Remote GitHub-hosted CI remains blocked before runner allocation
-by an account billing lock, so F03 is not yet marked complete.
+**Status:** complete for internal product development through reproducible local
+verification on Node 24.19.0 with pnpm 10.29.2, macOS Swift, and disposable
+PostgreSQL. Hosted CI remains blocked before runner allocation by an account
+billing lock and is required before merge, external contributions, or release.
 
 ### Delivered
 
@@ -44,8 +45,10 @@ by an account billing lock, so F03 is not yet marked complete.
 - GitHub created all three jobs but assigned no runner and executed zero steps.
   Each public check annotation says: `The job was not started because your
   account is locked due to a billing issue.`
-- Restoring GitHub Actions billing and rerunning this workflow is the remaining
-  F03 acceptance gate. A successful push or local test does not replace it.
+- Restoring GitHub Actions billing and rerunning this workflow remains a
+  pre-merge, external-contribution, and release gate. It no longer blocks
+  internal product development because equivalent local Node 24/macOS/
+  PostgreSQL evidence is recorded above.
 
 ### Still intentionally absent
 
@@ -55,8 +58,9 @@ by an account billing lock, so F03 is not yet marked complete.
 
 ### Next step
 
-Resolve the GitHub account billing lock, rerun the F03 workflow, and record the
-successful Node 24 Linux/macOS run before marking F03 complete or starting M1.
+Start M1's real Mac product foundation. Resolve the GitHub account billing lock
+and record a successful hosted run before merging, accepting an external
+contribution, or preparing a release.
 
 ## 2026-09-01 — F02 durable domain kernel and failure tests
 

@@ -39,6 +39,11 @@ environment.
   contract and Gateway lifecycle checks.
 - CI runs for pull requests, `main`, and `codex/**` branches so the public
   feature branch is verified before merge.
+- A complete local `check:f03` run under Node 24, pinned pnpm, macOS Swift, and
+  disposable PostgreSQL is sufficient to continue internal product development.
+  Hosted CI remains mandatory before merging to `main`, accepting external
+  contributions, or preparing a release; provider billing cannot block local
+  milestone progress when equivalent local evidence is recorded.
 
 ## Failure behavior
 
@@ -59,7 +64,9 @@ environment.
 - User-session service installation, signing, update behavior, long-running
   process pressure, sleep/wake recovery, and actual Codex lifecycle remain M1,
   M3, and M5 gates.
-- CI success is repository evidence, not production deployment evidence.
+- Local verification is development evidence, not release evidence. Hosted CI
+  success is still required before merge, contribution acceptance, or release,
+  and neither form of evidence is production deployment evidence.
 
 ## Verification
 

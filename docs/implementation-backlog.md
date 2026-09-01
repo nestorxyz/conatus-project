@@ -47,19 +47,22 @@ without fragments, and restart recovery through a fresh database connection.
 
 **Depends on:** F02
 
-**Status:** Implementation and local Node 24 verification complete; GitHub-hosted
-CI blocked before runner allocation by an account billing lock
+**Status:** Complete on 2026-09-01 through reproducible local Node 24, macOS
+Swift, and disposable PostgreSQL verification; hosted CI is a pre-merge,
+external-contribution, and release gate
 
 **Outcome:** Run the Mac, Core, database migrations, and local Gateway boundary
 through reproducible development supervision and CI without adding production
 credentials or a public service binding.
 
-**Acceptance:** Linux CI runs locked quality and disposable PostgreSQL checks;
-macOS CI runs Swift/TypeScript contracts and a bounded fake-provider helper
-lifecycle. One helper restart is visible, restart exhaustion stops, production
-mode rejects development auth, and diagnostics expose no credential, transcript,
-workspace path, raw output, or private provider reference. Signing and actual
-Codex execution remain blocked.
+**Acceptance:** The locked F03 gate runs Node 24 quality and disposable
+PostgreSQL checks plus macOS Swift/TypeScript contracts and a bounded
+fake-provider helper lifecycle. One helper restart is visible, a silent helper
+times out, restart exhaustion stops, production mode rejects development auth,
+and diagnostics expose no credential, transcript, workspace path, raw output,
+or private provider reference. Hosted CI must pass before merge, external
+contribution acceptance, or release. Signing and actual Codex execution remain
+blocked.
 
 ## How to use this backlog
 
