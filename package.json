@@ -10,6 +10,8 @@
     "check:f02": "node scripts/check-f02.mjs",
     "check:f03": "node scripts/check-f03.mjs",
     "check:gateway": "node scripts/check-gateway.mjs",
+    "check:m1-01": "pnpm check:codex-compatibility && pnpm check:gateway",
+    "check:codex-compatibility": "node scripts/check-codex-compatibility.mjs",
     "mac:app": "node scripts/build-mac-app.mjs"
   }
 }
