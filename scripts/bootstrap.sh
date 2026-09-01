@@ -7,7 +7,7 @@ set -eu
 repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo_root"
 
-components='apps/mobile agents/machine services/control-plane packages/protocol packages/test-vectors'
+components='apps/mobile apps/macos agents/machine services/control-plane services/core packages/protocol packages/test-vectors packages/contracts packages/mac-runtime'
 
 fail() {
   printf 'bootstrap: %s\n' "$1" >&2
@@ -25,4 +25,4 @@ for component in $components; do
 done
 
 ./scripts/check-licensing.sh
-printf 'bootstrap: verified %s components\n' 5
+printf 'bootstrap: verified %s components\n' 9

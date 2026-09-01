@@ -1,0 +1,12 @@
+{
+  "name": "conatus",
+  "private": true,
+  "packageManager": "pnpm@10.29.2",
+  "engines": { "node": ">=24 <25" },
+  "scripts": {
+    "build": "pnpm -r --if-present build",
+    "test": "pnpm -r --if-present test",
+    "check:f01": "node scripts/check-f01.mjs",
+    "mac:app": "node scripts/build-mac-app.mjs"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.conatus.local/health/v1",
+  "title": "ComponentHealth",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "component", "state", "version"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "component": { "enum": ["core", "mac"] },
+    "state": { "enum": ["ready", "degraded"] },
+    "version": { "type": "string", "minLength": 1 }
+  }
+}

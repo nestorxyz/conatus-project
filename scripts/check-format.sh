@@ -16,6 +16,10 @@ else
     -path './.git' -prune -o \
     -path './.cache' -prune -o \
     -path './artifacts' -prune -o \
+    -path './node_modules' -prune -o \
+    -path './build' -prune -o \
+    -path './dist' -prune -o \
+    -path '*/.build' -prune -o \
     -path './tests/fixtures' -prune -o \
     -type f \( -name '*.md' -o -name '*.sh' -o -name '*.yml' -o -name '*.yaml' -o -name '*.tsv' -o -name 'Makefile' \) -print)
 fi

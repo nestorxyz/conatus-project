@@ -10,6 +10,8 @@ fail() {
 }
 
 find . -path './.git' -prune -o -path './.cache' -prune -o \
+  -path './node_modules' -prune -o -path '*/.build' -prune -o \
+  -path './build' -prune -o -path './dist' -prune -o \
   -path './tests/fixtures' -prune -o \
   -name Cargo.toml -print | while IFS= read -r manifest; do
   directory=${manifest%/*}
@@ -17,9 +19,18 @@ find . -path './.git' -prune -o -path './.cache' -prune -o \
 done
 
 find . -path './.git' -prune -o -path './.cache' -prune -o \
+  -path './node_modules' -prune -o -path '*/.build' -prune -o \
+  -path './build' -prune -o -path './dist' -prune -o \
   -path './tests/fixtures' -prune -o \
   -name package.json -print | while IFS= read -r manifest; do
   directory=${manifest%/*}
+  case "$manifest" in
+    ./package.json|./services/core/package.json|./packages/contracts/package.json)
+      test -f pnpm-workspace.yaml || fail 'pnpm workspace definition is missing'
+      test -f pnpm-lock.yaml || fail 'pnpm workspace has no lockfile'
+      continue
+      ;;
+  esac
   test -f "$directory/package-lock.json" || test -f "$directory/yarn.lock" ||
     test -f "$directory/pnpm-lock.yaml" || fail "$manifest has no supported lockfile"
 done

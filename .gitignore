@@ -15,6 +15,7 @@ build/
 node_modules/
 coverage/
 dist/
+.build/
 
 # Local bootstrap/tool caches
 .cache/
