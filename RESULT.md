@@ -1,5 +1,63 @@
 # Conatus Implementation Results
 
+## 2026-09-01 — F03 CI and local supervision boundary
+
+**Status:** implementation complete and locally verified on Node 24.19.0 with
+pnpm 10.29.2. Remote GitHub-hosted CI remains blocked before runner allocation
+by an account billing lock, so F03 is not yet marked complete.
+
+### Delivered
+
+- ADR 0011 fixes the shipped Mac Gateway/Machine Bridge direction in Swift;
+  Node is development orchestration only and is not part of the Mac bundle.
+- Swift Gateway helper supervision with a narrow readiness signal, bounded
+  readiness timeout, visible restart count, bounded restart exhaustion, and an
+  explicit live helper session lifecycle.
+- A fake provider that fails once, then remains alive after readiness while
+  emitting deliberately private-looking output that cannot cross the diagnostic
+  boundary.
+- Allowlisted Gateway health diagnostics with no credential, transcript,
+  workspace path, raw helper output, or private provider reference.
+- Core startup rejection of development-auth bypass in production mode and a
+  standalone PostgreSQL migration command.
+- `check:f03` orchestration across F01 contracts, F02 disposable PostgreSQL
+  invariants, and F03 Gateway lifecycle tests.
+- GitHub Actions jobs for locked Node 24 Linux domain checks and macOS Swift/TS
+  foundation checks, with read-only repository permissions and job timeouts.
+
+### Local verification
+
+- `pnpm check:f03` passed under Node 24.19.0 and pnpm 10.29.2.
+- F01 passed TypeScript builds/tests and two Swift contract vectors.
+- F02 passed ten tests against disposable PostgreSQL 18, then removed its test
+  container, network, and volume.
+- F03 passed four Swift lifecycle tests: release-auth rejection, fail-once
+  restart and redaction, silent-helper timeout, and bounded restart exhaustion.
+- Repository formatting, shell lint, negative quality fixtures, lockfile,
+  secret, AGPL, and dependency-license gates passed.
+- `pnpm audit --prod` reported no known vulnerabilities.
+
+### Remote verification blocker
+
+- Push commit `a3f2cbf35609e905d2ead082ece5e8f9d20e9250` triggered
+  [GitHub Actions run 33567797351](https://github.com/nestorxyz/conatus-project/actions/runs/33567797351).
+- GitHub created all three jobs but assigned no runner and executed zero steps.
+  Each public check annotation says: `The job was not started because your
+  account is locked due to a billing issue.`
+- Restoring GitHub Actions billing and rerunning this workflow is the remaining
+  F03 acceptance gate. A successful push or local test does not replace it.
+
+### Still intentionally absent
+
+- Live Codex/App Server execution, provider credentials, signing, installation,
+  login-item behavior, sleep/wake recovery, cloud deployment, and production
+  migrations remain later tickets.
+
+### Next step
+
+Resolve the GitHub account billing lock, rerun the F03 workflow, and record the
+successful Node 24 Linux/macOS run before marking F03 complete or starting M1.
+
 ## 2026-09-01 — F02 durable domain kernel and failure tests
 
 **Status:** implemented and verified against disposable PostgreSQL 18 on the

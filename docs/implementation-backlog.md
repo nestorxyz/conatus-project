@@ -47,7 +47,8 @@ without fragments, and restart recovery through a fresh database connection.
 
 **Depends on:** F02
 
-**Status:** In progress
+**Status:** Implementation and local Node 24 verification complete; GitHub-hosted
+CI blocked before runner allocation by an account billing lock
 
 **Outcome:** Run the Mac, Core, database migrations, and local Gateway boundary
 through reproducible development supervision and CI without adding production

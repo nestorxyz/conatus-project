@@ -13,9 +13,11 @@ are deferred; their existing research remains preserved as future evidence.
 [ADR 0009](docs/decisions/0009-mac-v1-foundation.md) supersedes the earlier
 mobile/Linux launch direction. F01 provides the Mac/Core/contracts foundation,
 and F02 adds the account-scoped durable PostgreSQL kernel specified by
-[ADR 0010](docs/decisions/0010-durable-domain-kernel.md). Neither ticket adds
-live providers, authentication, deployment, voice, or Codex execution. See the
-verified results and remaining toolchain limits in [RESULT.md](RESULT.md).
+[ADR 0010](docs/decisions/0010-durable-domain-kernel.md). F03's Swift Gateway
+supervision and Node 24 local checks pass, but its GitHub-hosted CI acceptance is
+blocked before runner allocation by an account billing lock. None of these
+tickets adds live providers, authentication, deployment, voice, or Codex
+execution. See the verified results and exact blocker in [RESULT.md](RESULT.md).
 
 ### Preserved pre-pivot evidence
 
