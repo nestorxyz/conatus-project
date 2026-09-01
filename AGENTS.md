@@ -12,12 +12,13 @@ Before making meaningful changes, read:
 2. `docs/README.md`
 3. `docs/decisions/0009-mac-v1-foundation.md`
 4. `docs/decisions/0010-durable-domain-kernel.md`
-5. `docs/product-spec.md`
-6. `docs/alpha-scope.md`
-7. `docs/decisions/0001-foundation.md`
-8. `docs/technical-spec.md`
-9. `docs/threat-model.md`
-10. `docs/implementation-backlog.md`
+5. `docs/decisions/0011-local-supervision-and-ci.md`
+6. `docs/product-spec.md`
+7. `docs/alpha-scope.md`
+8. `docs/decisions/0001-foundation.md`
+9. `docs/technical-spec.md`
+10. `docs/threat-model.md`
+11. `docs/implementation-backlog.md`
 
 Read any ticket-specific documents linked from the backlog before implementing
 that ticket.

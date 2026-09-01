@@ -5,7 +5,7 @@ Mac-first, voice-first, Codex-owned execution, TypeScript Core, and managed
 activated speech. Older mobile/Linux documents remain historical and future
 design evidence where ADR 0009 supersedes them.
 
-The latest implementation evidence is recorded in [F01 Result](../RESULT.md).
+The latest implementation evidence is recorded in [Implementation Results](../RESULT.md).
 
 Start here:
 
@@ -15,23 +15,24 @@ Start here:
 4. [Security threat model](threat-model.md)
 5. [Current Mac V1 foundation](decisions/0009-mac-v1-foundation.md)
 6. [Durable domain kernel](decisions/0010-durable-domain-kernel.md)
-7. [Execution and approval policy](approval-policy.md)
-8. [Protocol baseline](protocol/README.md)
-9. [CLI agent adapter evaluation](agent-adapter-evaluation.md)
-10. [Alpha UX flows](ux-flows.md)
-11. [Sequential implementation backlog](implementation-backlog.md)
-12. [Licensing and contribution policy](licensing-policy.md)
-12. [CI and supply-chain baseline](ci-supply-chain.md)
-13. [Identity-provider decision](decisions/0007-identity-provider.md)
-14. [Proposed cryptographic architecture](decisions/0008-cryptographic-architecture.md)
-15. [Cryptographic design-review packet](cryptographic-design-review.md)
-16. [AI-assisted cryptographic pre-review](cryptographic-design-pre-review.md)
-17. [C-007 cryptographic remediation plan](cryptographic-remediation-plan.md)
-18. [Pairing and recovery ceremonies](protocol/pairing-and-recovery.md)
-19. [Sender-authenticated content and PTY channels](protocol/sender-authenticated-content.md)
-20. [Nonce, crash, restore, and retry state](protocol/nonce-and-retry-state.md)
-21. [Cryptographic byte profile v1](protocol/cryptographic-byte-profile.md)
-22. [C-007-R6 platform-boundary prototype](../apps/mobile/spikes/cryptographic-boundaries/README.md)
+7. [Local supervision and CI](decisions/0011-local-supervision-and-ci.md)
+8. [Execution and approval policy](approval-policy.md)
+9. [Protocol baseline](protocol/README.md)
+10. [CLI agent adapter evaluation](agent-adapter-evaluation.md)
+11. [Alpha UX flows](ux-flows.md)
+12. [Sequential implementation backlog](implementation-backlog.md)
+13. [Licensing and contribution policy](licensing-policy.md)
+14. [CI and supply-chain baseline](ci-supply-chain.md)
+15. [Identity-provider decision](decisions/0007-identity-provider.md)
+16. [Proposed cryptographic architecture](decisions/0008-cryptographic-architecture.md)
+17. [Cryptographic design-review packet](cryptographic-design-review.md)
+18. [AI-assisted cryptographic pre-review](cryptographic-design-pre-review.md)
+19. [C-007 cryptographic remediation plan](cryptographic-remediation-plan.md)
+20. [Pairing and recovery ceremonies](protocol/pairing-and-recovery.md)
+21. [Sender-authenticated content and PTY channels](protocol/sender-authenticated-content.md)
+22. [Nonce, crash, restore, and retry state](protocol/nonce-and-retry-state.md)
+23. [Cryptographic byte profile v1](protocol/cryptographic-byte-profile.md)
+24. [C-007-R6 platform-boundary prototype](../apps/mobile/spikes/cryptographic-boundaries/README.md)
 
 The product, technical, and security specifications define invariants. ADRs explain durable choices. The alpha scope defines the first release boundary. The backlog orders implementation but does not override an invariant or ADR.
 

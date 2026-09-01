@@ -47,11 +47,18 @@ without fragments, and restart recovery through a fresh database connection.
 
 **Depends on:** F02
 
-**Status:** Unblocked; not started
+**Status:** In progress
 
 **Outcome:** Run the Mac, Core, database migrations, and local Gateway boundary
 through reproducible development supervision and CI without adding production
 credentials or a public service binding.
+
+**Acceptance:** Linux CI runs locked quality and disposable PostgreSQL checks;
+macOS CI runs Swift/TypeScript contracts and a bounded fake-provider helper
+lifecycle. One helper restart is visible, restart exhaustion stops, production
+mode rejects development auth, and diagnostics expose no credential, transcript,
+workspace path, raw output, or private provider reference. Signing and actual
+Codex execution remain blocked.
 
 ## How to use this backlog
 
