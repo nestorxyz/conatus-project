@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Conatus contributors
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-.PHONY: bootstrap verify format lint test lock-check secret-scan license-scan sbom f01 ci
+.PHONY: bootstrap verify format lint test lock-check secret-scan license-scan sbom f01 f03 ci
 
 bootstrap verify:
 	@./scripts/bootstrap.sh
@@ -30,5 +30,8 @@ sbom:
 
 f01:
 	@pnpm check:f01
+
+f03:
+	@pnpm check:f03
 
 ci: bootstrap format lint test lock-check secret-scan license-scan

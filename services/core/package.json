@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch src/main.ts",
+    "migrate": "tsx src/migrate.ts",
     "start": "node dist/main.js",
     "test": "tsx --test src/*.test.ts src/domain/*.test.ts src/persistence/*.test.ts"
   },

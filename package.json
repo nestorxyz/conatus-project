@@ -8,6 +8,8 @@
     "test": "pnpm -r --if-present test",
     "check:f01": "node scripts/check-f01.mjs",
     "check:f02": "node scripts/check-f02.mjs",
+    "check:f03": "node scripts/check-f03.mjs",
+    "check:gateway": "node scripts/check-gateway.mjs",
     "mac:app": "node scripts/build-mac-app.mjs"
   }
 }

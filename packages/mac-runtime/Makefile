@@ -5,3 +5,4 @@
 verify:
 	@test -f README.md
 	@test -f OWNERS
+	@test -f Package.swift
