@@ -1,5 +1,10 @@
 # Conatus Mobile Product Specification
 
+> **Current launch amendment:** ADR 0009 replaces the mobile terminal product as
+> the first release with a complete Mac-only, voice-first executive interface
+> for a named development portfolio and Codex-owned tasks. Mobile/Linux/PTY
+> sections below remain historical or future design evidence.
+
 **Status:** Approved direction; alpha details in [Alpha scope](alpha-scope.md)  
 **Audience:** Product, design, mobile, platform, security, and quality engineering  
 **Product category:** Mobile control surface for developer machines and coding agents

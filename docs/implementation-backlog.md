@@ -1,5 +1,24 @@
 # Sequential Implementation Backlog
 
+## Current Mac V1 sequence
+
+ADR 0009 supersedes the mobile/Linux execution order below while preserving its
+completed evidence. Work one ticket at a time:
+
+```text
+F01 Mac/Core/contracts foundation
+  -> F02 durable domain kernel and failure tests
+  -> F03 CI and local supervision boundary
+  -> M1 named portfolio and Conatus-owned Codex tasks
+  -> M2 account-managed natural voice on Mac
+  -> M3 trusted Mac approvals and recovery
+  -> M4 executive delegation and verified outcomes
+  -> M5 signed launch-ready Mac V1
+```
+
+F01 must contain no live provider command, account creation, deployment, or
+production credential. Android-specific tickets below are deferred, not passed.
+
 **Status:** Initial execution plan  
 **Rule:** A ticket starts only when its dependencies and acceptance evidence are complete
 

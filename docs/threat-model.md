@@ -1,5 +1,11 @@
 # Conatus Mobile Security Threat Model
 
+> **Current launch amendment:** ADR 0009 defers Android/Linux-specific release
+> gates but retains account isolation, local IPC, approval, replay, workspace,
+> recovery, supply-chain, voice-injection, credential, and cloud threats for Mac
+> V1. Managed voice also requires cross-account grant, abandoned-session, quota,
+> and provider-credential abuse tests before shipping.
+
 **Status:** Initial design threat model  
 **Method:** STRIDE-informed, asset- and abuse-case-driven  
 **Related documents:** [Product specification](product-spec.md), [Technical specification](technical-spec.md)

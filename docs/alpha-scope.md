@@ -1,5 +1,9 @@
 # Alpha Scope and Acceptance
 
+> **Current launch amendment:** ADR 0009 defers this Android/Linux alpha. Its
+> acceptance cases remain preserved evidence, not Mac V1 launch requirements or
+> passed tests. The active sequence begins with F01 in the implementation backlog.
+
 **Status:** Approved implementation target  
 **Platforms:** Android internal build, Linux machine agent with an ext4 durable-security-state directory, Railway control plane
 

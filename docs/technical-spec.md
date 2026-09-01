@@ -1,5 +1,10 @@
 # Conatus Mobile Technical Specification
 
+> **Current architecture amendment:** ADR 0009 selects a native Swift Mac app,
+> TypeScript Core, local Swift runtime/Gateway, PostgreSQL/SQLite persistence,
+> and shared Swift/TypeScript contracts. Older Android/Rust/Linux sections remain
+> historical or future evidence where the ADR supersedes them.
+
 **Status:** Approved direction with recorded follow-up decisions  
 **Depends on:** [Product specification](product-spec.md), [Threat model](threat-model.md), [Foundation ADR](decisions/0001-foundation.md)
 

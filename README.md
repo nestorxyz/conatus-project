@@ -1,12 +1,25 @@
 # Conatus
 
-Conatus is an open-source, mobile-first control surface for developers to operate Linux machines and terminal-based coding agents securely from a phone. It combines a structured, resumable block timeline with a full interactive terminal.
+Conatus is an open-source, voice-first executive interface for development. It
+understands a named project portfolio, routes work to the correct Codex-owned
+task, delegates bounded agents, requests approval, and reports verified results.
 
-The alpha target is an Android internal build, a Rust Linux machine agent, and a Rust control plane hosted on Railway. Codex is the first structured agent adapter; Codex, Claude Code, Gemini CLI, and other terminal applications remain usable through the essential PTY mode. iOS is deferred until physical-device validation is available.
+The first launch is a complete native Mac product with a TypeScript Core and
+Codex as the execution harness. Android, iOS, Linux execution, and full PTY work
+are deferred; their existing research remains preserved as future evidence.
 
 ## Implementation status
 
-The product and architecture are specified, but application code has not started. Implementation is intentionally divided into dependency-ordered tickets rather than a one-shot build.
+[ADR 0009](docs/decisions/0009-mac-v1-foundation.md) supersedes the earlier
+mobile/Linux launch direction. F01 now provides the Mac/Core/contracts
+foundation without live providers, accounts, deployment, or Codex execution.
+See the verified result and remaining toolchain limits in [RESULT.md](RESULT.md).
+
+### Preserved pre-pivot evidence
+
+The following completed tickets and decisions belong to the earlier
+mobile/Linux direction. They remain useful evidence but do not define the active
+implementation order.
 
 Tickets `C-001` through `C-004` and C-006 are complete. On 2026-08-09, the founder adopted the licensing and
 contribution package and explicitly accepted the risk of proceeding without
@@ -28,7 +41,7 @@ Start with:
 1. [Documentation index](docs/README.md)
 2. [Product specification](docs/product-spec.md)
 3. [Alpha scope and acceptance](docs/alpha-scope.md)
-4. [Foundation decisions](docs/decisions/0001-foundation.md)
+4. [Current Mac V1 foundation](docs/decisions/0009-mac-v1-foundation.md)
 5. [Technical specification](docs/technical-spec.md)
 6. [Security threat model](docs/threat-model.md)
 7. [Sequential implementation backlog](docs/implementation-backlog.md)
@@ -50,7 +63,9 @@ host system. Component-specific build tools are introduced by later tickets.
 1. Read the documents above before changing files.
 2. Inspect Git status and preserve unrelated user work.
 3. Work on one backlog ticket at a time and honor its dependencies.
-4. Begin with `C-001 Confirm licensing and contribution model`; do not scaffold the product before resolving that gate.
+4. Continue with F02 from the current sequence in
+   [the implementation backlog](docs/implementation-backlog.md); do not resume a
+   legacy mobile ticket merely because it was previously dependency-unblocked.
 5. Update or add an ADR before implementation diverges from an accepted decision.
 6. Add the tests and acceptance evidence required by each ticket.
 7. Do not copy AGPL-covered Warp application code. Warp is architectural prior art only.
@@ -58,7 +73,7 @@ host system. Component-specific build tools are introduced by later tickets.
 9. Keep secrets outside Git and never expose provider authentication files or tokens.
 10. Stop after the selected ticket is verified and report the next unblocked tickets.
 
-## Confirmed alpha direction
+## Preserved legacy direction
 
 - Product name: Conatus
 - Positioning: independent developer product
@@ -75,7 +90,7 @@ host system. Component-specific build tools are introduced by later tickets.
 - Repository: one monorepo with extractable deployables
 - License: AGPL-3.0-or-later
 
-## First implementation sequence
+## Legacy implementation sequence
 
 ```text
 C-001 License and contribution model

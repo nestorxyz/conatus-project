@@ -10,12 +10,13 @@ Before making meaningful changes, read:
 
 1. `README.md`
 2. `docs/README.md`
-3. `docs/product-spec.md`
-4. `docs/alpha-scope.md`
-5. `docs/decisions/0001-foundation.md`
-6. `docs/technical-spec.md`
-7. `docs/threat-model.md`
-8. `docs/implementation-backlog.md`
+3. `docs/decisions/0009-mac-v1-foundation.md`
+4. `docs/product-spec.md`
+5. `docs/alpha-scope.md`
+6. `docs/decisions/0001-foundation.md`
+7. `docs/technical-spec.md`
+8. `docs/threat-model.md`
+9. `docs/implementation-backlog.md`
 
 Read any ticket-specific documents linked from the backlog before implementing
 that ticket.
@@ -46,6 +47,14 @@ that ticket.
 - Do not copy AGPL-covered Warp application code. Warp is prior art only.
 
 ## Repository boundaries
+
+- `apps/macos`: native Swift Mac application; owns presentation and local
+  interaction state, not executive policy or Codex execution.
+- `services/core`: TypeScript Executive Core and Relay; never trusts client
+  account identifiers as authorization context.
+- `packages/contracts`: versioned language-neutral schemas and golden vectors.
+- `packages/mac-runtime`: local Bridge/Gateway boundary; never exposes raw
+  shell, filesystem, MCP, App Server, or credentials remotely.
 
 - `apps/mobile`: native Kotlin/Jetpack Compose Android client; may consume
   generated Kotlin protocol artifacts and narrowly scoped Rust native cores.

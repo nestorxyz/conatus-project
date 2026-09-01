@@ -1,12 +1,19 @@
 # Conatus Documentation
 
+The current launch direction is [ADR 0009](decisions/0009-mac-v1-foundation.md):
+Mac-first, voice-first, Codex-owned execution, TypeScript Core, and managed
+activated speech. Older mobile/Linux documents remain historical and future
+design evidence where ADR 0009 supersedes them.
+
+The latest implementation evidence is recorded in [F01 Result](../RESULT.md).
+
 Start here:
 
 1. [Product specification](product-spec.md)
 2. [Alpha scope and acceptance](alpha-scope.md)
 3. [Technical specification](technical-spec.md)
 4. [Security threat model](threat-model.md)
-5. [Foundation decisions](decisions/0001-foundation.md)
+5. [Current Mac V1 foundation](decisions/0009-mac-v1-foundation.md)
 6. [Execution and approval policy](approval-policy.md)
 7. [Protocol baseline](protocol/README.md)
 8. [CLI agent adapter evaluation](agent-adapter-evaluation.md)
