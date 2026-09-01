@@ -68,7 +68,7 @@ blocked.
 
 **Depends on:** F03
 
-**Status:** In progress; M1-01 selected
+**Status:** In progress; M1-01 complete and M1-02 next
 
 **User-visible outcome:** The Mac command center shows named projects, tasks,
 blockers, and results. A user can create or resume a Conatus-owned Codex task
@@ -103,7 +103,7 @@ approvals exist.
 
 **Depends on:** F03
 
-**Status:** In progress
+**Status:** Complete on 2026-09-01. See `RESULT.md` and ADR 0012.
 
 **Acceptance:** The exact Codex CLI version and generated non-experimental
 schema digest are checked reproducibly; every allowlisted request/notification

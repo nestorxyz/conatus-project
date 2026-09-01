@@ -1,5 +1,50 @@
 # Conatus Implementation Results
 
+## 2026-09-01 — M1-01 Codex App Server compatibility pin
+
+**Status:** complete through local contract generation and request-vector
+verification. No Codex provider process was started, no account-backed request
+was made, and no persistent Codex task was created.
+
+### Delivered
+
+- ADR 0012 fixes the first M1 provider boundary to local stdio JSONL and a
+  narrow, non-experimental App Server surface.
+- Exact development candidate pin for `codex-cli 0.150.1` and SHA-256 digest
+  `8cdccfc35582696d7141e7f916e0d5a664ab5b5e90b732f104284d2507f369f8`
+  of its generated non-experimental v2 schema bundle.
+- Reproducible compatibility check that generates schema into a temporary
+  directory and rejects version, digest, or allowlisted-method drift.
+- Swift request types for stable initialization, thread start/read/resume, and
+  turn start. Creation and turns can express only approval policy `never` and a
+  read-only sandbox with network access disabled.
+- Input rejection for relative or non-normalized workspace paths, empty
+  provider identifiers, and empty command text.
+
+### Verification
+
+- `pnpm check:m1-01` passed under Node 24.19.0 and pnpm 10.29.2.
+- Five new Codex contract tests and the four existing Gateway lifecycle tests
+  passed with zero failures.
+- `pnpm check:f03` passed the complete prior foundation regression, including
+  ten disposable PostgreSQL tests and all Swift/TypeScript contracts.
+- Repository formatting, shell lint, negative quality fixtures, lockfile,
+  secret, AGPL, and dependency-license gates passed.
+- `pnpm audit --prod` reported no known vulnerabilities.
+
+### Limitations and next step
+
+- The pin proves compatibility with one locally installed development
+  candidate; it is not a signed distribution dependency or evidence of
+  commercial entitlement.
+- Hosted GitHub CI remains blocked by the previously recorded account billing
+  lock and is still required before merge, external contribution acceptance,
+  or release.
+- M1-02 is next: registered account-scoped workspace handles and the persistent
+  Products, Projects, Tasks, blockers, and results projection. The first real
+  account-backed read-only Codex lifecycle remains M1-04 and requires explicit
+  approval at that stage.
+
 ## 2026-09-01 — F03 CI and local supervision boundary
 
 **Status:** complete for internal product development through reproducible local

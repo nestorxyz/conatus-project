@@ -17,9 +17,11 @@ and F02 adds the account-scoped durable PostgreSQL kernel specified by
 supervision and reproducible Node 24/macOS/PostgreSQL checks pass, completing the
 internal-development foundation. GitHub-hosted CI remains a pre-merge,
 external-contribution, and release gate and is currently blocked before runner
-allocation by an account billing lock. None of these tickets adds live
-providers, authentication, deployment, voice, or Codex execution. See the
-verified results and exact limitation in [RESULT.md](RESULT.md).
+allocation by an account billing lock. M1-01 now pins the exact stable Codex App
+Server development contract and adds read-only Swift request vectors without
+starting a provider process or creating a Codex task. Authentication,
+deployment, voice, and live Codex execution remain absent. See the verified
+results and exact limitations in [RESULT.md](RESULT.md).
 
 ### Preserved pre-pivot evidence
 
@@ -69,7 +71,7 @@ host system. Component-specific build tools are introduced by later tickets.
 1. Read the documents above before changing files.
 2. Inspect Git status and preserve unrelated user work.
 3. Work on one backlog ticket at a time and honor its dependencies.
-4. Continue with F03 from the current sequence in
+4. Continue with M1-02 from the current sequence in
    [the implementation backlog](docs/implementation-backlog.md); do not resume a
    legacy mobile ticket merely because it was previously dependency-unblocked.
 5. Update or add an ADR before implementation diverges from an accepted decision.
