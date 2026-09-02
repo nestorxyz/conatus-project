@@ -3,6 +3,7 @@
 
 import { buildApp, LocalBearerIdentityResolver, type AppOptions } from "./app.js";
 import { DomainStore } from "./persistence/domain-store.js";
+import { VoiceGrantStore } from "./persistence/voice-grant-store.js";
 import { assertSafeRuntimeConfiguration, RuntimeConfigurationError } from "./runtime-config.js";
 
 const host = process.env.CONATUS_HOST ?? "127.0.0.1";
@@ -20,17 +21,29 @@ if (configuredCount !== 0 && configuredCount !== commandCenterValues.length) {
 const store = configuredCount === commandCenterValues.length
   ? new DomainStore(process.env.CONATUS_DATABASE_URL!)
   : undefined;
-const options: AppOptions = store ? {
-  commandCenter: {
-    identityResolver: new LocalBearerIdentityResolver(process.env.CONATUS_DEV_LOCAL_TOKEN!, {
+const voiceGrantStore = store ? new VoiceGrantStore(process.env.CONATUS_DATABASE_URL!) : undefined;
+const identityResolver = store
+  ? new LocalBearerIdentityResolver(process.env.CONATUS_DEV_LOCAL_TOKEN!, {
       accountId: process.env.CONATUS_DEV_ACCOUNT_ID!,
       principalId: process.env.CONATUS_DEV_PRINCIPAL_ID!,
-    }),
+    })
+  : undefined;
+const options: AppOptions = store ? {
+  commandCenter: {
+    identityResolver: identityResolver!,
     portfolioReader: store,
+  },
+  voiceGrants: {
+    identityResolver: identityResolver!,
+    authority: voiceGrantStore!,
   },
 } : {};
 const app = buildApp(options);
-if (store) app.addHook("onClose", async () => store.close());
+if (store && voiceGrantStore) {
+  app.addHook("onClose", async () => {
+    await Promise.all([store.close(), voiceGrantStore.close()]);
+  });
+}
 
 try {
   assertSafeRuntimeConfiguration();

@@ -34,21 +34,10 @@ import {
   requireSummary,
   type ReferenceRow,
 } from "./portfolio-projection.js";
+import { appendDomainEvent } from "./domain-events.js";
 
 interface StoreOptions {
   afterAggregateWrite?: (aggregateType: string) => void;
-}
-
-interface EventInput {
-  accountId: string;
-  aggregateType: string;
-  aggregateId: string;
-  aggregateVersion: number;
-  eventType: string;
-  actorRef: string;
-  correlationId: string;
-  causationId?: string;
-  payload: Record<string, unknown>;
 }
 
 type Queryable = Pick<PoolClient, "query">;
@@ -118,8 +107,13 @@ export class DomainStore {
         [accountId, principalId, ownerDisplayName, now, actorRef],
       );
       await client.query("INSERT INTO account_sequences (account_id) VALUES ($1)", [accountId]);
+      await client.query(
+        `INSERT INTO voice_account_quotas (account_id, updated_at, updated_by)
+         VALUES ($1, $2, $3)`,
+        [accountId, now, actorRef],
+      );
       this.options.afterAggregateWrite?.("Account");
-      await this.appendEvent(client, {
+      await appendDomainEvent(client, {
         accountId,
         aggregateType: "Account",
         aggregateId: accountId,
@@ -188,7 +182,7 @@ export class DomainStore {
         ["Project", projectId, "ProjectCreated"],
         ["Task", taskId, "TaskCreated"],
       ] as const) {
-        await this.appendEvent(client, {
+        await appendDomainEvent(client, {
           accountId: input.accountId,
           aggregateType: event[0],
           aggregateId: event[1],
@@ -232,7 +226,7 @@ export class DomainStore {
       }
       const row = updated.rows[0]!;
       this.options.afterAggregateWrite?.("Task");
-      await this.appendEvent(client, {
+      await appendDomainEvent(client, {
         accountId: input.accountId,
         aggregateType: "Task",
         aggregateId: input.taskId,
@@ -284,7 +278,7 @@ export class DomainStore {
         [input.accountId, input.entityId, input.alias.trim(), normalizedAlias, now, input.actorRef],
       );
       this.options.afterAggregateWrite?.(config.aggregateType);
-      await this.appendEvent(client, {
+      await appendDomainEvent(client, {
         accountId: input.accountId,
         aggregateType: config.aggregateType,
         aggregateId: input.entityId,
@@ -320,7 +314,7 @@ export class DomainStore {
         [input.accountId, blockerId, input.taskId, summary, now, input.actorRef],
       );
       this.options.afterAggregateWrite?.("Task");
-      await this.appendEvent(client, {
+      await appendDomainEvent(client, {
         accountId: input.accountId,
         aggregateType: "Task",
         aggregateId: input.taskId,
@@ -358,7 +352,7 @@ export class DomainStore {
         [input.accountId, resultId, input.taskId, summary, input.verificationState, now, input.actorRef],
       );
       this.options.afterAggregateWrite?.("Task");
-      await this.appendEvent(client, {
+      await appendDomainEvent(client, {
         accountId: input.accountId,
         aggregateType: "Task",
         aggregateId: input.taskId,
@@ -517,7 +511,7 @@ export class DomainStore {
         [input.accountId, commandId, input.taskId, input.actorRef, operationScope, input.idempotencyKey, fingerprint, input.commandType, input.payload, correlationId, now],
       );
       this.options.afterAggregateWrite?.("Command");
-      await this.appendEvent(client, {
+      await appendDomainEvent(client, {
         accountId: input.accountId,
         aggregateType: "Command",
         aggregateId: commandId,
@@ -556,7 +550,7 @@ export class DomainStore {
           [accountId, executionAttemptId, commandId, deliveryId, actorRef, command.correlationId, now],
         );
         this.options.afterAggregateWrite?.("ExecutionAttempt");
-        await this.appendEvent(client, {
+        await appendDomainEvent(client, {
           accountId,
           aggregateType: "Delivery",
           aggregateId: deliveryId,
@@ -567,7 +561,7 @@ export class DomainStore {
           causationId: commandId,
           payload: { commandId },
         });
-        await this.appendEvent(client, {
+        await appendDomainEvent(client, {
           accountId,
           aggregateType: "ExecutionAttempt",
           aggregateId: executionAttemptId,
@@ -613,31 +607,6 @@ export class DomainStore {
     } finally {
       client.release();
     }
-  }
-
-  private async appendEvent(client: PoolClient, input: EventInput): Promise<void> {
-    const position = await client.query<{ next_position: string }>(
-      "UPDATE account_sequences SET next_position = next_position + 1 WHERE account_id = $1 RETURNING next_position",
-      [input.accountId],
-    );
-    if (!position.rowCount) throw new DomainNotFoundError("Account sequence");
-    const eventId = uuidV7();
-    const recordedAt = new Date();
-    await client.query(
-      `INSERT INTO domain_events
-        (account_id, event_id, account_position, aggregate_type, aggregate_id, aggregate_version, event_type,
-         schema_version, actor_ref, correlation_id, causation_id, recorded_at, payload)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 1, $8, $9, $10, $11, $12)`,
-      [input.accountId, eventId, position.rows[0]!.next_position, input.aggregateType, input.aggregateId,
-        input.aggregateVersion, input.eventType, input.actorRef, input.correlationId, input.causationId ?? null,
-        recordedAt, input.payload],
-    );
-    await client.query(
-      `INSERT INTO outbox_records
-        (account_id, outbox_record_id, event_id, topic, payload, state, created_at)
-       VALUES ($1, $2, $3, $4, $5, 'pending', $6)`,
-      [input.accountId, uuidV7(), eventId, `domain.${input.eventType}`, input.payload, recordedAt],
-    );
   }
 
   private async reserveIdempotency(

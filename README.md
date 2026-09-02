@@ -48,6 +48,13 @@ consent-gated take workflow without a recorder or personal audio. The next gate
 requires privacy review and explicit approval before collecting an external
 consented corpus and producing the first honest candidate model.
 
+M2-03 now provides the account-managed voice authority behind that future
+audio path: authenticated loopback issue/revoke routes, opaque five-minute
+relay tokens stored only as SHA-256 digests, durable daily audio/turn
+reservation, atomic consumption, cross-account/principal denial, revocation,
+exhaustion, and abandoned-grant cleanup. It performs no provider call and does
+not expose a provider credential. M2-04 is the next implementation ticket.
+
 ### Preserved pre-pivot evidence
 
 The following completed tickets and decisions belong to the earlier

@@ -193,6 +193,10 @@ machine-granted pairwise channel.
 or supported clone boundary cannot cause new plaintext to be encrypted under a
 previously used AEAD key/nonce pair. Uncertain or unsupported state fails
 closed; an immutable ciphertext may only be retransmitted byte-for-byte.
+**P-061.** A Mac can obtain only a short-lived, account-scoped Conatus voice
+grant with bounded turns and audio duration. The Mac never receives a
+transcription-provider credential; expiry, revocation, exhaustion, or quota
+denial fails before additional provider usage is admitted.
 
 ## 8. Non-functional requirements
 

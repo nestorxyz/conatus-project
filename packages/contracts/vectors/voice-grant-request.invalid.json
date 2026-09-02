@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "requestedAudioMilliseconds": 120000,
+  "requestedTurns": 4,
+  "accountId": "client-selected-account"
+}

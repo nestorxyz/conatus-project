@@ -55,6 +55,49 @@ export function isVoiceStatusSnapshot(value: unknown): value is VoiceStatusSnaps
   return value.recoverable === false;
 }
 
+export interface VoiceGrantRequest {
+  schemaVersion: 1;
+  requestedAudioMilliseconds: number;
+  requestedTurns: number;
+}
+
+export interface VoiceGrantResponse {
+  schemaVersion: 1;
+  voiceGrantId: string;
+  relayToken: string;
+  scope: "transcribe_post_wake_audio";
+  issuedAt: string;
+  expiresAt: string;
+  maxAudioMilliseconds: number;
+  maxTurns: number;
+}
+
+export function isVoiceGrantRequest(value: unknown): value is VoiceGrantRequest {
+  return isRecord(value)
+    && hasExactKeys(value, ["schemaVersion", "requestedAudioMilliseconds", "requestedTurns"])
+    && value.schemaVersion === 1
+    && isIntegerBetween(value.requestedAudioMilliseconds, 1_000, 300_000)
+    && isIntegerBetween(value.requestedTurns, 1, 10);
+}
+
+export function isVoiceGrantResponse(value: unknown): value is VoiceGrantResponse {
+  if (!isRecord(value)) return false;
+  return hasExactKeys(value, [
+    "schemaVersion", "voiceGrantId", "relayToken", "scope", "issuedAt", "expiresAt",
+    "maxAudioMilliseconds", "maxTurns",
+  ])
+    && value.schemaVersion === 1
+    && nonemptyString(value.voiceGrantId)
+    && typeof value.relayToken === "string"
+    && /^[A-Za-z0-9_-]{43}$/.test(value.relayToken)
+    && value.scope === "transcribe_post_wake_audio"
+    && isTimestamp(value.issuedAt)
+    && isTimestamp(value.expiresAt)
+    && Date.parse(value.expiresAt) > Date.parse(value.issuedAt)
+    && isIntegerBetween(value.maxAudioMilliseconds, 1_000, 300_000)
+    && isIntegerBetween(value.maxTurns, 1, 10);
+}
+
 export interface CommandCenterSnapshot {
   schemaVersion: 1;
   observedAt: string;
@@ -202,6 +245,14 @@ function isArrayOf<T>(value: unknown, guard: (entry: unknown) => entry is T): va
 
 function isVersion(value: unknown): value is number {
   return Number.isSafeInteger(value) && Number(value) > 0;
+}
+
+function isIntegerBetween(value: unknown, minimum: number, maximum: number): value is number {
+  return Number.isSafeInteger(value) && Number(value) >= minimum && Number(value) <= maximum;
+}
+
+function nonemptyString(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0;
 }
 
 function isTimestamp(value: unknown): value is string {

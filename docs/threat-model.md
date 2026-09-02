@@ -142,6 +142,12 @@ references and separately permits training, evaluation, and distribution of a
 derived model; it does not permit raw-audio publication. Rejected takes are
 deleted rather than retained, and public collection status exposes counts only.
 The consent-state library is not a recorder and cannot itself authorize collection.
+**S-024.** A voice grant is account- and principal-scoped, short-lived,
+single-purpose, turn-bounded, and audio-duration-bounded. Core stores only a
+cryptographic digest of its opaque relay token. Atomic durable reservation
+prevents concurrent grants from exceeding account limits; expiry and revocation
+release unused reservation exactly once. The token, its digest, provider
+identity, and provider credential never enter events, telemetry, or public status.
 
 ## 7. Threats and controls
 

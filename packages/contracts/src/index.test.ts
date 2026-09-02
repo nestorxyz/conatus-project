@@ -4,7 +4,13 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
-import { isCommandCenterSnapshot, isComponentHealth, isVoiceStatusSnapshot } from "./index.js";
+import {
+  isCommandCenterSnapshot,
+  isComponentHealth,
+  isVoiceGrantRequest,
+  isVoiceGrantResponse,
+  isVoiceStatusSnapshot,
+} from "./index.js";
 
 async function vector(name: string): Promise<unknown> {
   return JSON.parse(await readFile(new URL(`../vectors/${name}`, import.meta.url), "utf8"));
@@ -44,4 +50,14 @@ test("rejects unknown voice lifecycle state", async () => {
 
 test("rejects contradictory voice recovery status", async () => {
   assert.equal(isVoiceStatusSnapshot(await vector("voice-status.semantic.invalid.json")), false);
+});
+
+test("accepts strict bounded voice grant vectors", async () => {
+  assert.equal(isVoiceGrantRequest(await vector("voice-grant-request.valid.json")), true);
+  assert.equal(isVoiceGrantResponse(await vector("voice-grant-response.valid.json")), true);
+});
+
+test("rejects client scope, provider data, and unknown voice grant fields", async () => {
+  assert.equal(isVoiceGrantRequest(await vector("voice-grant-request.invalid.json")), false);
+  assert.equal(isVoiceGrantResponse(await vector("voice-grant-response.invalid.json")), false);
 });

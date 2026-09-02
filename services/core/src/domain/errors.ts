@@ -54,3 +54,24 @@ export class AmbiguousReferenceError extends Error {
     this.name = "AmbiguousReferenceError";
   }
 }
+
+export class VoiceQuotaExceededError extends Error {
+  constructor() {
+    super("Voice quota cannot admit the requested grant or usage");
+    this.name = "VoiceQuotaExceededError";
+  }
+}
+
+export class VoiceGrantLimitError extends Error {
+  constructor() {
+    super("The account already has the maximum active voice grants");
+    this.name = "VoiceGrantLimitError";
+  }
+}
+
+export class InvalidVoiceGrantError extends Error {
+  constructor() {
+    super("Voice grant is invalid, expired, revoked, exhausted, or outside the authorized scope");
+    this.name = "InvalidVoiceGrantError";
+  }
+}

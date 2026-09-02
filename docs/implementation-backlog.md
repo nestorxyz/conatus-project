@@ -181,7 +181,8 @@ state or another account-backed Codex task.
 
 **Depends on:** M1
 
-**Status:** In progress; M2-02b2b1 is complete and M2-02b2b2 is next
+**Status:** In progress; M2-03 is complete, M2-02b2b2 remains approval-blocked,
+and M2-04 is the next implementation ticket
 
 **User-visible outcome:** A user says `Hey Conatus` and continues the command in
 the same sentence. Conatus acknowledges immediately, transcribes post-wake audio
@@ -328,6 +329,24 @@ weights are used.
 **Acceptance:** The verified candidate is integrated behind `WakeDetector` and
 passes the complete M2-02b2 live hardware acceptance above. Microphone recording
 and bundling occur only with explicit approval and reviewed evidence.
+
+#### M2-03 Account voice grants and quota
+
+**Depends on:** M2-01 and F02
+
+**Status:** Complete on 2026-09-02. See `RESULT.md` and ADR 0019.
+
+**Acceptance:** An authenticated loopback Core route derives account/principal
+scope server-side and issues only an opaque five-minute Conatus relay token for
+`transcribe_post_wake_audio`. Durable PostgreSQL admission atomically enforces
+one active grant per account, 60 daily audio minutes, five minutes and ten turns
+per grant, SHA-256-only token storage, revocation, exhaustion, and idempotent
+abandoned-grant cleanup. Cross-account/principal use, concurrent over-issue,
+expired/revoked replay, malformed or client-scoped requests, and quota overrun
+fail closed. Responses, events, outbox, and ordinary evidence contain no
+provider credential/identifier, token digest, transcript, audio, path, or raw
+output. Tests use only a disposable database and fake relay consumption; no
+provider call or cost occurs.
 
 ## How to use this backlog
 

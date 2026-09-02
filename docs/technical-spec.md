@@ -76,6 +76,16 @@ requires ordered 16 kHz mono digest evidence, and exposes only state and counts.
 It contains no recorder backend; collection and training remain an explicitly
 approved later operation outside Git.
 
+Core's voice authority is a separate durable boundary. Authenticated server
+context supplies account and principal IDs. Issue atomically locks the account
+quota and UTC-day usage ledger, reclaims expired reservations, enforces one
+active grant, and reserves at most five minutes and ten turns. Core returns one
+opaque five-minute Conatus relay token and stores only its SHA-256 digest.
+Relay admission moves reserved audio to consumed audio while decrementing turns;
+revocation, expiry, and exhaustion release unused reservation. Durable events
+contain only grant IDs, state, timestamps, scope, and numeric usage. Provider
+credentials stay behind the future relay and are never returned by this contract.
+
 ## 2. System boundaries
 
 ```mermaid

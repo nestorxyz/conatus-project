@@ -1,5 +1,48 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M2-03 account voice grants and quota
+
+**Status:** complete through disposable PostgreSQL and fake-relay verification.
+No provider credential or call, microphone audio, transcript, production
+database, deployment, or paid usage was involved.
+
+### Delivered
+
+- ADR 0019 and governing product/security/technical requirements for a
+  five-minute, single-purpose, account/principal-scoped Conatus voice grant.
+- Strict request/response contracts that reject unknown fields and any
+  client-selected account scope or provider data.
+- Authenticated loopback Core issue/revoke routes deriving account and principal
+  from server identity and returning one opaque relay token exactly once.
+- Durable account quota, UTC-day usage, and grant tables with one active grant,
+  60 daily minutes, five minutes and ten turns per grant, SHA-256-only token
+  storage, and database-enforced zero remaining authority in terminal states.
+- Atomic issue, fake-relay consumption, exhaustion, revocation, and idempotent
+  abandoned-grant expiry cleanup. Shared domain-event/outbox writes retain only
+  safe IDs, state, timestamps, scope, and numeric usage.
+
+### Verification
+
+- `node scripts/check-m2-03.mjs` built contracts/Core and ran a disposable
+  PostgreSQL gate: 11 contract tests and 31 Core tests passed.
+- Tests prove concurrent issue and consume admit one winner, cross-account and
+  cross-principal tokens fail, restart recovery works from the token digest,
+  quota cannot overrun, revocation/expiry release reservation exactly once, and
+  grant events/outbox contain neither token form nor provider/transcript data.
+- The AI-code audit extracted the existing event/outbox writer for reuse,
+  zeroed all remaining authority in terminal states, and added database checks
+  plus concurrent replay evidence.
+
+### Limitations and next step
+
+- This is a local development identity and disposable-database boundary, not
+  production WorkOS authentication, billing, deployment, or provider relay.
+- M2-04 next owns the provider-neutral Realtime transcription adapter and fake
+  transport. Any live provider validation remains a separate explicit approval.
+- M2-02b2b2 remains blocked until privacy review and explicit recording/import approval.
+- The preserved broad bootstrap still reaches the legacy Android native-core
+  check and stops because `cargo` is not installed. No global toolchain was installed.
+
 ## 2026-09-02 — M2-02b2b1 consent and collection boundary
 
 **Status:** complete through deterministic consent and collection-workflow

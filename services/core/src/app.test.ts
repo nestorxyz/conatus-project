@@ -4,7 +4,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { isComponentHealth } from "@conatus/contracts";
-import { buildApp, LocalBearerIdentityResolver } from "./app.js";
+import { buildApp, LocalBearerIdentityResolver, type VoiceGrantAuthority } from "./app.js";
+import { VoiceGrantLimitError, VoiceQuotaExceededError } from "./domain/errors.js";
 import type { PortfolioProjection } from "./domain/types.js";
 
 test("GET /health returns the shared contract", async () => {
@@ -96,5 +97,137 @@ test("command center hides reader failures", async () => {
   assert.equal(response.statusCode, 503);
   assert.deepEqual(response.json(), { error: "command_center_unavailable" });
   assert.equal(response.body.includes("private database detail"), false);
+  await app.close();
+});
+
+const issuedGrant = {
+  schemaVersion: 1 as const,
+  voiceGrantId: "019cc2a0-0000-7000-8000-000000000001",
+  relayToken: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  scope: "transcribe_post_wake_audio" as const,
+  issuedAt: "2026-09-02T15:00:00.000Z",
+  expiresAt: "2026-09-02T15:05:00.000Z",
+  maxAudioMilliseconds: 120_000,
+  maxTurns: 4,
+};
+
+function voiceGrantApp(authority: VoiceGrantAuthority) {
+  return buildApp({
+    voiceGrants: {
+      identityResolver: new LocalBearerIdentityResolver("voice-test-token", {
+        accountId: "voice-account-private",
+        principalId: "voice-principal-private",
+      }),
+      authority,
+      now: () => new Date("2026-09-02T15:00:00.000Z"),
+    },
+  });
+}
+
+test("voice grant issue derives scope server-side and returns no provider data", async () => {
+  let received: Parameters<VoiceGrantAuthority["issueVoiceGrant"]>[0] | undefined;
+  const app = voiceGrantApp({
+    async issueVoiceGrant(input) {
+      received = input;
+      return issuedGrant;
+    },
+    async revokeVoiceGrant() {},
+  });
+  const response = await app.inject({
+    method: "POST",
+    url: "/v1/voice/grants?accountId=attacker-selected",
+    headers: { authorization: "Bearer voice-test-token" },
+    payload: { schemaVersion: 1, requestedAudioMilliseconds: 120_000, requestedTurns: 4 },
+  });
+  assert.equal(response.statusCode, 201);
+  assert.deepEqual(received, {
+    accountId: "voice-account-private",
+    principalId: "voice-principal-private",
+    requestedAudioMilliseconds: 120_000,
+    requestedTurns: 4,
+    now: new Date("2026-09-02T15:00:00.000Z"),
+  });
+  for (const forbidden of ["provider", "credential", "account-private", "principal-private"]) {
+    assert.equal(response.body.includes(forbidden), false);
+  }
+  await app.close();
+});
+
+test("voice grant routes reject non-loopback, unauthenticated, and client-scoped requests", async () => {
+  const authority: VoiceGrantAuthority = {
+    async issueVoiceGrant() { return issuedGrant; },
+    async revokeVoiceGrant() {},
+  };
+  const app = voiceGrantApp(authority);
+  const nonLoopback = await app.inject({
+    method: "POST",
+    url: "/v1/voice/grants",
+    remoteAddress: "192.0.2.30",
+    headers: { authorization: "Bearer voice-test-token" },
+    payload: { schemaVersion: 1, requestedAudioMilliseconds: 1_000, requestedTurns: 1 },
+  });
+  assert.equal(nonLoopback.statusCode, 403);
+  const unauthenticated = await app.inject({
+    method: "POST",
+    url: "/v1/voice/grants",
+    payload: { schemaVersion: 1, requestedAudioMilliseconds: 1_000, requestedTurns: 1 },
+  });
+  assert.equal(unauthenticated.statusCode, 401);
+  const clientScoped = await app.inject({
+    method: "POST",
+    url: "/v1/voice/grants",
+    headers: { authorization: "Bearer voice-test-token" },
+    payload: {
+      schemaVersion: 1,
+      requestedAudioMilliseconds: 1_000,
+      requestedTurns: 1,
+      accountId: "attacker-selected",
+    },
+  });
+  assert.equal(clientScoped.statusCode, 400);
+  await app.close();
+});
+
+test("voice grant routes map quota and active-session denial without private detail", async () => {
+  for (const [error, expected] of [
+    [new VoiceQuotaExceededError(), "voice_quota_exceeded"],
+    [new VoiceGrantLimitError(), "voice_grant_limit"],
+  ] as const) {
+    const app = voiceGrantApp({
+      async issueVoiceGrant() { throw error; },
+      async revokeVoiceGrant() {},
+    });
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/voice/grants",
+      headers: { authorization: "Bearer voice-test-token" },
+      payload: { schemaVersion: 1, requestedAudioMilliseconds: 1_000, requestedTurns: 1 },
+    });
+    assert.equal(response.statusCode, 429);
+    assert.deepEqual(response.json(), { error: expected });
+    await app.close();
+  }
+});
+
+test("voice grant revocation is account-derived and validates its opaque id", async () => {
+  let revoked: Parameters<VoiceGrantAuthority["revokeVoiceGrant"]>[0] | undefined;
+  const app = voiceGrantApp({
+    async issueVoiceGrant() { return issuedGrant; },
+    async revokeVoiceGrant(input) { revoked = input; },
+  });
+  const response = await app.inject({
+    method: "DELETE",
+    url: `/v1/voice/grants/${issuedGrant.voiceGrantId}?accountId=attacker-selected`,
+    headers: { authorization: "Bearer voice-test-token" },
+  });
+  assert.equal(response.statusCode, 204);
+  assert.equal(revoked?.accountId, "voice-account-private");
+  assert.equal(revoked?.principalId, "voice-principal-private");
+  const invalid = await app.inject({
+    method: "DELETE",
+    url: "/v1/voice/grants/not-an-id",
+    headers: { authorization: "Bearer voice-test-token" },
+  });
+  assert.equal(invalid.statusCode, 400);
   await app.close();
 });

@@ -46,6 +46,30 @@ export interface EvidenceSummary {
   pendingOutboxCount: number;
 }
 
+export interface IssuedVoiceGrant {
+  schemaVersion: 1;
+  voiceGrantId: string;
+  relayToken: string;
+  scope: "transcribe_post_wake_audio";
+  issuedAt: string;
+  expiresAt: string;
+  maxAudioMilliseconds: number;
+  maxTurns: number;
+}
+
+export interface VoiceGrantUsage {
+  voiceGrantId: string;
+  state: "active" | "exhausted";
+  remainingAudioMilliseconds: number;
+  remainingTurns: number;
+}
+
+export interface VoiceQuotaEvidence {
+  activeGrantCount: number;
+  consumedAudioMilliseconds: number;
+  reservedAudioMilliseconds: number;
+}
+
 export type PortfolioEntityType = "workspace" | "product" | "project" | "task";
 
 export interface ResolvedPortfolioReference {
