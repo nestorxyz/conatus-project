@@ -68,7 +68,7 @@ blocked.
 
 **Depends on:** F03
 
-**Status:** In progress; M1-01 complete and M1-02 selected
+**Status:** In progress; M1-01 and M1-02 complete, M1-03 next
 
 **User-visible outcome:** The Mac command center shows named projects, tasks,
 blockers, and results. A user can create or resume a Conatus-owned Codex task
@@ -115,7 +115,7 @@ creation is structurally limited to read-only sandbox and approval policy
 
 **Depends on:** M1-01
 
-**Status:** In progress
+**Status:** Complete on 2026-09-01. See `RESULT.md` and ADR 0013.
 
 **Acceptance:** Account-scoped Workspace handles and aliases resolve primary
 names and spoken aliases without storing a path; ambiguous names return a

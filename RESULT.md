@@ -1,5 +1,58 @@
 # Conatus Implementation Results
 
+## 2026-09-01 — M1-02 registered workspace and portfolio projection
+
+**Status:** complete through disposable PostgreSQL verification under Node
+24.19.0 and pnpm 10.29.2. No production database, authentication provider,
+workspace path, Codex process, provider account, or persistent Codex task was
+used.
+
+### Delivered
+
+- ADR 0013 defines Conatus-owned named routing: stable account-scoped IDs,
+  Workspace handles, separate aliases, and typed deterministic ambiguity rather
+  than first-match guessing.
+- PostgreSQL migration for Workspace, Product, Project, and Task aliases plus
+  active Task blockers and verified/unverified/failed Task result summaries.
+- Core resolution by Conatus ID, primary name, or normalized alias, with an
+  optional parent Project/Product context for explicit disambiguation.
+- Repeatable-read command-center projection containing Workspaces, Products,
+  Projects, Tasks, active blockers, and at most five recent results per Task.
+- Atomic aggregate-version, DomainEvent, and OutboxRecord updates for alias,
+  blocker, and result mutations.
+- Serialized alias insertion on the owning aggregate, so concurrent duplicate
+  alias requests produce one durable alias and one transition.
+- Ordered migration discovery that skips already-applied versions.
+
+### Verification
+
+- `pnpm check:m1-02` passed all 16 Core tests against fresh PostgreSQL 18 and
+  removed its disposable container, network, and volume afterward.
+- Primary names, diacritic/case normalization, aliases, Conatus IDs,
+  deterministic ambiguity, and parent-context disambiguation passed.
+- Cross-account resolution, alias mutation, blocker mutation, and projection
+  reads exposed no owning-account state.
+- A fresh Core connection returned the exact same projection; its serialized
+  payload contained no absolute path, `cwd`, provider field, or thread ID.
+- Events and outbox records remained one-to-one after all M1-02 mutations.
+- `pnpm check:f03` passed the complete TypeScript, Swift Gateway, Codex contract,
+  and disposable PostgreSQL foundation regression.
+- Repository formatting, shell lint, negative quality fixtures, lockfile,
+  secret, AGPL, dependency-license, and production dependency audit gates
+  passed with no known vulnerabilities.
+
+### Limitations and next step
+
+- M1-02 is an internal Core capability. No HTTP endpoint or Mac command-center
+  screen exposes the portfolio yet.
+- Core deliberately has no local filesystem path mapping. M1-03 adds the
+  Gateway-owned workspace binding, local receipts, writer lease, fencing, and
+  idempotent Codex create/resume preparation.
+- Live account-backed Codex execution remains M1-04 and still requires explicit
+  approval before it is attempted.
+- Hosted GitHub CI remains the pre-merge, external-contribution, and release
+  gate recorded under F03.
+
 ## 2026-09-01 — M1-01 Codex App Server compatibility pin
 
 **Status:** complete through local contract generation and request-vector
