@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-02T12:00:00.000Z",
+  "accountId": "must-not-cross-client-boundary",
+  "providerThreadId": "private-provider-reference",
+  "workspaces": [],
+  "products": []
+}

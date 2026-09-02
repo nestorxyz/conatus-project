@@ -13,7 +13,13 @@ export class RuntimeConfigurationError extends Error {
 export function assertSafeRuntimeConfiguration(
   environment: Readonly<Record<string, string | undefined>> = process.env,
 ): void {
-  if (environment.NODE_ENV === "production" && isEnabled(environment.CONATUS_DEV_AUTH_BYPASS)) {
+  const developmentIdentityConfigured = [
+    environment.CONATUS_DEV_LOCAL_TOKEN,
+    environment.CONATUS_DEV_ACCOUNT_ID,
+    environment.CONATUS_DEV_PRINCIPAL_ID,
+  ].some((value) => value !== undefined);
+  if (environment.NODE_ENV === "production"
+      && (isEnabled(environment.CONATUS_DEV_AUTH_BYPASS) || developmentIdentityConfigured)) {
     throw new RuntimeConfigurationError();
   }
 }

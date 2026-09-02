@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-02T12:00:00.000Z",
+  "workspaces": [
+    {
+      "workspaceId": "01900000-0000-7000-8000-000000000001",
+      "displayName": "Conatus Workspace",
+      "handle": "conatus-workspace",
+      "state": "active",
+      "aliases": ["Main code"]
+    }
+  ],
+  "products": [
+    {
+      "productId": "01900000-0000-7000-8000-000000000002",
+      "displayName": "Conatus",
+      "slug": "conatus",
+      "state": "active",
+      "version": 1,
+      "aliases": ["Jarvis"],
+      "projects": [
+        {
+          "projectId": "01900000-0000-7000-8000-000000000003",
+          "workspaceId": "01900000-0000-7000-8000-000000000001",
+          "displayName": "Mac V1",
+          "slug": "mac-v1",
+          "state": "active",
+          "version": 1,
+          "aliases": ["Mac app"],
+          "tasks": [
+            {
+              "taskId": "01900000-0000-7000-8000-000000000004",
+              "workspaceId": "01900000-0000-7000-8000-000000000001",
+              "displayName": "Command center",
+              "slug": "command-center",
+              "objective": "Navigate work without paths",
+              "lifecycleState": "ready",
+              "version": 1,
+              "aliases": ["Current task"],
+              "activeBlockers": [],
+              "recentResults": [
+                {
+                  "resultId": "01900000-0000-7000-8000-000000000005",
+                  "summary": "Read-only lifecycle verified",
+                  "verificationState": "verified",
+                  "recordedAt": "2026-09-02T11:30:00.000Z"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

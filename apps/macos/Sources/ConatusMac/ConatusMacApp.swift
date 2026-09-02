@@ -1,51 +1,79 @@
 // SPDX-FileCopyrightText: 2026 Conatus contributors
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import ConatusContracts
+import ConatusCommandCenter
+import ConatusMacRuntime
 import SwiftUI
 
 @main
 struct ConatusMacApp: App {
+    @StateObject private var store: CommandCenterStore
+    @StateObject private var activation: TaskActivationCoordinator
+
+    init() {
+        let token = ProcessInfo.processInfo.environment["CONATUS_DEV_LOCAL_TOKEN"]
+        let client: any CommandCenterClient = token.map { LoopbackCommandCenterClient(bearerToken: $0) }
+            ?? UnconfiguredCommandCenterClient()
+        _store = StateObject(wrappedValue: CommandCenterStore(client: client))
+        let environment = ProcessInfo.processInfo.environment
+        if let executable = environment["CONATUS_FAKE_APP_SERVER_PATH"],
+           let database = environment["CONATUS_GATEWAY_DATABASE_PATH"],
+           let state = environment["CONATUS_FAKE_APP_SERVER_STATE"] {
+            let gateway = FakeOnlyTaskActivationAdapter(
+                gateway: M105FakeTaskActivationGateway(
+                    databaseURL: URL(fileURLWithPath: database),
+                    fakeAppServerURL: URL(fileURLWithPath: executable),
+                    environment: ["CONATUS_FAKE_APP_SERVER_STATE": state]
+                )
+            )
+            _activation = StateObject(wrappedValue: TaskActivationCoordinator(gateway: gateway))
+        } else {
+            _activation = StateObject(
+                wrappedValue: TaskActivationCoordinator(gateway: DisabledTaskActivationGateway(), available: false)
+            )
+        }
+    }
+
     var body: some Scene {
         WindowGroup("Conatus") {
-            CommandCenterView()
-                .frame(minWidth: 680, minHeight: 440)
+            CommandCenterView(store: store, activation: activation)
+                .frame(minWidth: 900, minHeight: 600)
+                .task { await store.load() }
         }
         .windowResizability(.contentMinSize)
+        .commands {
+            CommandGroup(after: .sidebar) {
+                Button("Refresh Command Center") { Task { await store.load() } }
+                    .keyboardShortcut("r", modifiers: .command)
+            }
+        }
     }
 }
 
-private struct CommandCenterView: View {
-    private let localHealth = ComponentHealth(
-        schemaVersion: 1,
-        component: "mac",
-        state: "ready",
-        version: "0.1.0-dev"
-    )
+private struct UnconfiguredCommandCenterClient: CommandCenterClient {
+    func fetch() async throws -> CommandCenterSnapshot {
+        throw CommandCenterClientError.unconfigured
+    }
+}
 
-    var body: some View {
-        NavigationSplitView {
-            List {
-                Label("Portfolio", systemImage: "square.grid.2x2")
-                Label("Tasks", systemImage: "checklist")
-                Label("Agents", systemImage: "person.2")
-            }
-            .navigationTitle("Conatus")
-        } detail: {
-            VStack(alignment: .leading, spacing: 18) {
-                Text("Mac foundation ready")
-                    .font(.largeTitle.bold())
-                Text("F01 provides the real application shell and contract boundary. Portfolio, Codex execution, and managed voice arrive in later milestones.")
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: 560, alignment: .leading)
-                HStack(spacing: 8) {
-                    Circle().fill(.green).frame(width: 10, height: 10)
-                    Text("Local component: \(localHealth.state)")
-                }
-                Spacer()
-            }
-            .padding(32)
-            .navigationTitle("Command Center")
-        }
+private struct DisabledTaskActivationGateway: TaskActivationGateway {
+    func activate(workspaceId: String, taskId: String) async throws -> TaskActivationReceipt {
+        throw CancellationError()
+    }
+}
+
+private struct FakeOnlyTaskActivationAdapter: TaskActivationGateway {
+    let gateway: M105FakeTaskActivationGateway
+
+    func activate(workspaceId: String, taskId: String) async throws -> TaskActivationReceipt {
+        let receipt = try await Task.detached {
+            try gateway.activate(workspaceId: workspaceId, taskId: taskId)
+        }.value
+        return TaskActivationReceipt(
+            bindingId: receipt.bindingId,
+            taskId: receipt.taskId,
+            workspaceId: receipt.workspaceId,
+            action: receipt.action == .created ? .created : .resumed
+        )
     }
 }

@@ -17,16 +17,16 @@ and F02 adds the account-scoped durable PostgreSQL kernel specified by
 supervision and reproducible Node 24/macOS/PostgreSQL checks pass, completing the
 internal-development foundation. GitHub-hosted CI remains a pre-merge,
 external-contribution, and release gate and is currently blocked before runner
-allocation by an account billing lock. M1-01 now pins the exact stable Codex App
-Server development contract and adds read-only Swift request vectors without
-starting a provider process or creating a Codex task. M1-02 adds the persistent,
-account-scoped named portfolio: Workspace handles and aliases, deterministic
-ambiguity, and Products, Projects, Tasks, blockers, and result summaries. There
-is no Mac portfolio UI yet. M1-03 adds the Gateway-owned private SQLite journal
-for canonical local paths, opaque Task bindings, provider references,
-idempotency receipts, and fenced writer leases. Authentication, deployment,
-voice, and live Codex execution remain absent. See the verified results and
-exact limitations in [RESULT.md](RESULT.md).
+allocation by an account billing lock. M1 is complete locally. The native
+command center reads an authenticated, loopback-only, account-derived portfolio
+and navigates named Products, Projects, and Tasks without repository paths. Its
+Task activation boundary passes only Conatus IDs to the Gateway; provider
+references and local paths remain private. Disposable PostgreSQL and a fake App
+Server prove create, restart, resume, and retry behavior. One separately
+approved bounded M1-04 account-backed lifecycle was verified; M1-05 created no
+additional real Codex task. Production identity, deployment, managed voice,
+signing, and release evidence remain absent. See the verified results and exact
+limitations in [RESULT.md](RESULT.md).
 
 ### Preserved pre-pivot evidence
 
@@ -76,7 +76,7 @@ host system. Component-specific build tools are introduced by later tickets.
 1. Read the documents above before changing files.
 2. Inspect Git status and preserve unrelated user work.
 3. Work on one backlog ticket at a time and honor its dependencies.
-4. Continue with M1-04 from the current sequence in
+4. Continue with M2 planning from the current sequence in
    [the implementation backlog](docs/implementation-backlog.md); do not resume a
    legacy mobile ticket merely because it was previously dependency-unblocked.
 5. Update or add an ADR before implementation diverges from an accepted decision.

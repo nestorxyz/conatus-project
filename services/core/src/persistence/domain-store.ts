@@ -69,17 +69,31 @@ export class DomainStore {
     const migrations = (await readdir(migrationsDirectory))
       .filter((entry) => /^\d+_[a-z0-9_]+\.sql$/.test(entry))
       .sort();
-    await this.pool.query(
-      `CREATE TABLE IF NOT EXISTS schema_migrations (
-         version integer PRIMARY KEY,
-         applied_at timestamptz NOT NULL DEFAULT clock_timestamp()
-       )`,
-    );
-    for (const migration of migrations) {
-      const version = Number(migration.slice(0, migration.indexOf("_")));
-      const applied = await this.pool.query("SELECT 1 FROM schema_migrations WHERE version = $1", [version]);
-      if (applied.rowCount) continue;
-      await this.pool.query(await readFile(new URL(migration, migrationsDirectory), "utf8"));
+    const client = await this.pool.connect();
+    let lockAcquired = false;
+    try {
+      await client.query("SELECT pg_advisory_lock(hashtext('conatus-schema-migrations'))");
+      lockAcquired = true;
+      await client.query(
+        `CREATE TABLE IF NOT EXISTS schema_migrations (
+           version integer PRIMARY KEY,
+           applied_at timestamptz NOT NULL DEFAULT clock_timestamp()
+         )`,
+      );
+      for (const migration of migrations) {
+        const version = Number(migration.slice(0, migration.indexOf("_")));
+        const applied = await client.query("SELECT 1 FROM schema_migrations WHERE version = $1", [version]);
+        if (applied.rowCount) continue;
+        await client.query(await readFile(new URL(migration, migrationsDirectory), "utf8"));
+      }
+    } finally {
+      try {
+        if (lockAcquired) {
+          await client.query("SELECT pg_advisory_unlock(hashtext('conatus-schema-migrations'))");
+        }
+      } finally {
+        client.release();
+      }
     }
   }
 

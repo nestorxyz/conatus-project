@@ -5,12 +5,14 @@ a bounded helper readiness supervisor, redacted health diagnostics, release-auth
 configuration checks, and a fake-provider lifecycle fixture. M1-03 adds the
 private local SQLite journal for canonical workspace paths, opaque Task
 bindings, provider references, idempotency receipts, and fenced writer leases.
-It includes no executor, provider credential, IPC listener, or live Codex
-adapter.
+M1-04 adds the bounded App Server lifecycle validator; M1-05 adds a fake-only,
+ID-based activation facade for command-center verification. It includes no
+provider credential, IPC listener, or production task executor.
 
 ```sh
 pnpm check:gateway
 pnpm check:m1-03
+pnpm check:m1-05
 ```
 
 ## Dependency boundary

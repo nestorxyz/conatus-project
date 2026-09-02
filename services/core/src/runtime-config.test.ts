@@ -22,3 +22,15 @@ test("development authentication remains explicit outside production", () => {
     assertSafeRuntimeConfiguration({ NODE_ENV: "production", CONATUS_DEV_AUTH_BYPASS: "false" });
   });
 });
+
+test("production mode rejects a configured local command-center identity", () => {
+  assert.throws(
+    () => assertSafeRuntimeConfiguration({
+      NODE_ENV: "production",
+      CONATUS_DEV_LOCAL_TOKEN: "secret",
+      CONATUS_DEV_ACCOUNT_ID: "account",
+      CONATUS_DEV_PRINCIPAL_ID: "principal",
+    }),
+    RuntimeConfigurationError,
+  );
+});

@@ -68,7 +68,7 @@ blocked.
 
 **Depends on:** F03
 
-**Status:** In progress; M1-01 through M1-04 complete, M1-05 selected
+**Status:** Complete on 2026-09-02. See `RESULT.md` and ADRs 0012 through 0016.
 
 **User-visible outcome:** The Mac command center shows named projects, tasks,
 blockers, and results. A user can create or resume a Conatus-owned Codex task
@@ -160,6 +160,22 @@ a complete retry issues neither another `thread/start` nor another `turn/start`;
 public results expose no provider reference, path, prompt, account data, or raw
 App Server output. Prepared-but-uncommitted create or turn dispatches fail
 closed for manual reconciliation.
+
+#### M1-05 Mac command center integration
+
+**Depends on:** M1-04
+
+**Status:** Complete on 2026-09-02. See `RESULT.md` and ADR 0016.
+
+**Acceptance:** An authenticated loopback request derives its account entirely
+from server-side identity and returns the persistent named portfolio without an
+account ID, path, provider reference, credential, transcript, or raw output. The
+native Mac UI navigates Products, Projects, and Tasks by stable Conatus IDs and
+shows loading, fresh, empty, stale, unauthorized, unavailable, and malformed
+states honestly. A Task activation crosses a narrow Gateway boundary containing
+only Conatus Workspace and Task IDs. Disposable PostgreSQL and fake App Server
+tests prove the read/create/restart/resume/retry journey without production
+state or another account-backed Codex task.
 
 ## How to use this backlog
 

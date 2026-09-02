@@ -1,5 +1,65 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M1-05 native Mac command center integration
+
+**Status:** complete through local, disposable M1 acceptance. No production
+service or database was changed, and no additional account-backed Codex task or
+turn was created.
+
+### Delivered
+
+- ADR 0016 defines an authenticated, loopback-only Core command-center route.
+  Identity derives the account server-side; the request cannot select tenancy
+  and the response omits account identity.
+- A strict shared TypeScript/Swift command-center contract for Workspaces,
+  Products, Projects, Tasks, aliases, blockers, recent results, and observation
+  freshness. Unknown or private fields fail closed.
+- Native SwiftUI navigation with first-view tasks and explicit loading, fresh,
+  empty, stale, unconfigured, unauthorized, unavailable, and malformed states.
+  The last valid portfolio remains visible but marked stale after refresh loss.
+- An ID-only Task activation protocol. The Mac UI passes only Conatus Workspace
+  and Task IDs; a fake-only Gateway adapter returns redacted created/resumed
+  evidence and never exposes provider identity or filesystem paths.
+- A single `pnpm check:m1-05` gate covering disposable PostgreSQL, Core,
+  contracts, Gateway fake lifecycle, native state tests, and `.app` creation.
+- PostgreSQL migrations now serialize with an advisory lock after the new
+  parallel integration test exposed a real concurrent-startup race.
+
+### Verification
+
+- `pnpm check:m1-05` passed under Node 24.19.0 and pnpm 10.29.2.
+- Five TypeScript contract tests and 21 Core tests passed against disposable
+  PostgreSQL 18. The route rejected non-loopback and unauthenticated requests,
+  ignored client account selection, hid reader errors, and returned no private
+  account, path, or provider field.
+- Twenty-two Gateway tests passed with two approval-gated live tests skipped.
+  The M1-05 fake activation created once, resumed the same binding, and kept
+  fake `thread/start` and `turn/start` counts at one after retry.
+- Six native Mac contract/state tests passed, including cross-language vectors,
+  selection preservation, stale fallback, honest first-load failures, and
+  ID-only activation.
+- `pnpm mac:app` built the unsigned local
+  `build/Conatus.app` development bundle.
+- The disposable database container, network, and volume were removed after
+  the gate.
+- Repository format, shell lint, negative quality fixtures, lockfile, secret,
+  AGPL, and dependency-license checks passed. The broader preserved bootstrap
+  still stops in the legacy Android native-core check because `cargo` is not
+  installed; no global Rust toolchain was installed implicitly.
+
+### Audit and next step
+
+- The code/frontend audit aligned strict Swift and TypeScript contract shapes,
+  added a request timeout, separated unconfigured from unauthorized UI, exposed
+  tasks on first view, and hardened concurrent migration locking.
+- M1 is locally complete, but hosted GitHub Actions remains blocked by the
+  recorded account billing lock and is still required before merge, external
+  contributions, or release.
+- M2 is next. Before implementation it needs dependency-ordered tickets for
+  account-managed cloud transcription, local wake detection, activated
+  conversation, interruption, audio feedback, and privacy/cost controls. The
+  local macOS transcript is not the intended command-transcription path.
+
 ## 2026-09-02 — M1-04 bounded account-backed read-only lifecycle
 
 **Status:** complete through one explicitly approved account-backed Codex task

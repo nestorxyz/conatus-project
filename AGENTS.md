@@ -17,12 +17,13 @@ Before making meaningful changes, read:
 7. `docs/decisions/0013-named-portfolio-projection.md`
 8. `docs/decisions/0014-local-binding-receipts-and-fencing.md`
 9. `docs/decisions/0015-bounded-account-backed-codex-validation.md`
-10. `docs/product-spec.md`
-11. `docs/alpha-scope.md`
-12. `docs/decisions/0001-foundation.md`
-13. `docs/technical-spec.md`
-14. `docs/threat-model.md`
-15. `docs/implementation-backlog.md`
+10. `docs/decisions/0016-loopback-command-center-boundary.md`
+11. `docs/product-spec.md`
+12. `docs/alpha-scope.md`
+13. `docs/decisions/0001-foundation.md`
+14. `docs/technical-spec.md`
+15. `docs/threat-model.md`
+16. `docs/implementation-backlog.md`
 
 Read any ticket-specific documents linked from the backlog before implementing
 that ticket.
