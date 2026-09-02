@@ -32,7 +32,7 @@ let package = Package(
         .target(name: "ConatusContracts"),
         .target(name: "ConatusCommandCenter"),
         .target(name: "ConatusVoice", dependencies: ["ConatusContracts"]),
-        .target(name: "ConatusVoicePlatform", dependencies: ["ConatusVoice"]),
+        .target(name: "ConatusVoicePlatform", dependencies: ["ConatusContracts", "ConatusVoice"]),
         .target(name: "ConatusWakeCollection"),
         .target(name: "ConatusWakeModelTraining", dependencies: ["ConatusVoicePlatform"]),
         .executableTarget(name: "ConatusWakeModelTool", dependencies: ["ConatusWakeModelTraining"]),

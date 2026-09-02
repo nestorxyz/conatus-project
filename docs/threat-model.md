@@ -163,6 +163,12 @@ content.
 text and has no command-transcript, Task-routing, provider, credential,
 persistence, or network capability. Native completion, failure, and cancellation
 resolve the pending utterance at most once.
+**S-028.** The native account-transcription transport accepts only authenticated
+loopback grant issue and revoke, exact unexpired grant responses, bounded finite
+post-wake samples, and monotonic provider-neutral relay events. The plaintext
+relay token exists only for the active turn and is revoked on every terminal or
+failed-start path; it never enters presentation, persistence, public status, or
+telemetry. Client-selected account scope and provider credentials are absent.
 
 ## 7. Threats and controls
 

@@ -1,5 +1,47 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M2-06b authenticated account-transcription transport
+
+**Status:** complete through authenticated loopback and deterministic fake-relay
+verification. No microphone, OpenAI/provider connection, provider credential,
+paid usage, transcript persistence, Task dispatch, or production state was used.
+
+### Delivered
+
+- ADR 0023 plus product, security, technical, and backlog boundaries for the
+  native Conatus-account transcription path.
+- A strict Swift voice-grant contract sharing the TypeScript golden vector and
+  accepting only an unexpired, single-purpose, provider-neutral relay token.
+- An authenticated loopback grant client whose request contains bounded audio
+  milliseconds and turns but no account or provider scope.
+- An in-memory account transcriber that normalizes bounded finite samples to
+  mono PCM16 at 24 kHz, emits one-second chunks through an injected relay,
+  validates monotonic provider-neutral events, and revokes on every terminal,
+  cancellation, allowance-denial, or failed-start path.
+
+### Verification
+
+- `node scripts/check-m2-06b.mjs` passed nine focused Swift tests using a URL
+  protocol stub, fake grant authority, fake relay, and synthetic samples only.
+- Tests prove authenticated issue/revoke, exact-field grant decoding, absence of
+  client-selected account/provider scope, bounded chunking, partial/final
+  forwarding, cancellation, late-event suppression, insufficient-grant denial,
+  revision-gap failure, and terminal revocation.
+- Static checks exclude provider/OpenAI endpoints and keys, Apple Speech
+  recognition, `UserDefaults`, and file writes from the native transport.
+
+### Limitations and next step
+
+- Fake-relay success is not live transcription or accuracy evidence. One bounded
+  provider run remains explicitly approval-gated under M2-06e.
+- M2-06c next owns stable named Task command routing before M2-06d composes the
+  native app.
+- Representative microphones, accents, background noise, code-switching, and
+  converter quality must be evaluated before launch acceptance.
+- The required broad bootstrap still reaches the preserved Android native-core
+  check and stops because `cargo` is not installed. No global toolchain was
+  installed.
+
 ## 2026-09-02 — M2-06a native spoken-status output
 
 **Status:** complete through deterministic native-boundary verification. No

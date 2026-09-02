@@ -87,7 +87,8 @@ export function isVoiceGrantResponse(value: unknown): value is VoiceGrantRespons
     "maxAudioMilliseconds", "maxTurns",
   ])
     && value.schemaVersion === 1
-    && nonemptyString(value.voiceGrantId)
+    && typeof value.voiceGrantId === "string"
+    && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value.voiceGrantId)
     && typeof value.relayToken === "string"
     && /^[A-Za-z0-9_-]{43}$/.test(value.relayToken)
     && value.scope === "transcribe_post_wake_audio"

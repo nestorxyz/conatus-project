@@ -114,6 +114,17 @@ or stop to one terminal result. Acknowledgement uses a separate local system
 sound. This driver performs no recognition and owns no transcript, routing,
 network, persistence, provider, or credential boundary.
 
+The M2-06b native account-transcription transport obtains a strict versioned
+grant only from authenticated loopback Core. Its request contains bounded audio
+milliseconds and turns but no account or provider scope. An unexpired opaque
+relay token stays in memory for one Voice Turn, and every terminal, cancellation,
+allowance denial, or failed-start path revokes it. Captured finite mono samples
+are normalized to PCM16 at 24 kHz and split into one-second chunks before the
+injected relay boundary. Relay events are accepted only for the active Voice
+Turn with a contiguous revision and one terminal. The deterministic gate uses a
+fake relay; provider networking, microphone access, accuracy evidence, and paid
+usage remain live-acceptance work.
+
 ## 2. System boundaries
 
 ```mermaid

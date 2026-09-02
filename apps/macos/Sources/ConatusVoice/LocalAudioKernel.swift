@@ -284,6 +284,20 @@ public struct CapturedAudioTurn: Equatable, Sendable {
     public let activationRange: AudioFrameRange
     public let endFrame: Int64
     public let samples: [Float]
+
+    public init(
+        turnID: VoiceTurnID,
+        sampleRate: Int,
+        activationRange: AudioFrameRange,
+        endFrame: Int64,
+        samples: [Float]
+    ) {
+        self.turnID = turnID
+        self.sampleRate = sampleRate
+        self.activationRange = activationRange
+        self.endFrame = endFrame
+        self.samples = samples
+    }
 }
 
 public enum LocalAudioAction: Equatable, Sendable {

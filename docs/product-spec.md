@@ -208,6 +208,10 @@ invalid lifecycle events cannot duplicate routing or fabricate acceptance.
 **P-064.** Spoken status is bounded user-facing output, never a source of Task
 authority. Barge-in or cancellation stops native speech promptly and resolves
 one pending output without replaying or duplicating conversation transitions.
+**P-065.** The native account-transcription client sends only bounded post-wake
+PCM audio with a short-lived single-purpose Conatus relay token. It cannot
+select account scope, receive provider credentials or identifiers, persist the
+token or raw audio, or accept a late or non-monotonic relay event as a command.
 
 ## 8. Non-functional requirements
 

@@ -181,9 +181,10 @@ state or another account-backed Codex task.
 
 **Depends on:** M1
 
-**Status:** In progress; M2-06a native spoken status is complete. M2-02b2b2
-remains approval-blocked, M2-06b is next, and live microphone/model/provider/
-product validation is not complete.
+**Status:** In progress; M2-06a native spoken status and M2-06b authenticated
+account transcription are complete. M2-02b2b2 remains approval-blocked, M2-06c
+is next, and live microphone, model, provider, and product validation is not
+complete.
 
 **User-visible outcome:** A user says `Hey Conatus` and continues the command in
 the same sentence. Conatus acknowledges immediately, transcribes post-wake audio
@@ -396,8 +397,9 @@ provider, persistent transcript, paid usage, or real Codex Task is used.
 
 **Depends on:** M2-05
 
-**Status:** In progress; M2-06a is complete and M2-06b is next. Live microphone,
-model, provider, and real command validation remain separately gated.
+**Status:** In progress; M2-06a and M2-06b are complete and M2-06c is next.
+Live microphone, model, provider, and real command validation remain separately
+gated.
 
 M2-06 is delivered through the following dependency-ordered slices:
 
@@ -416,7 +418,7 @@ credential, transcript-owner, or Task-routing capability.
 
 **Depends on:** M2-03, M2-04, and M2-06a
 
-**Status:** Planned
+**Status:** Complete on 2026-09-02. See `RESULT.md` and ADR 0023.
 
 **Acceptance:** The Mac obtains only a short-lived Conatus voice grant and sends
 post-wake audio through an authenticated Conatus relay. Provider credentials and
