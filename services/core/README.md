@@ -21,11 +21,18 @@ allowance, and reclaims unused reservation on revocation or expiry. No provider
 credential, provider call, transcript, audio, or production deployment is part
 of this boundary.
 
+M2-04 adds a provider-neutral Realtime transcription session and deterministic
+fake transport. The provider codec pins 24 kHz mono PCM16, manual commits, and
+`gpt-live-transcribe`; provider item/event identifiers remain internal while
+partials, one final, and typed failures use Conatus Voice Turn IDs. The fake
+gate makes no network call and captures or persists no audio/transcript.
+
 ```sh
 pnpm --filter @conatus/core dev
 pnpm check:f02
 pnpm check:m1-02
 pnpm check:m2-03
+pnpm check:m2-04
 ```
 
 The listener defaults to `127.0.0.1:4310`. Deployment and public binding are not

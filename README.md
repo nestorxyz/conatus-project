@@ -48,12 +48,19 @@ consent-gated take workflow without a recorder or personal audio. The next gate
 requires privacy review and explicit approval before collecting an external
 consented corpus and producing the first honest candidate model.
 
-M2-03 now provides the account-managed voice authority behind that future
+M2-03 provides the account-managed voice authority behind that future
 audio path: authenticated loopback issue/revoke routes, opaque five-minute
 relay tokens stored only as SHA-256 digests, durable daily audio/turn
 reservation, atomic consumption, cross-account/principal denial, revocation,
 exhaustion, and abandoned-grant cleanup. It performs no provider call and does
-not expose a provider credential. M2-04 is the next implementation ticket.
+not expose a provider credential.
+
+M2-04 now provides the provider-neutral Realtime transcription adapter: pinned
+24 kHz PCM/manual-commit session configuration, ordered bounded audio, internal
+provider-item reconciliation, safe partial/final events, duplicate suppression,
+and typed failures through a deterministic fake transport. It performs no
+network or provider call, captures no microphone audio, and persists no
+transcript. M2-05 native conversation integration is next.
 
 ### Preserved pre-pivot evidence
 

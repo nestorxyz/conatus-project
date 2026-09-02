@@ -86,6 +86,16 @@ revocation, expiry, and exhaustion release unused reservation. Durable events
 contain only grant IDs, state, timestamps, scope, and numeric usage. Provider
 credentials stay behind the future relay and are never returned by this contract.
 
+The Realtime transcription adapter presents a provider-neutral session to the
+rest of Core. Its initial codec pins a transcription-only `gpt-live-transcribe`
+session using mono PCM16 at 24 kHz, manual audio-buffer commits, and low delay.
+Each provider commit acknowledgement binds an internal item ID to one Conatus
+Voice Turn ID. Deltas increment a local per-turn revision; one non-empty
+completed transcript is the only final. Cross-turn completion order is
+irrelevant because reconciliation uses the binding, and provider identifiers or
+raw errors never cross the adapter. The deterministic fake transport is the
+only M2-04 transport; authenticated live network transport is a later gate.
+
 ## 2. System boundaries
 
 ```mermaid

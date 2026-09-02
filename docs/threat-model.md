@@ -148,6 +148,11 @@ cryptographic digest of its opaque relay token. Atomic durable reservation
 prevents concurrent grants from exceeding account limits; expiry and revocation
 release unused reservation exactly once. The token, its digest, provider
 identity, and provider credential never enter events, telemetry, or public status.
+**S-025.** Realtime provider messages are untrusted and remain inside a bounded
+adapter. Audio sequence gaps, malformed mapped events, unknown provider items,
+duplicate terminal events, and impossible commit acknowledgements fail closed.
+Provider item/event identifiers and raw failure payloads never enter
+provider-neutral events, public status, telemetry, or command history.
 
 ## 7. Threats and controls
 

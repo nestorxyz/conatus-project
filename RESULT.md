@@ -1,5 +1,46 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M2-04 provider-neutral Realtime transcription adapter
+
+**Status:** complete through deterministic fake-transport verification. No
+provider credential or call, network connection, microphone audio, transcript
+persistence, production deployment, or paid usage was involved.
+
+### Delivered
+
+- ADR 0020 plus product, security, and technical invariants for the replaceable
+  adapter and untrusted provider-event boundary.
+- A pinned transcription-only provider codec for 24 kHz mono PCM16,
+  `gpt-live-transcribe`, low delay, and explicit audio-buffer commits.
+- A provider-neutral session that validates ordered bounded audio, binds
+  provider items to Conatus Voice Turn IDs, emits local partial revisions and
+  one non-empty final, and maps failures without raw provider data.
+- A deterministic in-memory transport with no credential, socket, microphone,
+  file, persistence, or provider capability.
+
+### Verification
+
+- `node scripts/check-m2-04.mjs` built Core and passed nine focused tests.
+- The broader TypeScript gate passed 11 contract tests and 21 Core tests; four
+  existing PostgreSQL integration suites were skipped because that non-database
+  invocation did not configure `CONATUS_TEST_DATABASE_URL`.
+- Tests prove exact session configuration, ordered append/commit messages,
+  out-of-order cross-turn completion, correct turn reconciliation, duplicate
+  suppression, late-delta rejection, and typed malformed/empty/disconnect/send
+  failures.
+- Product events expose no provider item/event ID, model name, credential, or
+  raw error payload.
+
+### Limitations and next step
+
+- The authenticated provider transport and one bounded live transcription are
+  not implemented or validated; they remain separately approval-gated.
+- M2-05 next owns native partial presentation, exactly-once final routing,
+  spoken status, follow-up, barge-in, and recovery integration.
+- M2-02b2b2 remains blocked until privacy review and explicit recording/import approval.
+- The required broad bootstrap still reaches the preserved Android native-core
+  check and stops because `cargo` is not installed. No global toolchain was installed.
+
 ## 2026-09-02 — M2-03 account voice grants and quota
 
 **Status:** complete through disposable PostgreSQL and fake-relay verification.

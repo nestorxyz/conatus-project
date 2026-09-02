@@ -197,6 +197,10 @@ closed; an immutable ciphertext may only be retransmitted byte-for-byte.
 grant with bounded turns and audio duration. The Mac never receives a
 transcription-provider credential; expiry, revocation, exhaustion, or quota
 denial fails before additional provider usage is admitted.
+**P-062.** Provider transcription events are reconciled to Conatus Voice Turn
+IDs before they cross the adapter boundary. Partials cannot dispatch work, and
+each non-empty final can become eligible for routing at most once regardless of
+provider duplication or cross-turn completion order.
 
 ## 8. Non-functional requirements
 

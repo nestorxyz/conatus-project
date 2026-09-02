@@ -181,8 +181,8 @@ state or another account-backed Codex task.
 
 **Depends on:** M1
 
-**Status:** In progress; M2-03 is complete, M2-02b2b2 remains approval-blocked,
-and M2-04 is the next implementation ticket
+**Status:** In progress; M2-04 is complete, M2-02b2b2 remains approval-blocked,
+and M2-05 is the next implementation ticket
 
 **User-visible outcome:** A user says `Hey Conatus` and continues the command in
 the same sentence. Conatus acknowledges immediately, transcribes post-wake audio
@@ -347,6 +347,26 @@ fail closed. Responses, events, outbox, and ordinary evidence contain no
 provider credential/identifier, token digest, transcript, audio, path, or raw
 output. Tests use only a disposable database and fake relay consumption; no
 provider call or cost occurs.
+
+#### M2-04 Realtime transcription adapter
+
+**Depends on:** M2-01 and M2-03
+
+**Status:** Complete on 2026-09-02. See `RESULT.md` and ADR 0020.
+
+**Acceptance:** A provider-neutral Core adapter pins the current
+transcription-only provider contract behind a replaceable transport: mono PCM16
+at 24 kHz, explicit commits, `gpt-live-transcribe`, and provider `item_id`
+reconciliation. Ordered bounded audio chunks fail locally on gaps or malformed
+input. Provider deltas are presentation-only local revisions; each non-empty
+completed transcript produces at most one final for the correct Conatus Voice
+Turn ID even when turns complete out of order. Duplicate/late events, unknown
+items, malformed acknowledgements, empty finals, send failures, provider
+errors, and disconnects fail closed as safe typed results. Provider identifiers,
+credentials, and raw payloads do not cross the adapter. Deterministic tests use
+only a fake in-memory transport and synthetic bytes; no network, microphone,
+provider call, transcript persistence, or cost occurs. The authenticated live
+transport and bounded live validation remain separately approval-gated.
 
 ## How to use this backlog
 
