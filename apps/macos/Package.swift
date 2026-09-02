@@ -14,6 +14,7 @@ let package = Package(
         .library(name: "ConatusCommandCenter", targets: ["ConatusCommandCenter"]),
         .library(name: "ConatusVoice", targets: ["ConatusVoice"]),
         .library(name: "ConatusVoicePlatform", targets: ["ConatusVoicePlatform"]),
+        .library(name: "ConatusWakeCollection", targets: ["ConatusWakeCollection"]),
         .library(name: "ConatusWakeModelTraining", targets: ["ConatusWakeModelTraining"]),
     ],
     dependencies: [
@@ -32,12 +33,14 @@ let package = Package(
         .target(name: "ConatusCommandCenter"),
         .target(name: "ConatusVoice", dependencies: ["ConatusContracts"]),
         .target(name: "ConatusVoicePlatform", dependencies: ["ConatusVoice"]),
+        .target(name: "ConatusWakeCollection"),
         .target(name: "ConatusWakeModelTraining", dependencies: ["ConatusVoicePlatform"]),
         .executableTarget(name: "ConatusWakeModelTool", dependencies: ["ConatusWakeModelTraining"]),
         .testTarget(name: "ConatusContractsTests", dependencies: ["ConatusContracts"]),
         .testTarget(name: "ConatusCommandCenterTests", dependencies: ["ConatusCommandCenter"]),
         .testTarget(name: "ConatusVoiceTests", dependencies: ["ConatusVoice"]),
         .testTarget(name: "ConatusVoicePlatformTests", dependencies: ["ConatusVoicePlatform"]),
+        .testTarget(name: "ConatusWakeCollectionTests", dependencies: ["ConatusWakeCollection"]),
         .testTarget(name: "ConatusWakeModelTrainingTests", dependencies: ["ConatusWakeModelTraining"]),
     ]
 )

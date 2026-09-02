@@ -42,8 +42,11 @@ model. See the verified results and exact limitations in
 M2-02b2a now provides the offline, consent-safe model-production boundary: it
 validates external recordings and their provenance, trains/evaluates a custom
 Create ML sound classifier, and emits a candidate plus runtime manifest. No
-recording, dataset, or model weights are included. The next gate is collecting
-an explicitly consented corpus and producing the first honest candidate model.
+recording, dataset, or model weights are included. M2-02b2b1 now adds the
+review-ready consent/withdrawal packet, launch-corpus criteria, and a pure
+consent-gated take workflow without a recorder or personal audio. The next gate
+requires privacy review and explicit approval before collecting an external
+consented corpus and producing the first honest candidate model.
 
 ### Preserved pre-pivot evidence
 

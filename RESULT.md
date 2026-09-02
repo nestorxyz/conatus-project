@@ -1,5 +1,46 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M2-02b2b1 consent and collection boundary
+
+**Status:** complete through deterministic consent and collection-workflow
+verification. This is an engineering review packet, not legal approval. No
+microphone permission was requested, no recorder exists in the module, no
+person was recorded, and no audio or model asset was created.
+
+### Delivered
+
+- A participant-facing consent draft and operator gate covering specific uses,
+  affirmative choice, withdrawal before model release, raw-audio deletion,
+  adult-only collection, third-party-voice exclusion, opaque identifiers, and
+  review/accept/discard behavior.
+- Product-defined initial Mac V1 corpus thresholds for distinct split-isolated
+  speakers, per-speaker wake examples, `es-PE` and `en-US` pronunciation-group
+  coverage, held-out negative hours, and offline false-accept/false-reject gates.
+- A strict `conatus-wake-consent-v1` receipt and pure Swift state machine that
+  cannot start a take before validated consent, advances an immutable plan in
+  order, validates 16 kHz mono digest evidence, and requires explicit retain or
+  discard of each temporary take, including immediate stop/delete during capture.
+- A safe public collection projection containing only state and counts, plus a
+  ticket gate rejecting recorder, microphone, Apple Speech, network,
+  filesystem-write, or Create ML coupling.
+
+### Verification
+
+- `pnpm check:m2-02b2b1` passes the complete native suite and collection
+  boundary scan.
+- The new collection suite covers strict consent, unknown/incomplete/unsafe
+  consent, pre-consent recording denial, retakes, ordered completion, malformed
+  evidence, and invalid plans.
+
+### Limitations and next step
+
+- The packet requires qualified privacy review and real operator, contact,
+  retention, transfer, compensation, and withdrawal-cutoff details before use.
+- M2-02b2b2 requires separate explicit approval before implementing/running a
+  recorder, importing any voice data, training a candidate, or retaining audio.
+- Conatus still has no wake model and cannot yet hear `Hey Conatus`. Live Mac
+  performance remains M2-02b2c.
+
 ## 2026-09-02 — M2-02b2a owned-data and Create ML training boundary
 
 **Status:** complete through deterministic offline tooling verification. No
@@ -42,9 +83,9 @@ asset was committed, and no training run was represented as completed.
 ### Limitations and next step
 
 - There is still no wake model and Conatus still cannot hear `Hey Conatus` from
-  this repository state. M2-02b2b next requires review of the collection and
-  consent packet plus launch corpus thresholds, followed by explicit approval
-  before any recording or imported dataset is used.
+  this repository state. M2-02b2b1 now supplies the collection/consent packet
+  and launch corpus thresholds; M2-02b2b2 still requires privacy review and
+  explicit approval before any recording or imported dataset is used.
 - Offline classification is not live wake evidence. Bundling and supported-Mac
   microphone testing remain M2-02b2c.
 - The preserved broad bootstrap still requires the legacy Android Rust

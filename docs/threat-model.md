@@ -136,6 +136,12 @@ recording session, fixed split, SHA-256 digest, and declared audio metadata.
 Training reads a private digest-verified snapshot; mutable paths, symlinks,
 session leakage, and a wake test subject already present in training fail
 closed. Offline evaluation evidence is not live wake-performance evidence.
+**S-023.** Wake-dataset capture cannot start from a missing, unknown,
+incomplete, or non-affirmative consent receipt. The receipt uses opaque
+references and separately permits training, evaluation, and distribution of a
+derived model; it does not permit raw-audio publication. Rejected takes are
+deleted rather than retained, and public collection status exposes counts only.
+The consent-state library is not a recorder and cannot itself authorize collection.
 
 ## 7. Threats and controls
 

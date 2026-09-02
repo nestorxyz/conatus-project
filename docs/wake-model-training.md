@@ -44,7 +44,8 @@ and `testing`. The validator requires at least ten training clips and one
 validation/test clip for each label, at least 60 minutes of held-out background,
 mono audio at one consistent sample rate of 16 kHz or higher, no recording
 session across splits, and at least one held-out wake subject not used for
-training. M2-02b2b must adopt stronger launch thresholds before collection.
+training. M2-02b2b1 adopts stronger launch thresholds before collection;
+M2-02b2b2 owns the separately approved collection and candidate run.
 
 Approved license identifiers are deliberately allowlisted in code. Adding one
 requires review rather than changing a manifest string.

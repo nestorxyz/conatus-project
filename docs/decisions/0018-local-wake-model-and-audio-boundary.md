@@ -69,11 +69,14 @@ M2-02 is split at the evidence boundary:
    clip-digest, audio-format, split-isolation, held-out-subject, offline
    evaluation, and Create ML export tooling. It contains no recorder, dataset,
    or model weights.
-4. **M2-02b2b candidate model:** separately consented recordings outside the
-   repository, approved launch-quality corpus thresholds, a trained candidate,
-   offline false-accept/false-reject evidence, and a digest-verified runtime
-   manifest.
-5. **M2-02b2c hardware validation:** bundled candidate plus live same-sentence,
+4. **M2-02b2b1 collection boundary:** a review-ready consent/withdrawal packet,
+   measurable launch-corpus gate, and pure consent-gated take state machine. It
+   has no recorder or personal-audio capability and does not authorize collection.
+5. **M2-02b2b2 candidate model:** a separately approved recorder/import
+   operation, consented recordings outside the repository, the approved corpus
+   gate, a trained candidate, offline false-accept/false-reject evidence, and a
+   digest-verified runtime manifest.
+6. **M2-02b2c hardware validation:** bundled candidate plus live same-sentence,
    feedback-latency, false-wake, false-reject, accent, sleep/wake, permission,
    repeated lifecycle, and headset-route evidence on supported Macs.
 
@@ -122,3 +125,9 @@ on supported hardware.
   only the held-out test corpus, counts background-window false accepts and
   wake-clip false rejects, exports a candidate model plus strict runtime
   manifest atomically, and contains no microphone or recording API.
+- M2-02b2b1 accepts only the exact versioned consent receipt with affirmative
+  training, evaluation, and derived-model-distribution uses; adult and
+  no-third-party-voice confirmations; a withdrawal route; and raw-audio
+  publication disabled. It binds raw-audio deletion and model-release cutoff
+  dates. Its ordered take workflow emits only start/retain/delete
+  directives and safe public counts. It imports no recording or training API.

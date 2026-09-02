@@ -65,6 +65,17 @@ when none of its windows detects the phrase. Model and runtime manifest
 publication is atomic. This tooling never records audio and is not linked into
 `ConatusMac`.
 
+The collection boundary is also separate from both the app and trainer. A
+strict versioned receipt records opaque participant, controller,
+withdrawal-contact, and operator-approval references; raw-audio deletion and
+model-release cutoff dates; plus affirmative training, evaluation, and
+derived-model-distribution consent. Adults and absence of third-party voices
+must be confirmed; raw-audio publication is prohibited. A deterministic take
+state machine cannot emit a recorder-start directive before validated consent,
+requires ordered 16 kHz mono digest evidence, and exposes only state and counts.
+It contains no recorder backend; collection and training remain an explicitly
+approved later operation outside Git.
+
 ## 2. System boundaries
 
 ```mermaid

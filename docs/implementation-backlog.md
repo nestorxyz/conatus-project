@@ -181,7 +181,7 @@ state or another account-backed Codex task.
 
 **Depends on:** M1
 
-**Status:** In progress; M2-02b2a is complete and M2-02b2b is next
+**Status:** In progress; M2-02b2b1 is complete and M2-02b2b2 is next
 
 **User-visible outcome:** A user says `Hey Conatus` and continues the command in
 the same sentence. Conatus acknowledges immediately, transcribes post-wake audio
@@ -295,16 +295,31 @@ atomically emits a candidate model plus runtime manifest. Tests and the tool
 contain no recorder, microphone permission request, dataset, model asset, Apple
 Speech, or network call.
 
-##### M2-02b2b Consented corpus and candidate model
+##### M2-02b2b1 Collection consent and launch-corpus boundary
 
-**Status:** Planned
+**Status:** Complete on 2026-09-02. See `RESULT.md` and
+`docs/wake-model-collection.md`.
 
-**Acceptance:** The collection protocol and launch-quality corpus thresholds
-are reviewed before recording. Separately consented, commercially distributable
-audio remains outside Git, passes M2-02b2a, and produces a candidate model whose
-runtime manifest verifies against its exact bytes. Offline evaluation records
-false accepts/rejects and accent/subject coverage without claiming live wake
-performance. No third-party pretrained wake weights are used.
+**Acceptance:** A review-ready participant consent draft, operator procedure,
+withdrawal/deletion boundary, and measurable initial Mac V1 corpus gate are
+durable. A pure Swift collection state machine rejects unknown or incomplete
+consent, cannot start a take before consent, requires ordered 16 kHz mono digest
+evidence, supports explicit accept/discard, and projects only safe counts. The
+module has no recorder, microphone, Apple Speech, network, filesystem-write,
+training, personal-audio, or model-weight capability. No recording is authorized.
+
+##### M2-02b2b2 Consented corpus and candidate model
+
+**Status:** Planned; blocked on qualified privacy review, configured operator
+and withdrawal details, explicit recording/import approval, and participant consent.
+
+**Acceptance:** The reviewed M2-02b2b1 flow is implemented by an isolated
+recorder/import operator. Separately consented, commercially distributable audio
+remains outside Git, meets the approved corpus gate, passes M2-02b2a, and
+produces a candidate model whose runtime manifest verifies against its exact
+bytes. Offline evaluation records false accepts/rejects and pronunciation/subject
+coverage without claiming live wake performance. No third-party pretrained wake
+weights are used.
 
 ##### M2-02b2c Supported-Mac live validation
 
