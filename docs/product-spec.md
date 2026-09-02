@@ -205,6 +205,9 @@ provider duplication or cross-turn completion order.
 commits a transcript only after Task routing returns a matching Voice Turn ID
 and authoritative command ID. Follow-up, barge-in, cancellation, recovery, and
 invalid lifecycle events cannot duplicate routing or fabricate acceptance.
+**P-064.** Spoken status is bounded user-facing output, never a source of Task
+authority. Barge-in or cancellation stops native speech promptly and resolves
+one pending output without replaying or duplicating conversation transitions.
 
 ## 8. Non-functional requirements
 

@@ -30,6 +30,11 @@ Its fake-only tests cover exactly-once routing, follow-up, barge-in,
 cancellation, recovery, and transcript-free public status. Production drivers
 and live voice evidence remain later gates.
 
+M2-06a implements that coordinator's production speech boundary with local
+macOS synthesis, a separate acknowledgement sound, bounded status text, and
+stale-callback-safe cancellation. Its tests inject a fake backend and do not
+play audio or change system voice settings.
+
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swift build --package-path apps/macos
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swift test --package-path apps/macos
@@ -37,6 +42,7 @@ pnpm mac:app
 pnpm check:m2-02b1
 pnpm check:m2-02b2a
 pnpm check:m2-05
+pnpm check:m2-06a
 ```
 
 The ignored `build/Conatus.app` bundle is for local visual testing only; it is

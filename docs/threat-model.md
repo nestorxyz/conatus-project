@@ -159,6 +159,10 @@ Voice Turn ID and non-empty command receipt; cancelled, admitted, malformed, or
 late turns cannot route again. Invalid integration transitions fail closed and
 public status remains free of transcript, provider, path, credential, and Codex
 content.
+**S-027.** The native speech-output driver receives only bounded approved status
+text and has no command-transcript, Task-routing, provider, credential,
+persistence, or network capability. Native completion, failure, and cancellation
+resolve the pending utterance at most once.
 
 ## 7. Threats and controls
 

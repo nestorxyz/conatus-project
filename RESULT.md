@@ -1,5 +1,45 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M2-06a native spoken-status output
+
+**Status:** complete through deterministic native-boundary verification. No
+microphone, Apple Speech recognition, network, provider call, transcript,
+production Task route, real Codex task, persistence, or paid usage was involved.
+
+### Delivered
+
+- ADR 0022 and product, security, technical, and backlog boundaries for the
+  first production conversation driver and the remaining M2-06 sequence.
+- A `VoiceSpeechControlling` implementation using local macOS speech synthesis,
+  a separate system acknowledgement sound, trimmed non-empty status bounded to
+  1,000 characters, one active utterance, async completion, and immediate stop.
+- Exact native-utterance identity guards so a delayed completion from cancelled
+  speech cannot terminate a replacement utterance.
+
+### Verification
+
+- `node scripts/check-m2-06a.mjs` built an isolated Xcode Swift scratch package
+  and passed eight focused tests with an injected fake backend.
+- The full Mac package passed 43 XCTest cases. Repository format, lint,
+  quality-gate, lockfile, secret, and license checks also passed.
+- Tests cover acknowledgement separation, normalization, length bounds, one
+  active utterance, completion, native start/runtime failure, cancellation,
+  retry, and stale completion after replacement.
+- The focused gate statically excludes Apple Speech recognition, direct network,
+  provider key, user-default, and file-write capabilities. It never plays audio
+  or changes the selected system voice.
+
+### Limitations and next step
+
+- The driver is not composed into the app yet; M2-06d owns production app
+  composition after account transcription and named Task routing exist.
+- M2-06b next owns authenticated account-transcription transport behind the
+  Conatus grant/relay boundary. A live provider call remains separately approved.
+- M2-02b2b2 remains blocked on reviewed consent and explicit audio collection.
+- The required broad bootstrap still reaches the preserved Android native-core
+  check and stops because `cargo` is not installed. No global toolchain was
+  installed.
+
 ## 2026-09-02 — M2-05 native voice conversation integration
 
 **Status:** complete through deterministic fake integration. No microphone,

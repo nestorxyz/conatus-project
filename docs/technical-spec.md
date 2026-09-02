@@ -107,6 +107,13 @@ receipts, and invalid lifecycle transitions clear private turn state and cannot
 reuse a cancelled or admitted Voice Turn ID. Production drivers remain outside
 this fake-integration ticket.
 
+The first M2-06 production driver implements `SpeechOutput` with local macOS
+speech synthesis. It accepts only a trimmed status of at most 1,000 characters,
+allows one active utterance, awaits native completion, and maps native failure
+or stop to one terminal result. Acknowledgement uses a separate local system
+sound. This driver performs no recognition and owns no transcript, routing,
+network, persistence, provider, or credential boundary.
+
 ## 2. System boundaries
 
 ```mermaid

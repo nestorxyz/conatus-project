@@ -67,6 +67,12 @@ network/audio-route recovery against fake dependencies. It does not yet wire a
 live microphone, wake model, provider transport, production Task router, or
 speech driver.
 
+M2-06a now supplies the first production conversation dependency: bounded local
+spoken status through macOS speech synthesis, with a separate acknowledgement
+sound and exactly-once cancellation for barge-in. Deterministic tests use a fake
+native backend and play no audio. Account transcription transport, named Task
+routing, app composition, and live acceptance remain later M2-06 slices.
+
 ### Preserved pre-pivot evidence
 
 The following completed tickets and decisions belong to the earlier

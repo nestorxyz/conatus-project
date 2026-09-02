@@ -181,9 +181,9 @@ state or another account-backed Codex task.
 
 **Depends on:** M1
 
-**Status:** In progress; M2-05 is complete through deterministic fake integration.
-M2-02b2b2 remains approval-blocked, and live microphone/model/provider/product
-validation is not complete.
+**Status:** In progress; M2-06a native spoken status is complete. M2-02b2b2
+remains approval-blocked, M2-06b is next, and live microphone/model/provider/
+product validation is not complete.
 
 **User-visible outcome:** A user says `Hey Conatus` and continues the command in
 the same sentence. Conatus acknowledges immediately, transcribes post-wake audio
@@ -211,6 +211,11 @@ M2 is delivered through the following dependency-ordered slices:
 5. **M2-05 Native conversation integration:** task routing, partial transcript
    presentation, committed command state, spoken status, follow-up, barge-in,
    cancellation, sleep/wake, network-loss, and audio-route recovery.
+6. **M2-06 Production drivers and launch composition:** M2-06a native spoken
+   status, M2-06b authenticated account-transcription transport, M2-06c named
+   Task command routing, M2-06d app composition with synthetic end-to-end
+   evidence, and M2-06e approval-gated live launch acceptance. Wake-model and
+   hardware evidence remains owned by M2-02b2.
 
 **Milestone acceptance:** Five same-sentence commands and two follow-ups route
 exactly once; acknowledgement begins before cloud processing; no pre-wake audio
@@ -386,6 +391,71 @@ network/audio-route recovery, sleep/wake, typed quota and malformed failures,
 visible invalid lifecycle failure, and transcript-free public status. The gate
 uses fakes and synthetic samples only: no microphone, Apple Speech, network,
 provider, persistent transcript, paid usage, or real Codex Task is used.
+
+#### M2-06 Production drivers and launch composition
+
+**Depends on:** M2-05
+
+**Status:** In progress; M2-06a is complete and M2-06b is next. Live microphone,
+model, provider, and real command validation remain separately gated.
+
+M2-06 is delivered through the following dependency-ordered slices:
+
+##### M2-06a Native spoken-status output
+
+**Status:** Complete on 2026-09-02. See `RESULT.md` and ADR 0022.
+
+**Acceptance:** A replaceable macOS `AVSpeechSynthesizer` driver implements the
+M2-05 speech boundary with a separate immediate acknowledgement sound, bounded
+non-empty status, one active utterance, async completion, and exactly-once
+cancellation. Deterministic tests use a fake native backend and play no audio.
+The driver imports no Apple Speech recognition, network, persistence, provider,
+credential, transcript-owner, or Task-routing capability.
+
+##### M2-06b Authenticated account-transcription transport
+
+**Depends on:** M2-03, M2-04, and M2-06a
+
+**Status:** Planned
+
+**Acceptance:** The Mac obtains only a short-lived Conatus voice grant and sends
+post-wake audio through an authenticated Conatus relay. Provider credentials and
+identifiers remain behind Core. Fake relay integration is required before one
+separately approved bounded live transcription.
+
+##### M2-06c Named Task command routing
+
+**Depends on:** M1-05 and M2-06b
+
+**Status:** Planned
+
+**Acceptance:** A committed Voice Turn routes through stable Conatus Product,
+Project, Task, and Workspace IDs without requiring or exposing repository paths
+or provider identities. Admission returns a matching Voice Turn ID and durable
+command ID before the private transcript is committed.
+
+##### M2-06d Native app composition
+
+**Depends on:** M2-02b1, M2-06b, and M2-06c
+
+**Status:** Planned
+
+**Acceptance:** The Mac composition root connects wake/capture, account
+transcription, named Task routing, private presentation, and native speech while
+normal startup remains honest when a model or account capability is unavailable.
+Synthetic end-to-end tests prove the complete state and recovery journey without
+requesting microphone access or making provider/Codex calls.
+
+##### M2-06e Live Mac voice acceptance
+
+**Depends on:** M2-02b2c and M2-06d
+
+**Status:** Planned; approval-gated for microphone, provider usage, and real Task
+dispatch.
+
+**Acceptance:** The complete M2 milestone acceptance runs on supported Macs with
+the verified wake model, authenticated account transcription, named Task
+routing, spoken status, follow-up, barge-in, recovery, and bounded real evidence.
 
 ## How to use this backlog
 
