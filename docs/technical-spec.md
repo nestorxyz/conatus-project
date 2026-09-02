@@ -147,6 +147,17 @@ microphone authorization or live dependency is started. Synthetic composition
 tests use fake external boundaries and make no microphone, provider, or Codex
 call.
 
+ADR 0026 narrows first wake-model launch support without changing the native
+runtime: Sound Analysis executes a provenance-complete Conatus Core ML model on
+Apple Silicon Macs. A commercially reviewed synthetic candidate may reduce the
+initial human training corpus, but every generator, feature component, dataset,
+and derived weight remains provenance-gated. Local onboarding calibration
+selects a threshold for the current user/device and deletes raw calibration
+audio by default; it never authorizes identity or commands. The runtime manifest
+declares supported hardware, microphone, room class, distance, phrase, and
+evaluated pronunciation groups. Missing or failed calibration leaves wake off
+with manual activation available.
+
 ## 2. System boundaries
 
 ```mermaid

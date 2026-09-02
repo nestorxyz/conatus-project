@@ -181,6 +181,11 @@ session, verified wake model, and account relay are all available, voice remains
 off and no microphone authorization or capture begins. Partials, committed text,
 relay tokens, raw errors, provider identities, paths, and Codex identities do not
 enter logs, persistent UI state, or public status through this boundary.
+**S-031.** Wake calibration runs locally and adjusts only activation confidence;
+it grants no identity, Task, command, or approval authority. Raw calibration
+audio is deleted after calibration unless a separate reviewed opt-in authorizes
+retention. Failed, stale, mismatched-device, or out-of-scope calibration leaves
+wake activation off and cannot weaken the normal command authorization path.
 
 ## 7. Threats and controls
 

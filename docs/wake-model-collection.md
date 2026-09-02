@@ -69,10 +69,13 @@ The production consent screen must show, rather than hide in terms:
 7. Verify 16 kHz mono metadata and SHA-256 evidence, then create the external
    M2-02b2a dataset manifest. Never commit audio or consent records.
 
-## Initial Mac V1 corpus gate
+## Broader expansion corpus gate
 
-These are product-defined minimums for the first candidate, not universal
-industry standards and not a substitute for M2-02b2c live testing.
+ADR 0026 supersedes this table as a prerequisite for the first calibrated,
+narrowly supported Mac launch. The evidence is preserved as the broader support
+expansion gate; it has not been collected or completed. These are product-defined
+targets, not universal industry standards and not a substitute for M2-02b2c live
+testing.
 
 | Evidence | Candidate gate |
 | --- | --- |
@@ -83,10 +86,11 @@ industry standards and not a substitute for M2-02b2c live testing.
 | Offline candidate | Zero false accepts in the held-out 24 hours and no more than 5% false rejects overall or within either declared pronunciation group |
 | Provenance | Every clip passes M2-02b2a, every source is consented and commercially distributable, and the candidate/runtime manifest digests match exact bytes |
 
-A failed subgroup or aggregate threshold blocks the candidate. Passing does not
-claim production readiness: supported-Mac false-wake hours, same-sentence
-latency, sleep/wake, microphone permission, headset and route-change recovery,
-and real household conditions remain M2-02b2c.
+A failed subgroup or aggregate threshold blocks the broader support claim.
+Passing does not by itself establish production readiness: supported-Mac
+false-wake hours, same-sentence latency, sleep/wake, microphone permission,
+headset and route-change recovery, and real household conditions remain
+M2-02b2c.
 
 ## Code boundary delivered by M2-02b2b1
 

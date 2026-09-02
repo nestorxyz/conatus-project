@@ -27,12 +27,13 @@ Before making meaningful changes, read:
 17. `docs/decisions/0023-authenticated-account-transcription-transport.md`
 18. `docs/decisions/0024-named-task-voice-command-routing.md`
 19. `docs/decisions/0025-native-voice-app-composition.md`
-20. `docs/product-spec.md`
-21. `docs/alpha-scope.md`
-22. `docs/decisions/0001-foundation.md`
-23. `docs/technical-spec.md`
-24. `docs/threat-model.md`
-25. `docs/implementation-backlog.md`
+20. `docs/decisions/0026-calibrated-first-party-wake-launch.md`
+21. `docs/product-spec.md`
+22. `docs/alpha-scope.md`
+23. `docs/decisions/0001-foundation.md`
+24. `docs/technical-spec.md`
+25. `docs/threat-model.md`
+26. `docs/implementation-backlog.md`
 
 Read any ticket-specific documents linked from the backlog before implementing
 that ticket.

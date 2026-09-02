@@ -1,5 +1,29 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — Calibrated first-party wake launch decision
+
+**Status:** accepted planning decision; no audio was recorded, imported,
+generated, downloaded, or trained, and no microphone or provider was used.
+
+### Decision
+
+- ADR 0026 retains on-device Sound Analysis and Conatus-owned Core ML weights
+  while making M2-02b2b2a the next implementation task.
+- The first launch is calibrated per user/device and explicitly limited to its
+  tested Mac, microphone, environment, distance, phrase, and pronunciation
+  scope. Failed calibration keeps wake activation off with manual fallback.
+- Commercially reviewed synthetic generation may reduce the initial human
+  training corpus. No openWakeWord pretrained model or ambiguously licensed
+  shared feature weight may ship.
+- The earlier 48-speaker and 24-hour-negative gate remains preserved as broader
+  support-expansion evidence rather than being presented as complete.
+
+### Next step
+
+- M2-02b2b2a first defines the strict support manifest and deterministic local
+  calibration contract with fixtures only. Personal recording, external model
+  generation/training, and live hardware validation remain separately gated.
+
 ## 2026-09-02 — M2-06d native voice app composition
 
 **Status:** complete through synthetic native composition verification. No

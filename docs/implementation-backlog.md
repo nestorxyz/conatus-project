@@ -181,9 +181,9 @@ state or another account-backed Codex task.
 
 **Depends on:** M1
 
-**Status:** In progress; M2-06a through M2-06d are complete. M2-02b2b2 remains
-approval-blocked, M2-06e is next, and live microphone, model, provider, and
-product validation is not complete.
+**Status:** In progress; M2-06a through M2-06d are complete. M2-02b2b2a is next,
+M2-06e waits on the calibrated wake-model path, and live microphone, model,
+provider, and product validation is not complete.
 
 **User-visible outcome:** A user says `Hey Conatus` and continues the command in
 the same sentence. Conatus acknowledges immediately, transcribes post-wake audio
@@ -282,7 +282,7 @@ false-reject, accent, sleep/wake, microphone denial, input-route change, headset
 and repeated start/stop tests. The product bundle contains the required privacy
 usage description and no Apple Speech or third-party pretrained wake weights.
 
-M2-02b2 is delivered through three evidence gates:
+M2-02b2 is delivered through the following evidence gates:
 
 ##### M2-02b2a Owned-data and Create ML training boundary
 
@@ -317,8 +317,9 @@ training, personal-audio, or model-weight capability. No recording is authorized
 
 ##### M2-02b2b2 Consented corpus and candidate model
 
-**Status:** Planned; blocked on qualified privacy review, configured operator
-and withdrawal details, explicit recording/import approval, and participant consent.
+**Status:** Superseded as the first-launch path by ADR 0026. Its 48-speaker and
+24-hour-negative corpus remains the broader support expansion gate and is not
+complete.
 
 **Acceptance:** The reviewed M2-02b2b1 flow is implemented by an isolated
 recorder/import operator. Separately consented, commercially distributable audio
@@ -328,9 +329,27 @@ bytes. Offline evaluation records false accepts/rejects and pronunciation/subjec
 coverage without claiming live wake performance. No third-party pretrained wake
 weights are used.
 
+##### M2-02b2b2a Synthetic candidate and calibrated support contract
+
+**Depends on:** M2-02b2a and M2-02b2b1
+
+**Status:** Planned; next.
+
+**Acceptance:** A commercially reviewed synthetic-candidate plan, hard-negative
+set, fixed evaluation inputs, and strict runtime support manifest declare the
+initial Apple Silicon, macOS, built-in microphone, room, range, phrase, and
+pronunciation scope. A deterministic local calibration state machine proves
+pass, fail, retry, raw-audio deletion, stale/device-mismatch rejection, and
+manual fallback without recording a person, downloading or training a model,
+starting a microphone, or using a provider. openWakeWord training methods may be
+prior art, but no included pretrained model or ambiguously licensed shared
+feature weight is accepted.
+
 ##### M2-02b2c Supported-Mac live validation
 
-**Status:** Planned
+**Depends on:** M2-02b2b2a
+
+**Status:** Planned; approval-gated after M2-02b2b2a.
 
 **Acceptance:** The verified candidate is integrated behind `WakeDetector` and
 passes the complete M2-02b2 live hardware acceptance above. Microphone recording

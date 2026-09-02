@@ -221,6 +221,10 @@ scope are neither required nor accepted.
 verified wake model, and account transcription relay are all available. Missing
 capabilities remain visible, voice stays off, and startup does not request
 microphone access or imply that a partial development configuration is ready.
+**P-068.** Initial hands-free support is explicitly calibrated and scoped to the
+declared Mac hardware, microphone, environment, range, phrase, and evaluated
+pronunciation groups. Failed or missing local calibration keeps wake activation
+off and presents manual activation; it never silently broadens the support claim.
 
 ## 8. Non-functional requirements
 
