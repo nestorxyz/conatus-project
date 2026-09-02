@@ -1,5 +1,61 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M1-04 bounded account-backed read-only lifecycle
+
+**Status:** complete through one explicitly approved account-backed Codex task
+and exactly one read-only turn. The durable task remains in the signed-in Codex
+account; no deletion or archival was authorized.
+
+### Delivered
+
+- ADR 0015 fixes the live-validation boundary to local stdio App Server, one
+  exact prompt, approval policy `never`, a read-only sandbox, disabled network,
+  and rejection of tool-, command-, or file-change-shaped turn items.
+- A bounded Swift App Server client for initialize, thread start/read/resume,
+  turn start, authoritative completion parsing, redacted typed failures,
+  response-size limits, timeouts, and owned-child shutdown.
+- Gateway journal schema v2 with fenced turn receipts. The exact request is
+  durably prepared before dispatch and the provider turn plus exact-response
+  fingerprints commit only after successful completion.
+- Fail-closed recovery: an uncertain create or turn dispatch is never retried
+  automatically. A committed full retry reuses the same binding and submits no
+  additional task or turn.
+- A stateful fake App Server that rejects prompt or structural-policy drift and
+  records thread and turn counts across process restarts.
+
+### Verification
+
+- `pnpm check:gateway` passed 21 Swift tests with zero failures; the two
+  approval-gated live tests skipped during synthetic validation. The fake
+  provider observed one `thread/start` and one `turn/start` after a complete
+  validator retry.
+- The explicitly approved first `pnpm check:m1-04:live` passed both live tests
+  in 5.489 seconds against the pinned `codex-cli 0.150.1`. The final reply was
+  exactly `CONATUS_M1_04_READY`, the completed turn contained no disallowed
+  item type, and two fresh App Server processes read/resumed the same identity
+  with exactly one turn.
+- A second complete live run passed in 0.931 seconds. It used the committed
+  receipt, submitted no new task or turn, and again observed exactly one stored
+  turn after restart.
+- A redacted journal query returned one ready binding, one committed turn
+  receipt, zero prepared turn receipts, and zero prepared binding receipts.
+- Public validation results contain no provider thread or turn reference,
+  workspace path, prompt text, account data, or raw App Server output.
+
+### Audit and next step
+
+- The AI-code audit made the fake provider enforce the exact prompt and policy,
+  added persisted request/response fingerprint checks on retry, and rejected a
+  changed response during idempotent turn commit.
+- Two earlier zero-turn experiments were retained in recoverable local archive
+  directories. Scoped reconciliation found no persistent provider task from
+  either attempt; they are not completion evidence.
+- M1-05 is next: integrate these durable Gateway capabilities into the native
+  Mac command center so named Products, Projects, and Tasks can create or resume
+  Codex work without entering a path or provider identifier.
+- Hosted GitHub CI remains the pre-merge, external-contribution, and release
+  gate recorded under F03.
+
 ## 2026-09-01 — M1-03 durable Codex binding and writer lease
 
 **Status:** complete through disposable local SQLite verification. No Codex
