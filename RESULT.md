@@ -10,14 +10,17 @@ Rust, mobile, provider, network, or application build toolchain.
 - Restored mobile and control-plane `verify` targets to structural component
   checks while preserving their toolchain-dependent Rust suites under explicit
   `make spike` targets and the root `make historical-spikes` aggregate.
-- Preserved GitHub coverage, including tracked iOS evidence, in a separate
-  historical-spikes job whose Rust subsets are pinned to Rust 1.97.1 with
-  Clippy and rustfmt instead of making bootstrap depend on that toolchain.
+- Added a separate historical-spikes job to preserve intended GitHub coverage,
+  including tracked iOS evidence. Its Rust subsets are pinned to Rust 1.97.1
+  with Clippy and rustfmt instead of making bootstrap depend on that toolchain.
 - Added a quality-gate regression that shadows Cargo, Rust, Node, pnpm, Swift,
   Xcode, Docker, Java, and Gradle with failing commands, then proves bootstrap
   invokes none of them.
 - `make bootstrap` and the full dependency-free `make ci` gate pass without
   installing or mutating a global toolchain.
+- GitHub run 26 did not assign a runner to any job because the account is locked
+  for a billing issue; run 25 had the same pre-existing failure. The new
+  historical-spikes job is therefore configured but not remotely executed.
 
 ## 2026-09-02 — M2-06c named Task command routing
 

@@ -20,11 +20,11 @@ and an explicitly prohibited dependency license are rejected. It also shadows
 common language and build toolchains with failing guards and proves the
 repository bootstrap remains structural and dependency-free.
 
-Historical acceptance harnesses run in the separate `historical-spikes` CI job
-through `make historical-spikes`. That job installs the pinned Rust 1.97.1
-minimal profile with Clippy and rustfmt for its Rust subsets; these
-toolchain-dependent checks are not part of the dependency-free bootstrap or
-quality job.
+Historical acceptance harnesses are configured in the separate
+`historical-spikes` CI job through `make historical-spikes`. That job installs
+the pinned Rust 1.97.1 minimal profile with Clippy and rustfmt for its Rust
+subsets; these toolchain-dependent checks are not part of the dependency-free
+bootstrap or quality job.
 
 `make sbom` writes a CycloneDX 1.5 document to
 `artifacts/conatus.cdx.json`. Its component list is generated from the reviewed

@@ -116,8 +116,8 @@ The bootstrap is dependency-free: it validates component ownership, build entry
 points, and dependency boundaries without installing packages or changing the
 host system. Component-specific build tools are introduced by later tickets.
 Historical acceptance harnesses remain available separately through
-`make historical-spikes`; GitHub CI runs their Rust checks with the pinned Rust
-1.97.1 toolchain.
+`make historical-spikes`; GitHub CI is configured to run their Rust checks with
+the pinned Rust 1.97.1 toolchain.
 
 ## Instructions for the implementing agent
 
