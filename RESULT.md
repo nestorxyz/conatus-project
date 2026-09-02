@@ -1,5 +1,60 @@
 # Conatus Implementation Results
 
+## 2026-09-01 — M1-03 durable Codex binding and writer lease
+
+**Status:** complete through disposable local SQLite verification. No Codex
+process, provider credential, provider account, real provider reference, or
+persistent Codex task was used.
+
+### Delivered
+
+- ADR 0014 fixes local ownership: Core and clients know Conatus Workspace, Task,
+  and binding IDs; only the Mac Gateway journal stores canonical paths and
+  provider task references.
+- Private SQLite journal using foreign keys, WAL mode, full synchronous
+  durability, schema-version refusal, and owner-only permissions for the
+  database and journal sidecars.
+- Canonical existing-directory registration with symlink resolution, no silent
+  rebind, no duplicate path ownership, and availability revalidation before
+  local use.
+- One opaque binding per Conatus Task, local-only provider references, immutable
+  idempotency receipts, and redacted unbound/create-pending/resume-ready restart
+  reconciliation.
+- Per-Task writer leases using immediate transactions and durable increasing
+  fence tokens; expired takeover makes every older holder stale.
+
+### Verification
+
+- `pnpm check:m1-03` passed five local-journal tests plus the nine existing
+  Gateway and Codex-contract tests, with 14 tests and zero failures.
+- Two independent journal connections proved one live writer, expiry takeover,
+  increasing fences, release without resetting the fence, and stale-writer
+  rejection.
+- Fresh connections recovered the same pending-create and resume-ready states;
+  repeated semantic requests returned the original receipt and changed
+  fingerprints failed closed.
+- Encoded public results contained no canonical path, provider task reference,
+  or provider field. The database, WAL, and shared-memory files were mode 0600.
+- A newer schema version was rejected and remained unchanged; a removed
+  registered directory failed availability revalidation.
+- `pnpm check:f03` passed the complete TypeScript, Swift Gateway, Codex-contract,
+  and disposable PostgreSQL foundation regression.
+- Repository formatting, shell lint, negative quality fixtures, lockfile,
+  secret, AGPL, dependency-license, and production dependency audit gates
+  passed with no known vulnerabilities.
+
+### Audit and next step
+
+- The AI-code audit narrowed SQL projections, separated the SQLite wrapper from
+  journal policy, added typed corruption/schema failures, and closed silent
+  schema-downgrade and stale-workspace-path cases before completion.
+- M1-04 is next: an explicitly approved, bounded, account-backed read-only Codex
+  create/resume lifecycle through this journal. It must prove exact identity
+  across Gateway restart without sending a mutating turn or creating a
+  duplicate provider task.
+- Hosted GitHub CI remains the pre-merge, external-contribution, and release
+  gate recorded under F03.
+
 ## 2026-09-01 — M1-02 registered workspace and portfolio projection
 
 **Status:** complete through disposable PostgreSQL verification under Node

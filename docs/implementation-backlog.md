@@ -68,7 +68,7 @@ blocked.
 
 **Depends on:** F03
 
-**Status:** In progress; M1-01 and M1-02 complete, M1-03 next
+**Status:** In progress; M1-01 through M1-03 complete, M1-04 next
 
 **User-visible outcome:** The Mac command center shows named projects, tasks,
 blockers, and results. A user can create or resume a Conatus-owned Codex task
@@ -124,6 +124,27 @@ projection returns Products, Projects, Tasks, active blockers, and recent
 results; a fresh connection observes the same state; cross-account reads and
 mutations reveal nothing; projection payloads contain no absolute path or
 provider reference.
+
+#### M1-03 Durable Codex binding and writer lease
+
+**Depends on:** M1-02
+
+**Status:** Complete on 2026-09-01
+
+**Outcome:** Added a Gateway-owned SQLite journal with canonical private
+workspace registration, Conatus-owned opaque Task bindings, local-only provider
+references, immutable create/resume receipts, immediate-transaction writer
+leases, durable fence tokens, and redacted restart reconciliation. The journal
+refuses newer schema versions and revalidates registered directories before
+local use.
+
+**Acceptance:** A Gateway-owned SQLite journal binds one Conatus Workspace to a
+canonical local directory and one Task to an opaque binding; provider references
+remain local and absent from redacted reconciliation; create/resume preparation
+is idempotent; conflicting fingerprints fail; two journal connections prove one
+live writer, expiry takeover with a higher fence, and stale-writer rejection; a
+fresh connection recovers pending-create and resume-ready state without starting
+Codex or using a provider account.
 
 ## How to use this backlog
 
