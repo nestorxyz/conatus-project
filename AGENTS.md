@@ -19,12 +19,13 @@ Before making meaningful changes, read:
 9. `docs/decisions/0015-bounded-account-backed-codex-validation.md`
 10. `docs/decisions/0016-loopback-command-center-boundary.md`
 11. `docs/decisions/0017-managed-voice-lifecycle.md`
-12. `docs/product-spec.md`
-13. `docs/alpha-scope.md`
-14. `docs/decisions/0001-foundation.md`
-15. `docs/technical-spec.md`
-16. `docs/threat-model.md`
-17. `docs/implementation-backlog.md`
+12. `docs/decisions/0018-local-wake-model-and-audio-boundary.md`
+13. `docs/product-spec.md`
+14. `docs/alpha-scope.md`
+15. `docs/decisions/0001-foundation.md`
+16. `docs/technical-spec.md`
+17. `docs/threat-model.md`
+18. `docs/implementation-backlog.md`
 
 Read any ticket-specific documents linked from the backlog before implementing
 that ticket.

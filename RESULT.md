@@ -1,5 +1,54 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M2-02a local activated-audio kernel
+
+**Status:** complete through deterministic native audio-kernel verification. No
+microphone permission, audio engine, personal recording, model asset, Apple
+Speech API, filesystem audio write, provider credential, or network call was
+used.
+
+### Delivered
+
+- ADR 0018 selects Apple Sound Analysis with a Conatus-owned custom Core ML wake
+  model for M2-02b. It rejects openWakeWord's noncommercial pretrained weights
+  and any other model without explicit redistribution rights and provenance.
+- A bounded mono-frame rolling buffer with strict sample-rate, continuity,
+  finite-sample, range, and capacity validation. Storage compacts periodically
+  rather than shifting the full window for every audio chunk.
+- Activated-turn capture creates a separate bounded buffer beginning exactly at
+  the accepted local wake range. Earlier ambient samples are not included, and
+  overflow is cut at the configured maximum instead of silently displacing the
+  activation boundary.
+- A wake-score gate with threshold, consecutive evidence, overlap-aware ordering,
+  replay rejection, gap reset, and cooldown. A successful activation emits
+  audible and visible feedback actions immediately.
+- Local energy turn-end detection that requires post-activation speech, rejects
+  sample-rate or frame discontinuity, prefers a proven earlier silence boundary,
+  and enforces a maximum duration.
+- Transcript-free diagnostics and a `pnpm check:m2-02a` boundary gate that also
+  rejects accidental microphone, network, Apple Speech, or model-asset coupling.
+
+### Verification
+
+- `pnpm check:m2-02a` passed under Node 24.19.0 and pnpm 10.29.2.
+- Eleven local-audio tests and the twelve existing native contract/lifecycle
+  tests passed, for twenty-three XCTest tests plus four Swift Testing command-center
+  regressions.
+- The AI-code audit separated pre-wake and activated-turn storage, removed
+  repeated full-buffer shifts, rejected replayed/gapped classifier windows and
+  sample-rate drift, and preserved an earlier silence end when a chunk also
+  crosses the maximum duration.
+
+### Limitations and next step
+
+- This kernel does not yet hear the user. M2-02b is next: create the
+  provenance-complete `Hey Conatus` model, add native microphone/Sound Analysis
+  adapters and the privacy usage description, then run explicitly approved live
+  same-sentence, false-wake, accent, sleep/wake, and audio-route tests.
+- No existing third-party pretrained wake model is approved for the bundle.
+- The preserved broad bootstrap still requires the legacy Android Rust
+  toolchain, which is not installed. No global toolchain was installed.
+
 ## 2026-09-02 — M2-01 managed voice lifecycle contract
 
 **Status:** complete through deterministic local contracts and native lifecycle

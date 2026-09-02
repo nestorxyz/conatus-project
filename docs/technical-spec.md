@@ -35,6 +35,16 @@ identifiers, credentials, paths, raw output, and Codex references are private
 to their narrow owning boundary and are excluded from public status and default
 telemetry.
 
+The first local wake implementation uses Apple Sound Analysis with a
+Conatus-owned custom Core ML sound classifier. The framework is an acoustic
+classifier behind `WakeDetector`, not semantic transcription. Before the model
+is available, the platform-independent audio kernel accepts ordered mono sample
+frames, retains a separately bounded rolling window, commits only the locally
+accepted activation range plus subsequent command audio, gates repeated scores,
+and closes the turn through local energy/silence limits. Microphone, model, and
+audio-route adapters enter only after model provenance and hardware evidence
+exist.
+
 ## 2. System boundaries
 
 ```mermaid

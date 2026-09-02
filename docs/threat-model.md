@@ -122,6 +122,11 @@ per provider-neutral Voice Turn ID reaches Task routing.
 **S-020.** The Mac receives no long-lived transcription-provider credential.
 Core derives voice authority from authenticated account context, issues only
 bounded grants, and enforces account scope, quota, expiry, and revocation.
+**S-021.** A wake model cannot ship without code and weight redistribution
+rights, training-data provenance, an immutable digest, declared labels and audio
+format, and recorded false-accept/false-reject evidence. Activated command audio
+begins at the accepted local activation range; earlier rolling-buffer samples
+remain local and are excluded from the committed turn.
 
 ## 7. Threats and controls
 

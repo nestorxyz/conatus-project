@@ -29,8 +29,11 @@ and proves same-utterance capture, exactly-once final routing, follow-up,
 barge-in, cancellation, recovery, and transcript-free public status entirely
 against deterministic local contracts. Microphone capture, wake-model
 integration, provider transcription, production identity, deployment, signing,
-and release evidence remain absent. See the verified results and exact
-limitations in [RESULT.md](RESULT.md).
+and release evidence remain absent. M2-02a now also proves a bounded in-memory
+audio kernel that excludes ambient frames before the accepted activation range,
+suppresses repeated wake scores, and closes turns on silence or a maximum
+duration. See the verified results and exact limitations in
+[RESULT.md](RESULT.md).
 
 ### Preserved pre-pivot evidence
 

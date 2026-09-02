@@ -10,6 +10,10 @@ M2-01 adds a deterministic managed-voice lifecycle and shared public status
 contract. It uses no microphone, Apple Speech API, provider connection, or
 account credential; those boundaries remain dependency-ordered M2 tickets.
 
+M2-02a adds the bounded local audio kernel, activation-range privacy boundary,
+wake-score gate, energy turn end, and safe diagnostics. The Mac still does not
+request microphone permission or bundle a wake model; those are M2-02b gates.
+
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swift build --package-path apps/macos
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swift test --package-path apps/macos
