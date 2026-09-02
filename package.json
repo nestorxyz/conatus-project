@@ -26,6 +26,7 @@
     "check:m2-06a": "node scripts/check-m2-06a.mjs",
     "check:m2-06b": "node scripts/check-m2-06b.mjs",
     "check:m2-06c": "node scripts/check-m2-06c.mjs",
+    "check:m2-06d": "node scripts/check-m2-06d.mjs",
     "check:codex-compatibility": "node scripts/check-codex-compatibility.mjs",
     "mac:app": "node scripts/build-mac-app.mjs"
   }

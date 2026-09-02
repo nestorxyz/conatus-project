@@ -217,6 +217,10 @@ Product, Project, and Task IDs. Core verifies the exact account-scoped hierarchy
 and returns a matching Voice Turn ID plus durable command ID before private UI
 commit; paths, provider identities, and client-selected account or idempotency
 scope are neither required nor accepted.
+**P-067.** Normal Mac startup enables voice only when the account session,
+verified wake model, and account transcription relay are all available. Missing
+capabilities remain visible, voice stays off, and startup does not request
+microphone access or imply that a partial development configuration is ready.
 
 ## 8. Non-functional requirements
 

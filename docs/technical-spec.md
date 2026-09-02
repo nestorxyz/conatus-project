@@ -136,6 +136,17 @@ Task, command, and accepted state. The native coordinator commits private
 presentation only after validating that receipt. No repository path, provider
 identity, Codex session, or execution dispatch crosses this boundary.
 
+The M2-06d native composition root constructs the main-actor conversation graph
+from replaceable capture, authenticated grant and relay transport, selected
+named Task routing, in-memory private presentation, and native speech. Relay
+events are serialized before entering the coordinator and transport failures are
+reduced to bounded product failures. Normal app startup separately assesses the
+account session, verified wake model, and transcription relay. If any capability
+is missing, the UI names the unavailable capability, voice remains off, and no
+microphone authorization or live dependency is started. Synthetic composition
+tests use fake external boundaries and make no microphone, provider, or Codex
+call.
+
 ## 2. System boundaries
 
 ```mermaid

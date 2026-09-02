@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import ConatusCommandCenter
+import ConatusMacComposition
 import ConatusMacRuntime
 import SwiftUI
 
@@ -9,13 +10,24 @@ import SwiftUI
 struct ConatusMacApp: App {
     @StateObject private var store: CommandCenterStore
     @StateObject private var activation: TaskActivationCoordinator
+    @StateObject private var voice: VoicePresentationStore
 
     init() {
-        let token = ProcessInfo.processInfo.environment["CONATUS_DEV_LOCAL_TOKEN"]
-        let client: any CommandCenterClient = token.map { LoopbackCommandCenterClient(bearerToken: $0) }
-            ?? UnconfiguredCommandCenterClient()
-        _store = StateObject(wrappedValue: CommandCenterStore(client: client))
         let environment = ProcessInfo.processInfo.environment
+        let token = environment["CONATUS_DEV_LOCAL_TOKEN"]?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let client: any CommandCenterClient
+        if let token, !token.isEmpty {
+            client = LoopbackCommandCenterClient(bearerToken: token)
+        } else {
+            client = UnconfiguredCommandCenterClient()
+        }
+        _store = StateObject(wrappedValue: CommandCenterStore(client: client))
+        _voice = StateObject(
+            wrappedValue: VoicePresentationStore(
+                startup: .currentBuild(environment: environment)
+            )
+        )
         if let executable = environment["CONATUS_FAKE_APP_SERVER_PATH"],
            let database = environment["CONATUS_GATEWAY_DATABASE_PATH"],
            let state = environment["CONATUS_FAKE_APP_SERVER_STATE"] {
@@ -36,7 +48,7 @@ struct ConatusMacApp: App {
 
     var body: some Scene {
         WindowGroup("Conatus") {
-            CommandCenterView(store: store, activation: activation)
+            CommandCenterView(store: store, activation: activation, voice: voice)
                 .frame(minWidth: 900, minHeight: 600)
                 .task { await store.load() }
         }

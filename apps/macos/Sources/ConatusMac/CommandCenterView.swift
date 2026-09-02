@@ -2,21 +2,23 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import ConatusCommandCenter
+import ConatusMacComposition
 import SwiftUI
 
 struct CommandCenterView: View {
     @ObservedObject var store: CommandCenterStore
     @ObservedObject var activation: TaskActivationCoordinator
+    @ObservedObject var voice: VoicePresentationStore
 
     var body: some View {
         NavigationSplitView {
-            Sidebar(store: store)
+            Sidebar(store: store, voice: voice)
                 .navigationSplitViewColumnWidth(min: 240, ideal: 290, max: 360)
         } detail: {
             ZStack {
                 Color(nsColor: .windowBackgroundColor).ignoresSafeArea()
                 if let task = store.selectedTask {
-                    TaskDetail(task: task, state: store.state, activation: activation)
+                    TaskDetail(task: task, state: store.state, activation: activation, voice: voice)
                 } else {
                     Placeholder(state: store.state) { Task { await store.load() } }
                 }
@@ -35,6 +37,7 @@ struct CommandCenterView: View {
 
 private struct Sidebar: View {
     @ObservedObject var store: CommandCenterStore
+    @ObservedObject var voice: VoicePresentationStore
 
     var body: some View {
         List(selection: $store.selectedTaskId) {
@@ -66,8 +69,39 @@ private struct Sidebar: View {
         .listStyle(.sidebar)
         .navigationTitle("Conatus")
         .safeAreaInset(edge: .bottom) {
-            SidebarStatus(state: store.state, observedAt: store.snapshot?.observedAt)
+            VStack(spacing: 0) {
+                VoiceSidebarStatus(voice: voice)
+                Divider()
+                SidebarStatus(state: store.state, observedAt: store.snapshot?.observedAt)
+            }
         }
+    }
+}
+
+private struct VoiceSidebarStatus: View {
+    @ObservedObject var voice: VoicePresentationStore
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: voice.startup.isReady ? "waveform.circle.fill" : "waveform.slash")
+                .foregroundStyle(voice.startup.isReady ? .blue : .secondary)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(voice.startup.isReady ? "Voice \(voice.status.state.rawValue)" : "Voice unavailable")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                if let capability = voice.startup.unavailable.first {
+                    Text(capability.explanation)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(.bar)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -121,6 +155,7 @@ private struct TaskDetail: View {
     let task: CommandCenterTask
     let state: CommandCenterLoadState
     @ObservedObject var activation: TaskActivationCoordinator
+    @ObservedObject var voice: VoicePresentationStore
 
     var body: some View {
         ScrollView {
@@ -162,6 +197,8 @@ private struct TaskDetail: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
+                VoiceFeatureStatus(voice: voice)
+
                 ActivationControl(task: task, coordinator: activation)
 
                 if !task.activeBlockers.isEmpty {
@@ -201,6 +238,38 @@ private struct TaskDetail: View {
             .padding(36)
         }
         .navigationTitle("Command Center")
+    }
+}
+
+private struct VoiceFeatureStatus: View {
+    @ObservedObject var voice: VoicePresentationStore
+
+    var body: some View {
+        DetailSection(
+            title: voice.startup.isReady ? "Voice command" : "Voice command unavailable",
+            icon: voice.startup.isReady ? "waveform.circle.fill" : "waveform.slash"
+        ) {
+            if voice.startup.isReady {
+                Text("State: \(voice.status.state.rawValue.capitalized)")
+                    .foregroundStyle(.secondary)
+                if let partialText = voice.partialText {
+                    Text(partialText)
+                }
+                if let commit = voice.lastCommit {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Last private command").font(.caption.weight(.semibold))
+                        Text(commit.transcript)
+                    }
+                }
+            } else {
+                Text("Conatus will not start the microphone until every required capability is configured.")
+                    .foregroundStyle(.secondary)
+                ForEach(voice.startup.unavailable, id: \.rawValue) { capability in
+                    Label(capability.explanation, systemImage: "circle.dashed")
+                        .font(.callout)
+                }
+            }
+        }
     }
 }
 

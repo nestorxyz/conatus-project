@@ -14,6 +14,7 @@ let package = Package(
         .library(name: "ConatusCommandCenter", targets: ["ConatusCommandCenter"]),
         .library(name: "ConatusVoice", targets: ["ConatusVoice"]),
         .library(name: "ConatusVoicePlatform", targets: ["ConatusVoicePlatform"]),
+        .library(name: "ConatusMacComposition", targets: ["ConatusMacComposition"]),
         .library(name: "ConatusWakeCollection", targets: ["ConatusWakeCollection"]),
         .library(name: "ConatusWakeModelTraining", targets: ["ConatusWakeModelTraining"]),
     ],
@@ -26,6 +27,7 @@ let package = Package(
             dependencies: [
                 "ConatusContracts",
                 "ConatusCommandCenter",
+                "ConatusMacComposition",
                 .product(name: "ConatusMacRuntime", package: "mac-runtime"),
             ]
         ),
@@ -33,6 +35,10 @@ let package = Package(
         .target(name: "ConatusCommandCenter", dependencies: ["ConatusContracts", "ConatusVoice"]),
         .target(name: "ConatusVoice", dependencies: ["ConatusContracts"]),
         .target(name: "ConatusVoicePlatform", dependencies: ["ConatusContracts", "ConatusVoice"]),
+        .target(
+            name: "ConatusMacComposition",
+            dependencies: ["ConatusCommandCenter", "ConatusVoice", "ConatusVoicePlatform"]
+        ),
         .target(name: "ConatusWakeCollection"),
         .target(name: "ConatusWakeModelTraining", dependencies: ["ConatusVoicePlatform"]),
         .executableTarget(name: "ConatusWakeModelTool", dependencies: ["ConatusWakeModelTraining"]),
@@ -40,6 +46,16 @@ let package = Package(
         .testTarget(name: "ConatusCommandCenterTests", dependencies: ["ConatusCommandCenter"]),
         .testTarget(name: "ConatusVoiceTests", dependencies: ["ConatusVoice"]),
         .testTarget(name: "ConatusVoicePlatformTests", dependencies: ["ConatusVoicePlatform"]),
+        .testTarget(
+            name: "ConatusMacCompositionTests",
+            dependencies: [
+                "ConatusCommandCenter",
+                "ConatusContracts",
+                "ConatusMacComposition",
+                "ConatusVoice",
+                "ConatusVoicePlatform",
+            ]
+        ),
         .testTarget(name: "ConatusWakeCollectionTests", dependencies: ["ConatusWakeCollection"]),
         .testTarget(name: "ConatusWakeModelTrainingTests", dependencies: ["ConatusWakeModelTraining"]),
     ]

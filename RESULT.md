@@ -1,5 +1,42 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M2-06d native voice app composition
+
+**Status:** complete through synthetic native composition verification. No
+microphone permission or audio, wake-model inference, provider call, production
+account, real Codex task, deployment, or paid usage was involved.
+
+### Delivered
+
+- ADR 0025 plus product, security, technical, and backlog boundaries for honest
+  native voice startup and composition.
+- A main-actor composition root connecting capture, granted account
+  transcription, serialized relay events, selected named Task routing, private
+  in-memory presentation, and native speech.
+- A Mac UI capability assessment that keeps voice off and names unavailable
+  account, verified-model, and relay capabilities without requesting microphone
+  access or implying launch readiness.
+
+### Verification
+
+- `node scripts/check-m2-06d.mjs` built an isolated Xcode Swift scratch package
+  and passed four synthetic composition tests.
+- Tests prove the complete partial/final, Task admission, private commit, spoken
+  status, and follow-up journey; network cancellation and safe replacement;
+  honest startup; and recoverable quota denial.
+- Static checks exclude Apple Speech recognition, provider credentials and
+  endpoints, microphone authorization/construction, and persistent UI storage
+  from the composition and normal startup path.
+
+### Limitations and next step
+
+- The shipping startup intentionally remains unavailable because no verified
+  wake model or configured account transcription relay is bundled.
+- M2-06e is the next slice, but it remains approval-gated and also depends on
+  M2-02b2c wake-model/hardware evidence.
+- Live microphone, wake detection, provider transcription, real Task dispatch,
+  spoken output, representative hardware, and accuracy evidence remain unrun.
+
 ## 2026-09-02 — Dependency-free bootstrap repair
 
 **Status:** complete. The repository skeleton bootstrap no longer requires a

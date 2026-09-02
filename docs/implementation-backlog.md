@@ -181,8 +181,8 @@ state or another account-backed Codex task.
 
 **Depends on:** M1
 
-**Status:** In progress; M2-06a through M2-06c are complete. M2-02b2b2 remains
-approval-blocked, M2-06d is next, and live microphone, model, provider, and
+**Status:** In progress; M2-06a through M2-06d are complete. M2-02b2b2 remains
+approval-blocked, M2-06e is next, and live microphone, model, provider, and
 product validation is not complete.
 
 **User-visible outcome:** A user says `Hey Conatus` and continues the command in
@@ -396,7 +396,7 @@ provider, persistent transcript, paid usage, or real Codex Task is used.
 
 **Depends on:** M2-05
 
-**Status:** In progress; M2-06a through M2-06c are complete and M2-06d is next.
+**Status:** In progress; M2-06a through M2-06d are complete and M2-06e is next.
 Live microphone, model, provider, and real command validation remain separately
 gated.
 
@@ -439,7 +439,7 @@ command ID before the private transcript is committed.
 
 **Depends on:** M2-02b1, M2-06b, and M2-06c
 
-**Status:** Planned
+**Status:** Complete on 2026-09-02. See `RESULT.md` and ADR 0025.
 
 **Acceptance:** The Mac composition root connects wake/capture, account
 transcription, named Task routing, private presentation, and native speech while

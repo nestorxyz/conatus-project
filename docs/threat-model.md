@@ -175,6 +175,12 @@ Product, Project, and Task hierarchy; and accepts one bounded final text for one
 Voice Turn. Cross-account or mismatched hierarchy, changed replay, malformed or
 mismatched receipt, path/provider fields, and duplicate final admission fail
 before native private transcript commit. Events and public receipts omit text.
+**S-030.** The native voice composition owns only current-process presentation
+state and cannot make normal startup ready from a token alone. Until the account
+session, verified wake model, and account relay are all available, voice remains
+off and no microphone authorization or capture begins. Partials, committed text,
+relay tokens, raw errors, provider identities, paths, and Codex identities do not
+enter logs, persistent UI state, or public status through this boundary.
 
 ## 7. Threats and controls
 

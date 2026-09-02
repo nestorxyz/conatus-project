@@ -167,6 +167,15 @@ public final class VoiceConversationCoordinator {
         }
     }
 
+    public func transcriptionFailed(voiceTurnID: VoiceTurnID, recoverable: Bool) async {
+        if ignoredTurnID == voiceTurnID || lastAdmittedTurnID == voiceTurnID { return }
+        guard activeTurnID == voiceTurnID else {
+            await fail(.malformedTranscriptionEvent)
+            return
+        }
+        await fail(recoverable ? .providerUnavailable : .malformedTranscriptionEvent)
+    }
+
     public func workCompleted(status: String) async {
         do {
             try await perform(try transition(.resultReady(status)))
