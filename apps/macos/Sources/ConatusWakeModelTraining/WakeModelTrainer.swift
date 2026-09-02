@@ -154,6 +154,7 @@ public struct WakeModelTrainer {
                 )
                 let encoder = JSONEncoder()
                 encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+                encoder.dateEncodingStrategy = .iso8601
                 let manifestData = try encoder.encode(runtimeManifest)
                 _ = try WakeModelVerifier.verify(
                     manifestData: manifestData,
@@ -285,7 +286,7 @@ public struct WakeModelTrainer {
             .map { String(format: "%02x", $0) }.joined()
 
         return WakeModelManifest(
-            schemaVersion: 1,
+            schemaVersion: 2,
             modelFileName: recipe.modelFileName,
             modelSHA256: modelDigest,
             modelLicenseIdentifier: recipe.modelLicenseIdentifier,
@@ -303,6 +304,26 @@ public struct WakeModelTrainer {
                 falseRejects: falseRejects,
                 accentTags: accentTags,
                 hardwareModels: evaluationHardwareModels.sorted()
+            ),
+            supportScope: WakeModelSupportScope(
+                hardwareArchitectures: ["arm64"],
+                minimumMacOSMajorVersion: 14,
+                microphoneClasses: ["built_in"],
+                environmentClasses: ["ordinary_indoor", "quiet_indoor"],
+                minimumDistanceMeters: 0.5,
+                maximumDistanceMeters: 2.0,
+                wakePhrase: "Hey Conatus",
+                pronunciationTags: ["en-US", "es-PE"],
+                calibrationRequired: true
+            ),
+            calibrationPolicy: WakeCalibrationPolicy(
+                policyRevision: "calibrated-launch-v1",
+                expiresAt: Date(timeIntervalSince1970: 1_830_297_600),
+                positiveTrialCount: 3,
+                hardNegativeTrialCount: 3,
+                maximumFalseRejects: 0,
+                maximumFalseAccepts: 0,
+                thresholdCandidates: [0.55, 0.65, 0.75]
             )
         )
     }

@@ -225,6 +225,11 @@ microphone access or imply that a partial development configuration is ready.
 declared Mac hardware, microphone, environment, range, phrase, and evaluated
 pronunciation groups. Failed or missing local calibration keeps wake activation
 off and presents manual activation; it never silently broadens the support claim.
+**P-069.** A reusable wake calibration is valid only for its exact opaque device,
+model digest, unexpired policy revision, and allowed threshold. Calibration
+stores scores rather than raw audio, requires deletion of every ephemeral
+capture before wake enablement, and grants no identity, Task, command, or
+approval authority.
 
 ## 8. Non-functional requirements
 

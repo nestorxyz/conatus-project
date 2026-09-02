@@ -72,9 +72,11 @@ transcription transport, named Task routing, and one Mac composition root with
 private in-memory presentation. The normal app reports account, verified wake
 model, and relay availability honestly and does not start microphone capture
 while those launch capabilities are missing. Live acceptance remains M2-06e.
-ADR 0026 makes M2-02b2b2a the next task: a Conatus-owned synthetic candidate
-plan and local calibration contract for an explicitly narrow Mac launch. The
-previous 48-speaker corpus is preserved as broader support-expansion evidence.
+ADR 0027 completes M2-02b2b2a's strict support manifest and deterministic local
+calibration contract with fixtures only. M2-02b2c is next and approval-gated: it
+must integrate a verified candidate and prove real ephemeral-audio deletion and
+wake behavior on the declared Mac scope. The previous 48-speaker corpus remains
+preserved as broader support-expansion evidence.
 
 ### Preserved pre-pivot evidence
 

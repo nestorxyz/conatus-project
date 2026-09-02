@@ -1,5 +1,38 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M2-02b2b2a calibrated wake support contract
+
+**Status:** complete through deterministic Swift fixtures only. No synthetic
+generator, audio, microphone, model download/training, provider, live wake
+inference, or real deletion ran.
+
+### Delivered
+
+- ADR 0027 and a fixed synthetic-candidate launch packet with provenance gates,
+  hard-negative phrases, score fixtures, and explicit blocked inputs.
+- Runtime wake-manifest schema 2 binding exact model bytes to the narrow Apple
+  Silicon, macOS 14+, built-in microphone, indoor room, 0.5–2 m, exact phrase,
+  and `es-PE`/`en-US` support claim plus an expiring calibration policy.
+- A pure local calibration state machine selecting the lowest passing threshold,
+  emitting raw-capture deletion before wake enablement, failing closed to manual
+  activation, and binding reuse to device, model digest, and policy revision.
+
+### Verification
+
+- Seventeen focused tests pass for strict manifest validation, pass/fail/retry,
+  deletion ordering, stale policy, stored calibration drift, unsupported device,
+  malformed sequence, and manual fallback.
+- The new static gate excludes audio/model assets and microphone, provider,
+  persistence, model-training, and download capability from this boundary.
+
+### Limitations and next step
+
+- Numeric fixtures prove deterministic control flow, not acoustic quality.
+- Deletion effects are instructions, not evidence that real audio was deleted.
+- M2-02b2c is next and requires explicit approval before selecting/running a
+  generator, creating or downloading model/audio artifacts, using a microphone,
+  integrating a candidate, or running supported-Mac validation.
+
 ## 2026-09-02 — Calibrated first-party wake launch decision
 
 **Status:** accepted planning decision; no audio was recorded, imported,

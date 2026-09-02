@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import CryptoKit
+import ConatusVoice
 import Foundation
 import Testing
 @testable import ConatusVoicePlatform
@@ -21,6 +22,11 @@ struct WakeModelManifestTests {
 
         #expect(verified.wakeLabel == "hey_conatus")
         #expect(verified.trainingDataSources.count == 1)
+        #expect(verified.supportScope.wakePhrase == "Hey Conatus")
+        #expect(verified.calibrationPolicy.thresholdCandidates == [0.55, 0.65, 0.75])
+        let calibration = WakeCalibrationContract(verifiedManifest: verified)
+        #expect(calibration.modelSHA256 == sha256(model))
+        #expect(calibration.supportedMicrophoneClass == "built_in")
     }
 
     @Test("rejects unknown manifest fields")
@@ -100,13 +106,66 @@ struct WakeModelManifestTests {
         }
     }
 
+    @Test("rejects an expanded or incomplete launch support claim", arguments: [
+        ("hardwareArchitectures", ["arm64", "x86_64"]),
+        ("microphoneClasses", ["built_in", "headset"]),
+        ("pronunciationTags", ["en-US", "es-PE", "fr-FR"]),
+    ])
+    func rejectsUnsupportedScope(field: String, value: [String]) throws {
+        let model = Data("model bytes".utf8)
+        var object = try manifestObject(modelData: model)
+        var support = try #require(object["supportScope"] as? [String: Any])
+        support[field] = value
+        object["supportScope"] = support
+
+        #expect(throws: WakeModelManifestError.invalidEvidence) {
+            try WakeModelVerifier.verify(
+                manifestData: try encode(object),
+                modelData: model,
+                expectedModelFileName: "HeyConatus.mlmodel"
+            )
+        }
+    }
+
+    @Test("rejects a manifest without calibration")
+    func rejectsMissingCalibration() throws {
+        let model = Data("model bytes".utf8)
+        var object = try manifestObject(modelData: model)
+        object.removeValue(forKey: "calibrationPolicy")
+
+        #expect(throws: WakeModelManifestError.unknownField) {
+            try WakeModelVerifier.verify(
+                manifestData: try encode(object),
+                modelData: model,
+                expectedModelFileName: "HeyConatus.mlmodel"
+            )
+        }
+    }
+
+    @Test("rejects pronunciation support absent from evaluation evidence")
+    func rejectsUnevaluatedPronunciation() throws {
+        let model = Data("model bytes".utf8)
+        var object = try manifestObject(modelData: model)
+        var evaluation = try #require(object["evaluation"] as? [String: Any])
+        evaluation["accentTags"] = ["en-US"]
+        object["evaluation"] = evaluation
+
+        #expect(throws: WakeModelManifestError.invalidEvidence) {
+            try WakeModelVerifier.verify(
+                manifestData: try encode(object),
+                modelData: model,
+                expectedModelFileName: "HeyConatus.mlmodel"
+            )
+        }
+    }
+
     private func manifestData(modelData: Data) throws -> Data {
         try encode(manifestObject(modelData: modelData))
     }
 
     private func manifestObject(modelData: Data) throws -> [String: Any] {
         [
-            "schemaVersion": 1,
+            "schemaVersion": 2,
             "modelFileName": "HeyConatus.mlmodel",
             "modelSHA256": sha256(modelData),
             "modelLicenseIdentifier": "Apache-2.0",
@@ -129,6 +188,26 @@ struct WakeModelManifestTests {
                 "falseRejects": 3,
                 "accentTags": ["es-PE", "en-US"],
                 "hardwareModels": ["MacBookPro18,3"],
+            ],
+            "supportScope": [
+                "hardwareArchitectures": ["arm64"],
+                "minimumMacOSMajorVersion": 14,
+                "microphoneClasses": ["built_in"],
+                "environmentClasses": ["ordinary_indoor", "quiet_indoor"],
+                "minimumDistanceMeters": 0.5,
+                "maximumDistanceMeters": 2.0,
+                "wakePhrase": "Hey Conatus",
+                "pronunciationTags": ["en-US", "es-PE"],
+                "calibrationRequired": true,
+            ],
+            "calibrationPolicy": [
+                "policyRevision": "calibrated-launch-v1",
+                "expiresAt": "2028-01-01T00:00:00Z",
+                "positiveTrialCount": 3,
+                "hardNegativeTrialCount": 3,
+                "maximumFalseRejects": 0,
+                "maximumFalseAccepts": 0,
+                "thresholdCandidates": [0.55, 0.65, 0.75],
             ],
         ]
     }

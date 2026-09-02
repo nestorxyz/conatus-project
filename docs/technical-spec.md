@@ -158,6 +158,14 @@ declares supported hardware, microphone, room class, distance, phrase, and
 evaluated pronunciation groups. Missing or failed calibration leaves wake off
 with manual activation available.
 
+Runtime manifest schema 2 fixes the first scope to `arm64`, macOS 14+, built-in
+microphone, quiet/ordinary indoor rooms, 0.5–2 m, exact `Hey Conatus`, and
+`es-PE`/`en-US`. Its expiring calibration policy supplies ordered threshold
+candidates and false-reject/false-accept limits. The pure local calibration
+machine retains only scores, emits raw-capture deletion before wake enablement,
+and binds a reusable receipt to opaque device ID, model SHA-256, and policy
+revision. The platform shell must execute real deletion in M2-02b2c.
+
 ## 2. System boundaries
 
 ```mermaid

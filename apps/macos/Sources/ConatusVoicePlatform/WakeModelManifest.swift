@@ -46,6 +46,68 @@ public struct WakeModelEvaluation: Codable, Equatable, Sendable {
     }
 }
 
+public struct WakeModelSupportScope: Codable, Equatable, Sendable {
+    public let hardwareArchitectures: [String]
+    public let minimumMacOSMajorVersion: Int
+    public let microphoneClasses: [String]
+    public let environmentClasses: [String]
+    public let minimumDistanceMeters: Double
+    public let maximumDistanceMeters: Double
+    public let wakePhrase: String
+    public let pronunciationTags: [String]
+    public let calibrationRequired: Bool
+
+    public init(
+        hardwareArchitectures: [String],
+        minimumMacOSMajorVersion: Int,
+        microphoneClasses: [String],
+        environmentClasses: [String],
+        minimumDistanceMeters: Double,
+        maximumDistanceMeters: Double,
+        wakePhrase: String,
+        pronunciationTags: [String],
+        calibrationRequired: Bool
+    ) {
+        self.hardwareArchitectures = hardwareArchitectures
+        self.minimumMacOSMajorVersion = minimumMacOSMajorVersion
+        self.microphoneClasses = microphoneClasses
+        self.environmentClasses = environmentClasses
+        self.minimumDistanceMeters = minimumDistanceMeters
+        self.maximumDistanceMeters = maximumDistanceMeters
+        self.wakePhrase = wakePhrase
+        self.pronunciationTags = pronunciationTags
+        self.calibrationRequired = calibrationRequired
+    }
+}
+
+public struct WakeCalibrationPolicy: Codable, Equatable, Sendable {
+    public let policyRevision: String
+    public let expiresAt: Date
+    public let positiveTrialCount: Int
+    public let hardNegativeTrialCount: Int
+    public let maximumFalseRejects: Int
+    public let maximumFalseAccepts: Int
+    public let thresholdCandidates: [Double]
+
+    public init(
+        policyRevision: String,
+        expiresAt: Date,
+        positiveTrialCount: Int,
+        hardNegativeTrialCount: Int,
+        maximumFalseRejects: Int,
+        maximumFalseAccepts: Int,
+        thresholdCandidates: [Double]
+    ) {
+        self.policyRevision = policyRevision
+        self.expiresAt = expiresAt
+        self.positiveTrialCount = positiveTrialCount
+        self.hardNegativeTrialCount = hardNegativeTrialCount
+        self.maximumFalseRejects = maximumFalseRejects
+        self.maximumFalseAccepts = maximumFalseAccepts
+        self.thresholdCandidates = thresholdCandidates
+    }
+}
+
 public struct WakeModelManifest: Codable, Equatable, Sendable {
     public let schemaVersion: Int
     public let modelFileName: String
@@ -58,6 +120,8 @@ public struct WakeModelManifest: Codable, Equatable, Sendable {
     public let trainingRecipeSHA256: String
     public let trainingDataSources: [WakeTrainingDataSource]
     public let evaluation: WakeModelEvaluation
+    public let supportScope: WakeModelSupportScope
+    public let calibrationPolicy: WakeCalibrationPolicy
 
     public init(
         schemaVersion: Int,
@@ -70,7 +134,9 @@ public struct WakeModelManifest: Codable, Equatable, Sendable {
         sampleRate: Int,
         trainingRecipeSHA256: String,
         trainingDataSources: [WakeTrainingDataSource],
-        evaluation: WakeModelEvaluation
+        evaluation: WakeModelEvaluation,
+        supportScope: WakeModelSupportScope,
+        calibrationPolicy: WakeCalibrationPolicy
     ) {
         self.schemaVersion = schemaVersion
         self.modelFileName = modelFileName
@@ -83,6 +149,8 @@ public struct WakeModelManifest: Codable, Equatable, Sendable {
         self.trainingRecipeSHA256 = trainingRecipeSHA256
         self.trainingDataSources = trainingDataSources
         self.evaluation = evaluation
+        self.supportScope = supportScope
+        self.calibrationPolicy = calibrationPolicy
     }
 }
 
@@ -125,12 +193,22 @@ public enum WakeModelVerifier {
     private static let rootKeys = Set([
         "schemaVersion", "modelFileName", "modelSHA256", "modelLicenseIdentifier",
         "distributionApprovalReference", "wakeLabel", "backgroundLabel", "sampleRate",
-        "trainingRecipeSHA256", "trainingDataSources", "evaluation",
+        "trainingRecipeSHA256", "trainingDataSources", "evaluation", "supportScope",
+        "calibrationPolicy",
     ])
     private static let sourceKeys = Set(["sourceID", "licenseIdentifier", "contentSHA256", "sampleCount"])
     private static let evaluationKeys = Set([
         "corpusSHA256", "positiveCount", "negativeMinutes", "falseAccepts", "falseRejects",
         "accentTags", "hardwareModels",
+    ])
+    private static let supportKeys = Set([
+        "hardwareArchitectures", "minimumMacOSMajorVersion", "microphoneClasses",
+        "environmentClasses", "minimumDistanceMeters", "maximumDistanceMeters", "wakePhrase",
+        "pronunciationTags", "calibrationRequired",
+    ])
+    private static let calibrationKeys = Set([
+        "policyRevision", "expiresAt", "positiveTrialCount", "hardNegativeTrialCount",
+        "maximumFalseRejects", "maximumFalseAccepts", "thresholdCandidates",
     ])
 
     public static func verify(
@@ -139,7 +217,7 @@ public enum WakeModelVerifier {
         expectedModelFileName: String
     ) throws -> WakeModelManifest {
         let manifest = try decodeStrict(manifestData)
-        guard manifest.schemaVersion == 1 else { throw WakeModelManifestError.unsupportedVersion }
+        guard manifest.schemaVersion == 2 else { throw WakeModelManifestError.unsupportedVersion }
         try validateEvidence(manifest)
         guard manifest.modelFileName == expectedModelFileName else {
             throw WakeModelManifestError.unexpectedModelFile
@@ -170,8 +248,18 @@ public enum WakeModelVerifier {
         else {
             throw WakeModelManifestError.unknownField
         }
+        guard
+            let support = object["supportScope"] as? [String: Any],
+            Set(support.keys) == supportKeys,
+            let calibration = object["calibrationPolicy"] as? [String: Any],
+            Set(calibration.keys) == calibrationKeys
+        else {
+            throw WakeModelManifestError.unknownField
+        }
         do {
-            return try JSONDecoder().decode(WakeModelManifest.self, from: data)
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            return try decoder.decode(WakeModelManifest.self, from: data)
         } catch {
             throw WakeModelManifestError.malformed
         }
@@ -202,7 +290,32 @@ public enum WakeModelVerifier {
             manifest.evaluation.falseRejects >= 0,
             manifest.evaluation.falseRejects <= manifest.evaluation.positiveCount,
             !manifest.evaluation.accentTags.isEmpty,
-            !manifest.evaluation.hardwareModels.isEmpty
+            !manifest.evaluation.hardwareModels.isEmpty,
+            manifest.supportScope.hardwareArchitectures == ["arm64"],
+            manifest.supportScope.minimumMacOSMajorVersion == 14,
+            manifest.supportScope.microphoneClasses == ["built_in"],
+            Set(manifest.supportScope.environmentClasses) == Set(["quiet_indoor", "ordinary_indoor"]),
+            manifest.supportScope.minimumDistanceMeters.isFinite,
+            manifest.supportScope.maximumDistanceMeters.isFinite,
+            manifest.supportScope.minimumDistanceMeters == 0.5,
+            manifest.supportScope.maximumDistanceMeters == 2.0,
+            manifest.supportScope.wakePhrase == "Hey Conatus",
+            Set(manifest.supportScope.pronunciationTags) == Set(["es-PE", "en-US"]),
+            Set(manifest.supportScope.pronunciationTags)
+                .isSubset(of: Set(manifest.evaluation.accentTags)),
+            manifest.supportScope.calibrationRequired,
+            !manifest.calibrationPolicy.policyRevision.isEmpty,
+            manifest.calibrationPolicy.positiveTrialCount > 0,
+            manifest.calibrationPolicy.hardNegativeTrialCount > 0,
+            manifest.calibrationPolicy.maximumFalseRejects >= 0,
+            manifest.calibrationPolicy.maximumFalseRejects < manifest.calibrationPolicy.positiveTrialCount,
+            manifest.calibrationPolicy.maximumFalseAccepts >= 0,
+            manifest.calibrationPolicy.maximumFalseAccepts < manifest.calibrationPolicy.hardNegativeTrialCount,
+            !manifest.calibrationPolicy.thresholdCandidates.isEmpty,
+            manifest.calibrationPolicy.thresholdCandidates.allSatisfy({ $0.isFinite && (0 ... 1).contains($0) }),
+            manifest.calibrationPolicy.thresholdCandidates == manifest.calibrationPolicy.thresholdCandidates.sorted(),
+            Set(manifest.calibrationPolicy.thresholdCandidates).count
+                == manifest.calibrationPolicy.thresholdCandidates.count
         else {
             throw WakeModelManifestError.invalidEvidence
         }

@@ -186,6 +186,11 @@ it grants no identity, Task, command, or approval authority. Raw calibration
 audio is deleted after calibration unless a separate reviewed opt-in authorizes
 retention. Failed, stale, mismatched-device, or out-of-scope calibration leaves
 wake activation off and cannot weaken the normal command authorization path.
+**S-032.** A wake calibration receipt is bound to the exact model digest, opaque
+device, unexpired policy revision, and an allowed threshold. Every calibration
+trial requires raw-capture deletion before wake enablement; unknown sequence or
+receipt drift fails closed with manual activation. Fixture deletion effects are
+not accepted as proof that a real platform capture was deleted.
 
 ## 7. Threats and controls
 

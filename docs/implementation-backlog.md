@@ -181,8 +181,9 @@ state or another account-backed Codex task.
 
 **Depends on:** M1
 
-**Status:** In progress; M2-06a through M2-06d are complete. M2-02b2b2a is next,
-M2-06e waits on the calibrated wake-model path, and live microphone, model,
+**Status:** In progress; M2-06a through M2-06d and M2-02b2b2a are complete.
+M2-02b2c is next and approval-gated; M2-06e waits on that calibrated wake-model
+path, and live microphone, model,
 provider, and product validation is not complete.
 
 **User-visible outcome:** A user says `Hey Conatus` and continues the command in
@@ -333,7 +334,8 @@ weights are used.
 
 **Depends on:** M2-02b2a and M2-02b2b1
 
-**Status:** Planned; next.
+**Status:** Complete on 2026-09-02 through deterministic fixtures only. See ADR
+0027 and `RESULT.md`. No generator, audio, model, microphone, or provider ran.
 
 **Acceptance:** A commercially reviewed synthetic-candidate plan, hard-negative
 set, fixed evaluation inputs, and strict runtime support manifest declare the
@@ -349,7 +351,7 @@ feature weight is accepted.
 
 **Depends on:** M2-02b2b2a
 
-**Status:** Planned; approval-gated after M2-02b2b2a.
+**Status:** Next; approval-gated after M2-02b2b2a.
 
 **Acceptance:** The verified candidate is integrated behind `WakeDetector` and
 passes the complete M2-02b2 live hardware acceptance above. Microphone recording
