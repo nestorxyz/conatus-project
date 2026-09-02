@@ -25,6 +25,8 @@ public enum VoiceSessionEvent: Equatable, Sendable {
     case speechOutputFinished(VoiceOutputCompletion)
     case bargeIn
     case cancel
+    case audioRouteLost
+    case audioRouteRestored
     case networkLost
     case networkRestored
     case fail(VoiceFailureDisposition)
@@ -148,6 +150,8 @@ public struct ManagedVoiceSession: Sendable {
              (.capturing, .cancel),
              (.transcribing, .cancel),
              (.routing, .cancel),
+             (.working, .cancel),
+             (.speaking, .cancel),
              (.recovering, .cancel):
             currentTurnID = nil
             conversationMode = .wakeRequired
@@ -156,12 +160,16 @@ public struct ManagedVoiceSession: Sendable {
 
         case (.acknowledging, .networkLost),
              (.capturing, .networkLost),
-             (.transcribing, .networkLost):
+             (.transcribing, .networkLost),
+             (.acknowledging, .audioRouteLost),
+             (.capturing, .audioRouteLost),
+             (.transcribing, .audioRouteLost):
             currentTurnID = nil
             state = .recovering
             return []
 
-        case (.recovering, .networkRestored):
+        case (.recovering, .networkRestored),
+             (.recovering, .audioRouteRestored):
             state = .capturing
             return [.beginCapture(conversationMode)]
 

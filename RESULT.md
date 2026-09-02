@@ -1,5 +1,56 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M2-05 native voice conversation integration
+
+**Status:** complete through deterministic fake integration. No microphone,
+Apple Speech, network, provider call, production Task route, real Codex task,
+transcript persistence, deployment, or paid usage was involved.
+
+### Delivered
+
+- ADR 0021 and product, security, and technical invariants for the native
+  capture/transcription/routing/speech/presentation integration boundary.
+- A main-actor Swift coordinator that acknowledges and captures before account
+  transcription, bounds private partials, admits one matching final receipt,
+  speaks status, and manages follow-up, barge-in, cancellation, recovery, and
+  sleep/wake.
+- Typed recoverable and blocked failures. Invalid lifecycle events are visible
+  and fail closed rather than disappearing; cancel works during transcription,
+  work, spoken output, and recovery.
+
+### Verification
+
+- `node scripts/check-m2-05.mjs` built an isolated Xcode Swift scratch package
+  and passed 12 focused coordinator tests.
+- The full Mac Swift package passed 35 XCTest cases. Repository format, lint,
+  quality-gate, lockfile, secret, and license checks also passed.
+- `pnpm test` passed 11 contract tests and 21 Core tests; four existing
+  PostgreSQL suites were skipped without `CONATUS_TEST_DATABASE_URL`. The local
+  run used Node 22 and emitted the expected warning because the repository pins
+  Node 24.
+- Five wake commands, one conversation-start command, and two follow-ups used
+  eight distinct Voice Turn IDs and routed exactly once each.
+- Tests also prove acknowledgement-before-transcription, presentation-only
+  partials, matching receipt admission, barge-in order, cancellation and late
+  event suppression, network/audio-route recovery, sleep/wake, quota denial,
+  malformed receipt failure, invalid-transition failure, and transcript-free
+  public status.
+- The gate statically excludes Apple Speech, provider keys, persistence, and
+  direct network use from the coordinator and uses fake dependencies plus
+  synthetic samples only.
+
+### Limitations and next step
+
+- Capture, account transcription, Task routing, speech, and presentation are
+  protocols with fake test drivers; they are not production wiring.
+- M2-02b2b2 remains blocked on reviewed consent and explicit audio collection;
+  M2-02b2c and a bounded live provider validation remain unperformed.
+- A complete hands-free product test must wait for the verified wake model,
+  native drivers, authenticated provider transport, and production Task route.
+- The required broad bootstrap still reaches the preserved Android native-core
+  check and stops because `cargo` is not installed. No global toolchain was
+  installed.
+
 ## 2026-09-02 — M2-04 provider-neutral Realtime transcription adapter
 
 **Status:** complete through deterministic fake-transport verification. No

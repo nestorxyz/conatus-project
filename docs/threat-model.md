@@ -153,6 +153,12 @@ adapter. Audio sequence gaps, malformed mapped events, unknown provider items,
 duplicate terminal events, and impossible commit acknowledgements fail closed.
 Provider item/event identifiers and raw failure payloads never enter
 provider-neutral events, public status, telemetry, or command history.
+**S-026.** Native partial transcripts remain bounded authenticated presentation
+state and cannot dispatch work. A committed transcript requires a matching
+Voice Turn ID and non-empty command receipt; cancelled, admitted, malformed, or
+late turns cannot route again. Invalid integration transitions fail closed and
+public status remains free of transcript, provider, path, credential, and Codex
+content.
 
 ## 7. Threats and controls
 

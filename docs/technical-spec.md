@@ -96,6 +96,17 @@ irrelevant because reconciliation uses the binding, and provider identifiers or
 raw errors never cross the adapter. The deterministic fake transport is the
 only M2-04 transport; authenticated live network transport is a later gate.
 
+The native M2-05 coordinator runs on the main actor and composes narrow capture,
+account-transcription, Task-routing, speech, and private-presentation protocols.
+It starts acknowledgement and capture before transcription, presents bounded
+partials without dispatch, and commits a final only after a matching Task
+admission receipt. Spoken completion explicitly enters follow-up capture or
+returns to wake-required mode; barge-in stops output before capture. Cancellation,
+sleep/wake, network and input-route recovery, dependency failure, malformed
+receipts, and invalid lifecycle transitions clear private turn state and cannot
+reuse a cancelled or admitted Voice Turn ID. Production drivers remain outside
+this fake-integration ticket.
+
 ## 2. System boundaries
 
 ```mermaid

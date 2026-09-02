@@ -60,7 +60,12 @@ M2-04 now provides the provider-neutral Realtime transcription adapter: pinned
 provider-item reconciliation, safe partial/final events, duplicate suppression,
 and typed failures through a deterministic fake transport. It performs no
 network or provider call, captures no microphone audio, and persists no
-transcript. M2-05 native conversation integration is next.
+transcript. M2-05 now adds the main-actor native conversation coordinator and
+proves partial presentation, matching Task admission, exactly-once routing,
+spoken completion, two follow-ups, barge-in, cancellation, sleep/wake, and
+network/audio-route recovery against fake dependencies. It does not yet wire a
+live microphone, wake model, provider transport, production Task router, or
+speech driver.
 
 ### Preserved pre-pivot evidence
 

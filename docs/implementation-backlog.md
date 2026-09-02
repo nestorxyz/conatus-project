@@ -181,8 +181,9 @@ state or another account-backed Codex task.
 
 **Depends on:** M1
 
-**Status:** In progress; M2-04 is complete, M2-02b2b2 remains approval-blocked,
-and M2-05 is the next implementation ticket
+**Status:** In progress; M2-05 is complete through deterministic fake integration.
+M2-02b2b2 remains approval-blocked, and live microphone/model/provider/product
+validation is not complete.
 
 **User-visible outcome:** A user says `Hey Conatus` and continues the command in
 the same sentence. Conatus acknowledges immediately, transcribes post-wake audio
@@ -367,6 +368,24 @@ credentials, and raw payloads do not cross the adapter. Deterministic tests use
 only a fake in-memory transport and synthetic bytes; no network, microphone,
 provider call, transcript persistence, or cost occurs. The authenticated live
 transport and bounded live validation remain separately approval-gated.
+
+#### M2-05 Native conversation integration
+
+**Depends on:** M2-01 and M2-04
+
+**Status:** Complete on 2026-09-02 through fake integration. See `RESULT.md` and
+ADR 0021.
+
+**Acceptance:** A main-actor Swift coordinator composes narrow capture,
+account-transcription, Task-routing, speech, and private-presentation boundaries.
+Twelve focused tests prove acknowledgement and capture before transcription,
+presentation-only partials, matching command receipts, exactly-once routing for
+five wake commands plus one conversation start and two follow-ups, spoken
+status, barge-in order, cancellation during transcription and speech,
+network/audio-route recovery, sleep/wake, typed quota and malformed failures,
+visible invalid lifecycle failure, and transcript-free public status. The gate
+uses fakes and synthetic samples only: no microphone, Apple Speech, network,
+provider, persistent transcript, paid usage, or real Codex Task is used.
 
 ## How to use this backlog
 

@@ -20,12 +20,15 @@ Before making meaningful changes, read:
 10. `docs/decisions/0016-loopback-command-center-boundary.md`
 11. `docs/decisions/0017-managed-voice-lifecycle.md`
 12. `docs/decisions/0018-local-wake-model-and-audio-boundary.md`
-13. `docs/product-spec.md`
-14. `docs/alpha-scope.md`
-15. `docs/decisions/0001-foundation.md`
-16. `docs/technical-spec.md`
-17. `docs/threat-model.md`
-18. `docs/implementation-backlog.md`
+13. `docs/decisions/0019-account-voice-grants-and-quota.md`
+14. `docs/decisions/0020-realtime-transcription-adapter.md`
+15. `docs/decisions/0021-native-voice-conversation-coordinator.md`
+16. `docs/product-spec.md`
+17. `docs/alpha-scope.md`
+18. `docs/decisions/0001-foundation.md`
+19. `docs/technical-spec.md`
+20. `docs/threat-model.md`
+21. `docs/implementation-backlog.md`
 
 Read any ticket-specific documents linked from the backlog before implementing
 that ticket.

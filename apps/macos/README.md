@@ -24,12 +24,19 @@ out clips, and emits a candidate model plus strict runtime manifest. It is not
 linked into `ConatusMac`, includes no recorder, and ships with no dataset or
 weights. See `docs/wake-model-training.md` before using it.
 
+M2-05 adds a main-actor conversation coordinator over injected capture,
+account-transcription, Task-routing, speech, and private-presentation protocols.
+Its fake-only tests cover exactly-once routing, follow-up, barge-in,
+cancellation, recovery, and transcript-free public status. Production drivers
+and live voice evidence remain later gates.
+
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swift build --package-path apps/macos
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swift test --package-path apps/macos
 pnpm mac:app
 pnpm check:m2-02b1
 pnpm check:m2-02b2a
+pnpm check:m2-05
 ```
 
 The ignored `build/Conatus.app` bundle is for local visual testing only; it is

@@ -201,6 +201,10 @@ denial fails before additional provider usage is admitted.
 IDs before they cross the adapter boundary. Partials cannot dispatch work, and
 each non-empty final can become eligible for routing at most once regardless of
 provider duplication or cross-turn completion order.
+**P-063.** The native conversation coordinator presents partials privately and
+commits a transcript only after Task routing returns a matching Voice Turn ID
+and authoritative command ID. Follow-up, barge-in, cancellation, recovery, and
+invalid lifecycle events cannot duplicate routing or fabricate acceptance.
 
 ## 8. Non-functional requirements
 
