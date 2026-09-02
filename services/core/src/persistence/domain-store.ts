@@ -2,11 +2,38 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { Pool, type PoolClient } from "pg";
-import { DomainNotFoundError, IdempotencyConflictError, StaleVersionError } from "../domain/errors.js";
+import {
+  AmbiguousReferenceError,
+  DomainNotFoundError,
+  IdempotencyConflictError,
+  StaleVersionError,
+} from "../domain/errors.js";
 import { uuidV7 } from "../domain/ids.js";
-import type { AccountOwner, CommandRecord, EvidenceSummary, ExecutionRecord, PortfolioSeed, TaskRecord } from "../domain/types.js";
+import type {
+  AccountOwner,
+  CommandRecord,
+  EvidenceSummary,
+  ExecutionRecord,
+  PortfolioEntityType,
+  PortfolioProjection,
+  PortfolioSeed,
+  ResolvedPortfolioReference,
+  TaskBlockerProjection,
+  TaskRecord,
+  TaskResultProjection,
+} from "../domain/types.js";
+import {
+  aliasConfigurations,
+  buildPortfolioProjection,
+  mapReferenceCandidate,
+  mapResolvedReference,
+  normalizePortfolioReference,
+  portfolioEntityTypes,
+  requireSummary,
+  type ReferenceRow,
+} from "./portfolio-projection.js";
 
 interface StoreOptions {
   afterAggregateWrite?: (aggregateType: string) => void;
@@ -38,8 +65,22 @@ export class DomainStore {
   }
 
   async migrate(): Promise<void> {
-    const sql = await readFile(new URL("../../migrations/001_domain_kernel.sql", import.meta.url), "utf8");
-    await this.pool.query(sql);
+    const migrationsDirectory = new URL("../../migrations/", import.meta.url);
+    const migrations = (await readdir(migrationsDirectory))
+      .filter((entry) => /^\d+_[a-z0-9_]+\.sql$/.test(entry))
+      .sort();
+    await this.pool.query(
+      `CREATE TABLE IF NOT EXISTS schema_migrations (
+         version integer PRIMARY KEY,
+         applied_at timestamptz NOT NULL DEFAULT clock_timestamp()
+       )`,
+    );
+    for (const migration of migrations) {
+      const version = Number(migration.slice(0, migration.indexOf("_")));
+      const applied = await this.pool.query("SELECT 1 FROM schema_migrations WHERE version = $1", [version]);
+      if (applied.rowCount) continue;
+      await this.pool.query(await readFile(new URL(migration, migrationsDirectory), "utf8"));
+    }
   }
 
   async createAccount(displayName: string, ownerDisplayName: string): Promise<AccountOwner> {
@@ -188,6 +229,252 @@ export class DomainStore {
         payload: { displayName: input.displayName },
       });
       return mapTask(row);
+    });
+  }
+
+  async addPortfolioAlias(input: {
+    accountId: string;
+    entityType: PortfolioEntityType;
+    entityId: string;
+    alias: string;
+    actorRef: string;
+  }): Promise<void> {
+    const normalizedAlias = normalizePortfolioReference(input.alias);
+    const config = aliasConfigurations[input.entityType];
+    await this.transaction(async (client) => {
+      const target = await client.query(
+        `SELECT 1 FROM ${config.entityTable}
+         WHERE account_id = $1 AND ${config.idColumn} = $2 FOR UPDATE`,
+        [input.accountId, input.entityId],
+      );
+      if (!target.rowCount) throw new DomainNotFoundError(config.aggregateType);
+      const existing = await client.query(
+        `SELECT 1 FROM ${config.aliasTable}
+         WHERE account_id = $1 AND ${config.idColumn} = $2 AND normalized_alias = $3`,
+        [input.accountId, input.entityId, normalizedAlias],
+      );
+      if (existing.rowCount) return;
+
+      const updated = await client.query<{ version: string }>(
+        `UPDATE ${config.entityTable}
+         SET version = version + 1, updated_at = $3, updated_by = $4
+         WHERE account_id = $1 AND ${config.idColumn} = $2
+         RETURNING version`,
+        [input.accountId, input.entityId, new Date(), input.actorRef],
+      );
+      const now = new Date();
+      await client.query(
+        `INSERT INTO ${config.aliasTable}
+          (account_id, ${config.idColumn}, alias, normalized_alias, created_at, created_by)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [input.accountId, input.entityId, input.alias.trim(), normalizedAlias, now, input.actorRef],
+      );
+      this.options.afterAggregateWrite?.(config.aggregateType);
+      await this.appendEvent(client, {
+        accountId: input.accountId,
+        aggregateType: config.aggregateType,
+        aggregateId: input.entityId,
+        aggregateVersion: Number(updated.rows[0]!.version),
+        eventType: `${config.aggregateType}AliasAdded`,
+        actorRef: input.actorRef,
+        correlationId: uuidV7(),
+        payload: { alias: input.alias.trim(), normalizedAlias },
+      });
+    });
+  }
+
+  async addTaskBlocker(input: {
+    accountId: string;
+    taskId: string;
+    summary: string;
+    actorRef: string;
+  }): Promise<TaskBlockerProjection> {
+    const summary = requireSummary(input.summary);
+    return this.transaction(async (client) => {
+      const now = new Date();
+      const task = await client.query<{ version: string }>(
+        `UPDATE tasks SET version = version + 1, updated_at = $3, updated_by = $4
+         WHERE account_id = $1 AND task_id = $2 RETURNING version`,
+        [input.accountId, input.taskId, now, input.actorRef],
+      );
+      if (!task.rowCount) throw new DomainNotFoundError("Task");
+      const blockerId = uuidV7();
+      await client.query(
+        `INSERT INTO task_blockers
+          (account_id, blocker_id, task_id, summary, state, created_at, created_by)
+         VALUES ($1, $2, $3, $4, 'active', $5, $6)`,
+        [input.accountId, blockerId, input.taskId, summary, now, input.actorRef],
+      );
+      this.options.afterAggregateWrite?.("Task");
+      await this.appendEvent(client, {
+        accountId: input.accountId,
+        aggregateType: "Task",
+        aggregateId: input.taskId,
+        aggregateVersion: Number(task.rows[0]!.version),
+        eventType: "TaskBlockerAdded",
+        actorRef: input.actorRef,
+        correlationId: uuidV7(),
+        payload: { blockerId, summary },
+      });
+      return { blockerId, summary, createdAt: now.toISOString() };
+    });
+  }
+
+  async recordTaskResult(input: {
+    accountId: string;
+    taskId: string;
+    summary: string;
+    verificationState: "unverified" | "verified" | "failed";
+    actorRef: string;
+  }): Promise<TaskResultProjection> {
+    const summary = requireSummary(input.summary);
+    return this.transaction(async (client) => {
+      const now = new Date();
+      const task = await client.query<{ version: string }>(
+        `UPDATE tasks SET version = version + 1, updated_at = $3, updated_by = $4
+         WHERE account_id = $1 AND task_id = $2 RETURNING version`,
+        [input.accountId, input.taskId, now, input.actorRef],
+      );
+      if (!task.rowCount) throw new DomainNotFoundError("Task");
+      const resultId = uuidV7();
+      await client.query(
+        `INSERT INTO task_results
+          (account_id, result_id, task_id, summary, verification_state, recorded_at, recorded_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [input.accountId, resultId, input.taskId, summary, input.verificationState, now, input.actorRef],
+      );
+      this.options.afterAggregateWrite?.("Task");
+      await this.appendEvent(client, {
+        accountId: input.accountId,
+        aggregateType: "Task",
+        aggregateId: input.taskId,
+        aggregateVersion: Number(task.rows[0]!.version),
+        eventType: "TaskResultRecorded",
+        actorRef: input.actorRef,
+        correlationId: uuidV7(),
+        payload: { resultId, summary, verificationState: input.verificationState },
+      });
+      return {
+        resultId,
+        summary,
+        verificationState: input.verificationState,
+        recordedAt: now.toISOString(),
+      };
+    });
+  }
+
+  async resolvePortfolioReference(input: {
+    accountId: string;
+    entityType: PortfolioEntityType;
+    reference: string;
+    parentId?: string;
+  }): Promise<ResolvedPortfolioReference> {
+    const normalizedReference = normalizePortfolioReference(input.reference);
+    const config = aliasConfigurations[input.entityType];
+    const parentJoin = config.parentTable
+      ? `LEFT JOIN ${config.parentTable} parent
+           ON parent.account_id = entity.account_id AND parent.${config.parentIdColumn} = entity.${config.parentColumn}`
+      : "";
+    const parentSelect = config.parentTable
+      ? `entity.${config.parentColumn} AS parent_id, parent.display_name AS parent_display_name`
+      : "NULL::uuid AS parent_id, NULL::text AS parent_display_name";
+    const parentFilter = input.parentId && config.parentColumn
+      ? `AND entity.${config.parentColumn} = $4`
+      : "";
+    const parameters = input.parentId && config.parentColumn
+      ? [input.accountId, input.reference.trim().toLowerCase(), normalizedReference, input.parentId]
+      : [input.accountId, input.reference.trim().toLowerCase(), normalizedReference];
+    const matches = await this.pool.query<ReferenceRow>(
+      `SELECT entity.${config.idColumn} AS entity_id, entity.display_name, entity.slug,
+         ${parentSelect}
+       FROM ${config.entityTable} entity
+       ${parentJoin}
+       WHERE entity.account_id = $1
+         AND (
+           entity.${config.idColumn}::text = $2
+           OR entity.slug = $3
+           OR EXISTS (
+             SELECT 1 FROM ${config.aliasTable} alias
+             WHERE alias.account_id = entity.account_id
+               AND alias.${config.idColumn} = entity.${config.idColumn}
+               AND alias.normalized_alias = $3
+           )
+         )
+         ${parentFilter}
+       ORDER BY lower(entity.display_name), entity.${config.idColumn}`,
+      parameters,
+    );
+    if (!matches.rowCount) throw new DomainNotFoundError(config.aggregateType);
+    if (matches.rowCount > 1) {
+      throw new AmbiguousReferenceError(
+        input.entityType,
+        input.reference,
+        matches.rows.map(mapReferenceCandidate),
+      );
+    }
+    return mapResolvedReference(input.entityType, matches.rows[0]!);
+  }
+
+  async getPortfolioProjection(accountId: string): Promise<PortfolioProjection> {
+    return this.transaction(async (client) => {
+      await client.query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
+      const workspaces = await client.query(
+        `SELECT workspace_id, display_name, slug, state FROM workspaces
+         WHERE account_id = $1 ORDER BY lower(display_name), workspace_id`,
+        [accountId],
+      );
+      const products = await client.query(
+        `SELECT product_id, display_name, slug, state, version FROM products
+         WHERE account_id = $1 ORDER BY lower(display_name), product_id`,
+        [accountId],
+      );
+      const projects = await client.query(
+        `SELECT project_id, product_id, workspace_id, display_name, slug, state, version FROM projects
+         WHERE account_id = $1 ORDER BY lower(display_name), project_id`,
+        [accountId],
+      );
+      const tasks = await client.query(
+        `SELECT task_id, project_id, workspace_id, display_name, slug, objective, lifecycle_state, version
+         FROM tasks WHERE account_id = $1 ORDER BY lower(display_name), task_id`,
+        [accountId],
+      );
+      const blockers = await client.query(
+        `SELECT blocker_id, task_id, summary, created_at FROM task_blockers
+         WHERE account_id = $1 AND state = 'active'
+         ORDER BY created_at, blocker_id`,
+        [accountId],
+      );
+      const results = await client.query(
+        `SELECT result_id, task_id, summary, verification_state, recorded_at
+         FROM (
+           SELECT result_id, task_id, summary, verification_state, recorded_at,
+             row_number() OVER (PARTITION BY task_id ORDER BY recorded_at DESC, result_id DESC) AS result_rank
+           FROM task_results WHERE account_id = $1
+         ) ranked
+         WHERE result_rank <= 5
+         ORDER BY task_id, recorded_at DESC, result_id DESC`,
+        [accountId],
+      );
+      const aliasRows = {} as Record<PortfolioEntityType, Record<string, unknown>[]>;
+      for (const entityType of portfolioEntityTypes) {
+        const config = aliasConfigurations[entityType];
+        const rows = await client.query(
+          `SELECT ${config.idColumn} AS entity_id, alias FROM ${config.aliasTable}
+           WHERE account_id = $1 ORDER BY lower(alias), alias`,
+          [accountId],
+        );
+        aliasRows[entityType] = rows.rows;
+      }
+      return buildPortfolioProjection({
+        accountId,
+        workspaceRows: workspaces.rows,
+        productRows: products.rows,
+        projectRows: projects.rows,
+        taskRows: tasks.rows,
+        blockerRows: blockers.rows,
+        resultRows: results.rows,
+        aliasRows,
+      });
     });
   }
 
@@ -438,7 +725,7 @@ function canonicalJson(value: unknown): string {
 }
 
 function slugify(value: string): string {
-  return value.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return normalizePortfolioReference(value);
 }
 
 function mapTask(row: Record<string, unknown>): TaskRecord {

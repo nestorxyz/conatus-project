@@ -3,7 +3,13 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { DomainNotFoundError, IdempotencyConflictError, StaleVersionError } from "../domain/errors.js";
+import {
+  AmbiguousReferenceError,
+  DomainNotFoundError,
+  IdempotencyConflictError,
+  InvalidReferenceError,
+  StaleVersionError,
+} from "../domain/errors.js";
 import { DomainStore } from "./domain-store.js";
 
 const databaseUrl = process.env.CONATUS_TEST_DATABASE_URL;
@@ -127,5 +133,229 @@ test("F02 durable kernel invariants", { skip: !databaseUrl }, async (context) =>
     const recoveredTask = await restarted.getTask(ownerA.accountId, portfolioA.task.taskId);
     assert.equal(recoveredTask.version, 2);
     assert.deepEqual(await restarted.evidence(ownerA.accountId), beforeRestart);
+  });
+});
+
+test("M1-02 named portfolio projection", { skip: !databaseUrl }, async (context) => {
+  const store = new DomainStore(databaseUrl!);
+  await store.migrate();
+  context.after(async () => store.close());
+
+  const owner = await store.createAccount("Portfolio Account", "Portfolio Owner");
+  const otherOwner = await store.createAccount("Other Portfolio Account", "Other Owner");
+  const actorRef = `principal:${owner.principalId}`;
+  const otherActorRef = `principal:${otherOwner.principalId}`;
+  const conatus = await store.createPortfolio({
+    accountId: owner.accountId,
+    actorRef,
+    idempotencyKey: "portfolio-conatus",
+    workspaceName: "Conatus Workspace",
+    productName: "Conatus",
+    projectName: "Mac V1",
+    taskName: "Voice review",
+    objective: "Review the voice experience",
+  });
+  const kubo = await store.createPortfolio({
+    accountId: owner.accountId,
+    actorRef,
+    idempotencyKey: "portfolio-kubo",
+    workspaceName: "Kubo Workspace",
+    productName: "Kubo",
+    projectName: "Invoice Launch",
+    taskName: "Invoice review",
+    objective: "Review the invoice workflow",
+  });
+
+  await store.addPortfolioAlias({
+    accountId: owner.accountId,
+    entityType: "workspace",
+    entityId: conatus.workspaceId,
+    alias: "Main code",
+    actorRef,
+  });
+  await Promise.all([
+    store.addPortfolioAlias({
+      accountId: owner.accountId,
+      entityType: "product",
+      entityId: conatus.productId,
+      alias: "Jarvis",
+      actorRef,
+    }),
+    store.addPortfolioAlias({
+      accountId: owner.accountId,
+      entityType: "product",
+      entityId: conatus.productId,
+      alias: "Jarvis",
+      actorRef,
+    }),
+  ]);
+  await store.addPortfolioAlias({
+    accountId: owner.accountId,
+    entityType: "project",
+    entityId: conatus.projectId,
+    alias: "Mac app",
+    actorRef,
+  });
+  for (const task of [conatus.task, kubo.task]) {
+    await store.addPortfolioAlias({
+      accountId: owner.accountId,
+      entityType: "task",
+      entityId: task.taskId,
+      alias: "Current review",
+      actorRef,
+    });
+  }
+  await store.addTaskBlocker({
+    accountId: owner.accountId,
+    taskId: conatus.task.taskId,
+    summary: "Wake-word device validation is pending",
+    actorRef,
+  });
+  await store.recordTaskResult({
+    accountId: owner.accountId,
+    taskId: conatus.task.taskId,
+    summary: "Stable Codex contract verified locally",
+    verificationState: "verified",
+    actorRef,
+  });
+  for (let index = 1; index <= 5; index += 1) {
+    await store.recordTaskResult({
+      accountId: owner.accountId,
+      taskId: conatus.task.taskId,
+      summary: `Additional verified result ${index}`,
+      verificationState: "verified",
+      actorRef,
+    });
+  }
+
+  await context.test("resolves IDs, primary names, and aliases without a path", async () => {
+    assert.equal(
+      (await store.resolvePortfolioReference({
+        accountId: owner.accountId,
+        entityType: "product",
+        reference: "CÓNATUS!!!",
+      })).entityId,
+      conatus.productId,
+    );
+    assert.equal(
+      (await store.resolvePortfolioReference({
+        accountId: owner.accountId,
+        entityType: "workspace",
+        reference: "main CODE",
+      })).entityId,
+      conatus.workspaceId,
+    );
+    assert.equal(
+      (await store.resolvePortfolioReference({
+        accountId: owner.accountId,
+        entityType: "project",
+        reference: conatus.projectId,
+      })).entityId,
+      conatus.projectId,
+    );
+    await assert.rejects(
+      store.resolvePortfolioReference({
+        accountId: owner.accountId,
+        entityType: "task",
+        reference: "...",
+      }),
+      InvalidReferenceError,
+    );
+  });
+
+  await context.test("returns deterministic ambiguity and accepts explicit project context", async () => {
+    await assert.rejects(
+      store.resolvePortfolioReference({
+        accountId: owner.accountId,
+        entityType: "task",
+        reference: "current review",
+      }),
+      (error: unknown) => {
+        assert.equal(error instanceof AmbiguousReferenceError, true);
+        if (!(error instanceof AmbiguousReferenceError)) return false;
+        assert.deepEqual(
+          error.candidates.map((candidate) => candidate.displayName),
+          ["Invoice review", "Voice review"],
+        );
+        assert.deepEqual(
+          error.candidates.map((candidate) => candidate.parentDisplayName),
+          ["Invoice Launch", "Mac V1"],
+        );
+        return true;
+      },
+    );
+    const resolved = await store.resolvePortfolioReference({
+      accountId: owner.accountId,
+      entityType: "task",
+      reference: "current review",
+      parentId: conatus.projectId,
+    });
+    assert.equal(resolved.entityId, conatus.task.taskId);
+  });
+
+  await context.test("persists a path-free command-center projection across restart", async () => {
+    const beforeRestart = await store.getPortfolioProjection(owner.accountId);
+    assert.equal(beforeRestart.workspaces.length, 2);
+    const conatusProduct = beforeRestart.products.find((product) => product.productId === conatus.productId)!;
+    assert.deepEqual(conatusProduct.aliases, ["Jarvis"]);
+    const conatusProject = conatusProduct.projects[0]!;
+    assert.deepEqual(conatusProject.aliases, ["Mac app"]);
+    const voiceTask = conatusProject.tasks[0]!;
+    assert.deepEqual(voiceTask.aliases, ["Current review"]);
+    assert.deepEqual(
+      voiceTask.activeBlockers.map((blocker) => blocker.summary),
+      ["Wake-word device validation is pending"],
+    );
+    assert.equal(voiceTask.recentResults.length, 5);
+    assert.equal(voiceTask.recentResults.every((result) => result.verificationState === "verified"), true);
+    const serialized = JSON.stringify(beforeRestart);
+    for (const forbidden of ["/Users/", '"cwd"', '"path"', '"provider"', '"threadId"']) {
+      assert.equal(serialized.includes(forbidden), false, `projection exposed ${forbidden}`);
+    }
+
+    const restarted = new DomainStore(databaseUrl!);
+    context.after(async () => restarted.close());
+    assert.deepEqual(await restarted.getPortfolioProjection(owner.accountId), beforeRestart);
+  });
+
+  await context.test("account scope hides aliases, projection state, and mutations", async () => {
+    assert.deepEqual(await store.getPortfolioProjection(otherOwner.accountId), {
+      accountId: otherOwner.accountId,
+      workspaces: [],
+      products: [],
+    });
+    await assert.rejects(
+      store.resolvePortfolioReference({
+        accountId: otherOwner.accountId,
+        entityType: "product",
+        reference: "Jarvis",
+      }),
+      DomainNotFoundError,
+    );
+    await assert.rejects(
+      store.addPortfolioAlias({
+        accountId: otherOwner.accountId,
+        entityType: "task",
+        entityId: conatus.task.taskId,
+        alias: "Leaked task",
+        actorRef: otherActorRef,
+      }),
+      DomainNotFoundError,
+    );
+    await assert.rejects(
+      store.addTaskBlocker({
+        accountId: otherOwner.accountId,
+        taskId: conatus.task.taskId,
+        summary: "Leaked blocker",
+        actorRef: otherActorRef,
+      }),
+      DomainNotFoundError,
+    );
+  });
+
+  await context.test("keeps durable events and outbox records one-to-one", async () => {
+    const evidence = await store.evidence(owner.accountId);
+    assert.equal(evidence.eventCount, evidence.outboxCount);
+    assert.equal(evidence.pendingOutboxCount, evidence.outboxCount);
   });
 });

@@ -45,3 +45,75 @@ export interface EvidenceSummary {
   outboxCount: number;
   pendingOutboxCount: number;
 }
+
+export type PortfolioEntityType = "workspace" | "product" | "project" | "task";
+
+export interface ResolvedPortfolioReference {
+  entityType: PortfolioEntityType;
+  entityId: string;
+  displayName: string;
+  slug: string;
+  parentId?: string;
+  parentDisplayName?: string;
+}
+
+export interface WorkspaceProjection {
+  workspaceId: string;
+  displayName: string;
+  handle: string;
+  state: string;
+  aliases: string[];
+}
+
+export interface TaskBlockerProjection {
+  blockerId: string;
+  summary: string;
+  createdAt: string;
+}
+
+export interface TaskResultProjection {
+  resultId: string;
+  summary: string;
+  verificationState: string;
+  recordedAt: string;
+}
+
+export interface TaskProjection {
+  taskId: string;
+  workspaceId: string;
+  displayName: string;
+  slug: string;
+  objective: string;
+  lifecycleState: string;
+  version: number;
+  aliases: string[];
+  activeBlockers: TaskBlockerProjection[];
+  recentResults: TaskResultProjection[];
+}
+
+export interface ProjectProjection {
+  projectId: string;
+  workspaceId: string;
+  displayName: string;
+  slug: string;
+  state: string;
+  version: number;
+  aliases: string[];
+  tasks: TaskProjection[];
+}
+
+export interface ProductProjection {
+  productId: string;
+  displayName: string;
+  slug: string;
+  state: string;
+  version: number;
+  aliases: string[];
+  projects: ProjectProjection[];
+}
+
+export interface PortfolioProjection {
+  accountId: string;
+  workspaces: WorkspaceProjection[];
+  products: ProductProjection[];
+}

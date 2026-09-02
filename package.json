@@ -11,6 +11,7 @@
     "check:f03": "node scripts/check-f03.mjs",
     "check:gateway": "node scripts/check-gateway.mjs",
     "check:m1-01": "pnpm check:codex-compatibility && pnpm check:gateway",
+    "check:m1-02": "node scripts/check-m1-02.mjs",
     "check:codex-compatibility": "node scripts/check-codex-compatibility.mjs",
     "mac:app": "node scripts/build-mac-app.mjs"
   }

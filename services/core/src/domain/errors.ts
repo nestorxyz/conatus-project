@@ -21,3 +21,36 @@ export class IdempotencyConflictError extends Error {
     this.name = "IdempotencyConflictError";
   }
 }
+
+export interface ReferenceCandidate {
+  entityId: string;
+  displayName: string;
+  slug: string;
+  parentId?: string;
+  parentDisplayName?: string;
+}
+
+export class InvalidReferenceError extends Error {
+  constructor() {
+    super("Portfolio reference must contain a name, alias, or Conatus identifier");
+    this.name = "InvalidReferenceError";
+  }
+}
+
+export class InvalidSummaryError extends Error {
+  constructor() {
+    super("Task blocker and result summaries cannot be empty");
+    this.name = "InvalidSummaryError";
+  }
+}
+
+export class AmbiguousReferenceError extends Error {
+  constructor(
+    readonly entityType: string,
+    readonly reference: string,
+    readonly candidates: readonly ReferenceCandidate[],
+  ) {
+    super(`Portfolio reference '${reference}' is ambiguous for ${entityType}`);
+    this.name = "AmbiguousReferenceError";
+  }
+}
