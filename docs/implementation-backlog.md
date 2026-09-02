@@ -181,7 +181,7 @@ state or another account-backed Codex task.
 
 **Depends on:** M1
 
-**Status:** In progress; M2-02b1 is complete and M2-02b2 is next
+**Status:** In progress; M2-02b2a is complete and M2-02b2b is next
 
 **User-visible outcome:** A user says `Hey Conatus` and continues the command in
 the same sentence. Conatus acknowledges immediately, transcribes post-wake audio
@@ -274,6 +274,45 @@ pass same-sentence activation, audible/visible feedback latency, false-accept,
 false-reject, accent, sleep/wake, microphone denial, input-route change, headset,
 and repeated start/stop tests. The product bundle contains the required privacy
 usage description and no Apple Speech or third-party pretrained wake weights.
+
+M2-02b2 is delivered through three evidence gates:
+
+##### M2-02b2a Owned-data and Create ML training boundary
+
+**Status:** Complete on 2026-09-02. See `RESULT.md`, ADR 0018, and
+`docs/wake-model-training.md`.
+
+**Acceptance:** A strict external-dataset manifest binds every audio clip to an
+opaque source/subject, consent reference, approved commercial license, SHA-256,
+recording session, fixed train/validation/test split, label, mono sample rate,
+channel count, and duration. Validation rejects unknown fields, unreviewed or
+noncommercial licensing, traversal/symlinks, missing or changed files, metadata
+drift, mixed sample rates, insufficient class/split evidence, session leakage,
+and a wake test subject seen in training. A pinned Create ML recipe trains only
+from a private digest-verified snapshot, evaluates the held-out test corpus,
+counts offline background-window false accepts and wake-clip false rejects, and
+atomically emits a candidate model plus runtime manifest. Tests and the tool
+contain no recorder, microphone permission request, dataset, model asset, Apple
+Speech, or network call.
+
+##### M2-02b2b Consented corpus and candidate model
+
+**Status:** Planned
+
+**Acceptance:** The collection protocol and launch-quality corpus thresholds
+are reviewed before recording. Separately consented, commercially distributable
+audio remains outside Git, passes M2-02b2a, and produces a candidate model whose
+runtime manifest verifies against its exact bytes. Offline evaluation records
+false accepts/rejects and accent/subject coverage without claiming live wake
+performance. No third-party pretrained wake weights are used.
+
+##### M2-02b2c Supported-Mac live validation
+
+**Status:** Planned
+
+**Acceptance:** The verified candidate is integrated behind `WakeDetector` and
+passes the complete M2-02b2 live hardware acceptance above. Microphone recording
+and bundling occur only with explicit approval and reviewed evidence.
 
 ## How to use this backlog
 

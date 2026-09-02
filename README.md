@@ -39,6 +39,12 @@ synthetically verified and does not request access, start capture, or bundle a
 model. See the verified results and exact limitations in
 [RESULT.md](RESULT.md).
 
+M2-02b2a now provides the offline, consent-safe model-production boundary: it
+validates external recordings and their provenance, trains/evaluates a custom
+Create ML sound classifier, and emits a candidate plus runtime manifest. No
+recording, dataset, or model weights are included. The next gate is collecting
+an explicitly consented corpus and producing the first honest candidate model.
+
 ### Preserved pre-pivot evidence
 
 The following completed tickets and decisions belong to the earlier

@@ -130,6 +130,12 @@ remain local and are excluded from the committed turn. Model filename and bytes
 are verified against a strict manifest before Core ML compilation. Microphone
 tap buffers are deep-copied before leaving the real-time callback, and Sound
 Analysis consumes them on one ordered serial queue.
+**S-022.** Wake-model training data remains outside Git and every clip is bound
+to an opaque subject, explicit consent reference, reviewed commercial license,
+recording session, fixed split, SHA-256 digest, and declared audio metadata.
+Training reads a private digest-verified snapshot; mutable paths, symlinks,
+session leakage, and a wake test subject already present in training fail
+closed. Offline evaluation evidence is not live wake-performance evidence.
 
 ## 7. Threats and controls
 

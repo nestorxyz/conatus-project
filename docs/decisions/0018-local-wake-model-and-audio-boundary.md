@@ -65,15 +65,24 @@ M2-02 is split at the evidence boundary:
    digest verification, microphone permission/lifecycle, copied monotonic audio
    frames, and serialized Sound Analysis scoring without a bundled model or live
    microphone start.
-3. **M2-02b2 model and hardware validation:** provenance-complete `Hey Conatus`
-   model, live same-sentence tests, false-wake and false-reject evaluation,
-   sleep/wake, and headset-route recovery.
+3. **M2-02b2a owned-data and training boundary:** strict consent, license,
+   clip-digest, audio-format, split-isolation, held-out-subject, offline
+   evaluation, and Create ML export tooling. It contains no recorder, dataset,
+   or model weights.
+4. **M2-02b2b candidate model:** separately consented recordings outside the
+   repository, approved launch-quality corpus thresholds, a trained candidate,
+   offline false-accept/false-reject evidence, and a digest-verified runtime
+   manifest.
+5. **M2-02b2c hardware validation:** bundled candidate plus live same-sentence,
+   feedback-latency, false-wake, false-reject, accent, sleep/wake, permission,
+   repeated lifecycle, and headset-route evidence on supported Macs.
 
 M2-02a does not request microphone permission, include a model, start an audio
 engine, or claim that the Mac can hear the wake phrase. M2-02b1 includes the
 permission declaration and adapter code but does not request access at test or
-application startup. M2-02 is complete only after M2-02b2 passes on supported
-hardware.
+application startup. M2-02b2a does not record, download, or synthesize audio and
+does not train placeholder weights. M2-02 is complete only after M2-02b2c passes
+on supported hardware.
 
 ## Consequences
 
@@ -104,3 +113,12 @@ hardware.
 - Sound Analysis work is serialized away from the real-time audio callback. The
   built app declares its scoped microphone purpose, while tests and normal
   startup neither request permission nor start capture.
+- M2-02b2a validates external audio against a strict manifest, approved
+  commercial-license identifiers, consent references, immutable clip digests,
+  mono 16 kHz-or-higher metadata, recording-session split isolation, and a wake
+  subject held out from training. Create ML consumes a private digest-verified
+  snapshot, not mutable source paths.
+- The offline trainer fixes validation data and training parameters, evaluates
+  only the held-out test corpus, counts background-window false accepts and
+  wake-clip false rejects, exports a candidate model plus strict runtime
+  manifest atomically, and contains no microphone or recording API.

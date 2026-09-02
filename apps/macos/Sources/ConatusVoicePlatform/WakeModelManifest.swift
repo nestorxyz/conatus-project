@@ -9,6 +9,13 @@ public struct WakeTrainingDataSource: Codable, Equatable, Sendable {
     public let licenseIdentifier: String
     public let contentSHA256: String
     public let sampleCount: Int
+
+    public init(sourceID: String, licenseIdentifier: String, contentSHA256: String, sampleCount: Int) {
+        self.sourceID = sourceID
+        self.licenseIdentifier = licenseIdentifier
+        self.contentSHA256 = contentSHA256
+        self.sampleCount = sampleCount
+    }
 }
 
 public struct WakeModelEvaluation: Codable, Equatable, Sendable {
@@ -19,6 +26,24 @@ public struct WakeModelEvaluation: Codable, Equatable, Sendable {
     public let falseRejects: Int
     public let accentTags: [String]
     public let hardwareModels: [String]
+
+    public init(
+        corpusSHA256: String,
+        positiveCount: Int,
+        negativeMinutes: Int,
+        falseAccepts: Int,
+        falseRejects: Int,
+        accentTags: [String],
+        hardwareModels: [String]
+    ) {
+        self.corpusSHA256 = corpusSHA256
+        self.positiveCount = positiveCount
+        self.negativeMinutes = negativeMinutes
+        self.falseAccepts = falseAccepts
+        self.falseRejects = falseRejects
+        self.accentTags = accentTags
+        self.hardwareModels = hardwareModels
+    }
 }
 
 public struct WakeModelManifest: Codable, Equatable, Sendable {
@@ -33,6 +58,57 @@ public struct WakeModelManifest: Codable, Equatable, Sendable {
     public let trainingRecipeSHA256: String
     public let trainingDataSources: [WakeTrainingDataSource]
     public let evaluation: WakeModelEvaluation
+
+    public init(
+        schemaVersion: Int,
+        modelFileName: String,
+        modelSHA256: String,
+        modelLicenseIdentifier: String,
+        distributionApprovalReference: String,
+        wakeLabel: String,
+        backgroundLabel: String,
+        sampleRate: Int,
+        trainingRecipeSHA256: String,
+        trainingDataSources: [WakeTrainingDataSource],
+        evaluation: WakeModelEvaluation
+    ) {
+        self.schemaVersion = schemaVersion
+        self.modelFileName = modelFileName
+        self.modelSHA256 = modelSHA256
+        self.modelLicenseIdentifier = modelLicenseIdentifier
+        self.distributionApprovalReference = distributionApprovalReference
+        self.wakeLabel = wakeLabel
+        self.backgroundLabel = backgroundLabel
+        self.sampleRate = sampleRate
+        self.trainingRecipeSHA256 = trainingRecipeSHA256
+        self.trainingDataSources = trainingDataSources
+        self.evaluation = evaluation
+    }
+}
+
+public enum WakeDistributionPolicy {
+    private static let approvedLicenseIdentifiers: Set<String> = [
+        "AGPL-3.0-or-later",
+        "Apache-2.0",
+        "BSD-2-Clause",
+        "BSD-3-Clause",
+        "CC-BY-4.0",
+        "CC0-1.0",
+        "Conatus-Owned-1.0",
+        "MIT",
+    ]
+
+    public static func allowsCommercialUse(_ licenseIdentifier: String) -> Bool {
+        let lowered = licenseIdentifier.lowercased()
+        let tokens = lowered.components(separatedBy: CharacterSet.alphanumerics.inverted)
+            .filter { !$0.isEmpty }
+        let isNoncommercial = lowered.contains("noncommercial")
+            || tokens.contains("nc")
+            || tokens.indices.dropLast().contains(where: {
+                tokens[$0] == "non" && tokens[$0 + 1] == "commercial"
+            })
+        return approvedLicenseIdentifiers.contains(licenseIdentifier) && !isNoncommercial
+    }
 }
 
 public enum WakeModelManifestError: Error, Equatable, Sendable {
@@ -132,7 +208,7 @@ public enum WakeModelVerifier {
         }
         let licenses = [manifest.modelLicenseIdentifier]
             + manifest.trainingDataSources.map(\.licenseIdentifier)
-        guard !licenses.contains(where: isNoncommercial) else {
+        guard licenses.allSatisfy(WakeDistributionPolicy.allowsCommercialUse) else {
             throw WakeModelManifestError.noncommercialLicense
         }
     }
@@ -146,14 +222,4 @@ public enum WakeModelVerifier {
         return value.count == 64 && value.allSatisfy(hexadecimal.contains)
     }
 
-    private static func isNoncommercial(_ value: String) -> Bool {
-        let lowered = value.lowercased()
-        let tokens = lowered.components(separatedBy: CharacterSet.alphanumerics.inverted)
-            .filter { !$0.isEmpty }
-        return lowered.contains("noncommercial")
-            || tokens.contains("nc")
-            || tokens.indices.dropLast().contains(where: {
-                tokens[$0] == "non" && tokens[$0 + 1] == "commercial"
-            })
-    }
 }

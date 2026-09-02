@@ -52,6 +52,19 @@ evidence. No model is compiled until that manifest passes. M2-02b1 verifies
 this adapter boundary synthetically; actual microphone use, the model artifact,
 and hardware/audio-route evidence remain M2-02b2.
 
+The offline model-production path is separate from the app runtime. A strict
+manifest points only to an external dataset and records opaque subjects,
+consent references, approved licenses, per-clip SHA-256 values, recording
+sessions, immutable splits, labels, and audio metadata. Validation rejects
+session leakage and requires a wake subject in testing that is absent from
+training. Create ML receives a private copied snapshot whose digest is checked
+after copying, fixed validation data, and a pinned recipe. Only held-out test
+clips contribute to the evaluation-corpus digest. Overlapping background
+windows contribute false accepts; a wake clip contributes one false reject only
+when none of its windows detects the phrase. Model and runtime manifest
+publication is atomic. This tooling never records audio and is not linked into
+`ConatusMac`.
+
 ## 2. System boundaries
 
 ```mermaid

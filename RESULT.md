@@ -1,5 +1,55 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M2-02b2a owned-data and Create ML training boundary
+
+**Status:** complete through deterministic offline tooling verification. No
+microphone permission was requested, no person was recorded, no audio or model
+asset was committed, and no training run was represented as completed.
+
+### Delivered
+
+- A strict external-dataset manifest for opaque sources/subjects, consent
+  references, allowlisted commercial licenses, clip/session IDs, fixed splits,
+  labels, SHA-256 values, and audio metadata.
+- Validation for unknown fields, unsafe or symlinked paths, changed bytes,
+  missing files, mono/sample-rate/duration drift, mixed sample rates,
+  insufficient splits, recording-session leakage, and wake-subject leakage from
+  training into held-out testing.
+- A separate offline Create ML training target and CLI. It copies validated
+  clips into a private temporary snapshot, verifies copied digests, uses an
+  explicit validation set and pinned Audio Feature Print/logistic recipe,
+  evaluates held-out test clips, counts background-window false accepts and
+  wake-clip false rejects, atomically emits a candidate plus strict runtime
+  manifest, and treats private-snapshot cleanup failure as an error rather than
+  ignoring it.
+- A no-recording ticket gate that rejects audio/model assets in Git and
+  microphone, recorder, Apple Speech, or permission APIs in the trainer.
+- A durable privacy, consent, manifest, command, and evidence guide in
+  `docs/wake-model-training.md`.
+
+### Verification
+
+- `pnpm check:m2-02b2a` passes the complete native suite and CLI boundary.
+- Twenty-three XCTest cases and twenty-five Swift Testing cases pass, including
+  the nine new dataset/training-recipe cases.
+- Repository formatting, lint, quality-fixture, lockfile, secret, AGPL, and
+  dependency-license gates pass.
+- The AI-code audit replaced permissive license inference with an explicit
+  reviewed allowlist, made the evaluation digest test-only, required a held-out
+  wake subject, rejected unknown prediction labels, and snapshot-verified every
+  file before Create ML can read it.
+
+### Limitations and next step
+
+- There is still no wake model and Conatus still cannot hear `Hey Conatus` from
+  this repository state. M2-02b2b next requires review of the collection and
+  consent packet plus launch corpus thresholds, followed by explicit approval
+  before any recording or imported dataset is used.
+- Offline classification is not live wake evidence. Bundling and supported-Mac
+  microphone testing remain M2-02b2c.
+- The preserved broad bootstrap still requires the legacy Android Rust
+  toolchain, which is not installed. No global toolchain was installed.
+
 ## 2026-09-02 — M2-02b1 native microphone and Sound Analysis boundary
 
 **Status:** complete through synthetic native-adapter and app-bundle

@@ -18,11 +18,18 @@ microphone purpose string. Tests and normal startup still do not request
 microphone permission, start capture, compile Core ML, or bundle a wake model;
 the real `Hey Conatus` model and hardware validation remain M2-02b2.
 
+M2-02b2a adds a separate offline `ConatusWakeModelTool`. It validates consented
+audio stored outside the repository, trains through Create ML, evaluates held-
+out clips, and emits a candidate model plus strict runtime manifest. It is not
+linked into `ConatusMac`, includes no recorder, and ships with no dataset or
+weights. See `docs/wake-model-training.md` before using it.
+
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swift build --package-path apps/macos
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swift test --package-path apps/macos
 pnpm mac:app
 pnpm check:m2-02b1
+pnpm check:m2-02b2a
 ```
 
 The ignored `build/Conatus.app` bundle is for local visual testing only; it is
