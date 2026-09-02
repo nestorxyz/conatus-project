@@ -26,8 +26,9 @@ person was recorded, and no audio or model asset was created.
 
 ### Verification
 
-- `pnpm check:m2-02b2b1` passes the complete native suite and collection
-  boundary scan.
+- `node scripts/check-m2-02b2b1.mjs` passes the complete native suite and
+  collection boundary scan. `pnpm check:m2-02b2b1` maps to the same entrypoint;
+  its Corepack launcher could not write this host's sandboxed user cache.
 - The new collection suite covers strict consent, unknown/incomplete/unsafe
   consent, pre-consent recording denial, retakes, ordered completion, malformed
   evidence, and invalid plans.
