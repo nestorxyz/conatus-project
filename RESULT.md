@@ -1,5 +1,24 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — Dependency-free bootstrap repair
+
+**Status:** complete. The repository skeleton bootstrap no longer requires a
+Rust, mobile, provider, network, or application build toolchain.
+
+### Delivered and verified
+
+- Restored mobile and control-plane `verify` targets to structural component
+  checks while preserving their toolchain-dependent Rust suites under explicit
+  `make spike` targets and the root `make historical-spikes` aggregate.
+- Preserved GitHub coverage, including tracked iOS evidence, in a separate
+  historical-spikes job whose Rust subsets are pinned to Rust 1.97.1 with
+  Clippy and rustfmt instead of making bootstrap depend on that toolchain.
+- Added a quality-gate regression that shadows Cargo, Rust, Node, pnpm, Swift,
+  Xcode, Docker, Java, and Gradle with failing commands, then proves bootstrap
+  invokes none of them.
+- `make bootstrap` and the full dependency-free `make ci` gate pass without
+  installing or mutating a global toolchain.
+
 ## 2026-09-02 — M2-06c named Task command routing
 
 **Status:** complete through disposable PostgreSQL and synthetic native-client

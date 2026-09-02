@@ -5,9 +5,10 @@ organization-scoped authorization.
 
 ## Build entry point
 
-Run `make verify` from this directory. The disposable C-004 comparison harness
-is under `spikes/rust-web-stack`; it is acceptance evidence and is not a
-production service.
+Run `make verify` from this directory for the dependency-free component boundary
+check. The disposable C-004 comparison harness is under
+`spikes/rust-web-stack`; run it separately with `make spike` in a pinned Rust
+environment. It is acceptance evidence and is not a production service.
 
 ## Dependency boundary
 

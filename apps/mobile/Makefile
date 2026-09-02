@@ -1,5 +1,5 @@
 .PHONY: verify spike ios-spike android-spike android-native-core cryptographic-boundary-spike
-verify: spike
+verify:
 	@test -f README.md
 	@test -f OWNERS
 

@@ -27,6 +27,16 @@ jobs:
           path: artifacts/conatus.cdx.json
           if-no-files-found: error
 
+  historical-spikes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install pinned Rust spike toolchain
+        run: rustup toolchain install 1.97.1 --profile minimal --component clippy,rustfmt
+      - name: Run historical Rust spike checks
+        run: env RUSTUP_TOOLCHAIN=1.97.1 make historical-spikes
+
   domain:
     runs-on: ubuntu-latest
     timeout-minutes: 15

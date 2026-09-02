@@ -8,4 +8,3 @@ spike:
 verify:
 	@test -f README.md
 	@test -f OWNERS
-	@$(MAKE) --no-print-directory spike
