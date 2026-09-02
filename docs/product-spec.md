@@ -212,6 +212,11 @@ one pending output without replaying or duplicating conversation transitions.
 PCM audio with a short-lived single-purpose Conatus relay token. It cannot
 select account scope, receive provider credentials or identifiers, persist the
 token or raw audio, or accept a late or non-monotonic relay event as a command.
+**P-066.** A final Voice Turn routes only through the selected Conatus Workspace,
+Product, Project, and Task IDs. Core verifies the exact account-scoped hierarchy
+and returns a matching Voice Turn ID plus durable command ID before private UI
+commit; paths, provider identities, and client-selected account or idempotency
+scope are neither required nor accepted.
 
 ## 8. Non-functional requirements
 

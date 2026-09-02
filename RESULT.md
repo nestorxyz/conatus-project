@@ -1,5 +1,50 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M2-06c named Task command routing
+
+**Status:** complete through disposable PostgreSQL and synthetic native-client
+verification. No microphone, provider/model call, real Codex task, command
+execution, production account, deployment, or paid usage was involved.
+
+### Delivered
+
+- ADR 0024 plus product, security, technical, and backlog boundaries for routing
+  one committed Voice Turn to a selected named Task.
+- Strict shared request and receipt contracts containing only the Voice Turn,
+  stable Workspace/Product/Project/Task IDs, bounded final text, and durable
+  command ID.
+- An authenticated loopback Core route that derives account, principal, actor,
+  and Voice Turn idempotency server-side, then atomically verifies the exact
+  account-scoped hierarchy and admits the durable command.
+- A native selected-Task router and loopback client that fail closed on missing
+  or inconsistent selection, malformed or mismatched receipts, authorization,
+  conflict, and unavailable service states.
+
+### Verification
+
+- `node scripts/check-m2-06c.mjs` built contracts and Core, ran their full suites
+  against disposable PostgreSQL, and ran the focused Swift contract, selection,
+  router, and HTTP-client tests with synthetic input only.
+- Persistence tests prove exact hierarchy and account isolation, same-turn
+  replay across a restarted store, and conflict on changed text or target.
+- Native tests prove stable-ID routing, exact loopback authorization and body,
+  no route without selection, inconsistent hierarchy rejection, and matching
+  receipt admission.
+- Static checks exclude client-selected identity, provider identity, filesystem
+  paths, provider credentials, and direct provider endpoints from this route.
+
+### Limitations and next step
+
+- An accepted durable command is not dispatched to a real Codex task in this
+  slice. Provider and Codex execution remain behind Core-owned capabilities.
+- M2-06d next composes wake/capture, account transcription, this named Task
+  route, private presentation, and native speech into one synthetic app journey.
+- Live microphone, model, provider, and real Task validation remain separately
+  approval-gated under M2-06e.
+- The required broad bootstrap still reaches the preserved Android native-core
+  check and stops because `cargo` is not installed. No global toolchain was
+  installed.
+
 ## 2026-09-02 — M2-06b authenticated account-transcription transport
 
 **Status:** complete through authenticated loopback and deterministic fake-relay

@@ -125,6 +125,17 @@ Turn with a contiguous revision and one terminal. The deterministic gate uses a
 fake relay; provider networking, microphone access, accuracy evidence, and paid
 usage remain live-acceptance work.
 
+The M2-06c router resolves the currently selected command-center entry into
+Conatus Workspace, Product, Project, and Task UUIDs and sends those IDs, one
+Voice Turn ID, and bounded final text to authenticated loopback Core. Core
+derives account/principal identity and the `voice-turn:<id>` idempotency scope,
+then verifies the complete hierarchy inside the same transaction that stores a
+`task.voice_message` command. Replays return the same durable command UUID;
+changed text or target conflicts. The receipt contains only matching Voice Turn,
+Task, command, and accepted state. The native coordinator commits private
+presentation only after validating that receipt. No repository path, provider
+identity, Codex session, or execution dispatch crosses this boundary.
+
 ## 2. System boundaries
 
 ```mermaid

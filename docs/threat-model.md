@@ -169,6 +169,12 @@ post-wake samples, and monotonic provider-neutral relay events. The plaintext
 relay token exists only for the active turn and is revoked on every terminal or
 failed-start path; it never enters presentation, persistence, public status, or
 telemetry. Client-selected account scope and provider credentials are absent.
+**S-029.** Named voice-command admission derives account, principal, actor, and
+idempotency scope server-side; atomically verifies the complete Workspace,
+Product, Project, and Task hierarchy; and accepts one bounded final text for one
+Voice Turn. Cross-account or mismatched hierarchy, changed replay, malformed or
+mismatched receipt, path/provider fields, and duplicate final admission fail
+before native private transcript commit. Events and public receipts omit text.
 
 ## 7. Threats and controls
 

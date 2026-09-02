@@ -16,7 +16,7 @@ public enum CommandCenterLoadState: Equatable, Sendable {
 }
 
 @MainActor
-public final class CommandCenterStore: ObservableObject {
+public final class CommandCenterStore: ObservableObject, NamedTaskSelecting {
     @Published public private(set) var state: CommandCenterLoadState = .idle
     @Published public private(set) var snapshot: CommandCenterSnapshot?
     @Published public var selectedTaskId: String?
@@ -29,6 +29,25 @@ public final class CommandCenterStore: ObservableObject {
 
     public var selectedTask: CommandCenterTask? {
         snapshot?.products.lazy.flatMap(\.projects).flatMap(\.tasks).first { $0.taskId == selectedTaskId }
+    }
+
+    public var selectedNamedTaskRoute: NamedTaskRoute? {
+        guard let selectedTaskId else { return nil }
+        for product in snapshot?.products ?? [] {
+            for project in product.projects {
+                if let task = project.tasks.first(where: { $0.taskId == selectedTaskId }),
+                   task.workspaceId == project.workspaceId
+                {
+                    return NamedTaskRoute(
+                        workspaceID: task.workspaceId,
+                        productID: product.productId,
+                        projectID: project.projectId,
+                        taskID: task.taskId
+                    )
+                }
+            }
+        }
+        return nil
     }
 
     public func load() async {

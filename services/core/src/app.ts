@@ -6,14 +6,18 @@ import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest }
 import {
   isCommandCenterSnapshot,
   isComponentHealth,
+  isNamedTaskCommandRequest,
+  isNamedTaskCommandResponse,
   isVoiceGrantRequest,
   isVoiceGrantResponse,
   type CommandCenterSnapshot,
   type ComponentHealth,
+  type NamedTaskCommandResponse,
   type VoiceGrantResponse,
 } from "@conatus/contracts";
 import {
   DomainNotFoundError,
+  IdempotencyConflictError,
   VoiceGrantLimitError,
   VoiceQuotaExceededError,
 } from "./domain/errors.js";
@@ -62,9 +66,28 @@ export interface VoiceGrantRouteOptions {
   now?: () => Date;
 }
 
+export interface NamedTaskCommandAuthority {
+  admit(input: {
+    accountId: string;
+    principalId: string;
+    voiceTurnId: string;
+    workspaceId: string;
+    productId: string;
+    projectId: string;
+    taskId: string;
+    text: string;
+  }): Promise<NamedTaskCommandResponse>;
+}
+
+export interface NamedTaskCommandRouteOptions {
+  identityResolver: RequestIdentityResolver;
+  authority: NamedTaskCommandAuthority;
+}
+
 export interface AppOptions {
   commandCenter?: CommandCenterRouteOptions;
   voiceGrants?: VoiceGrantRouteOptions;
+  namedTaskCommands?: NamedTaskCommandRouteOptions;
 }
 
 export class LocalBearerIdentityResolver implements RequestIdentityResolver {
@@ -129,7 +152,49 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
   if (options.voiceGrants) {
     registerVoiceGrantRoutes(app, options.voiceGrants);
   }
+  if (options.namedTaskCommands) {
+    registerNamedTaskCommandRoutes(app, options.namedTaskCommands);
+  }
   return app;
+}
+
+function registerNamedTaskCommandRoutes(
+  app: FastifyInstance,
+  commands: NamedTaskCommandRouteOptions,
+): void {
+  app.post("/v1/voice/commands", async (request, reply) => {
+    const identity = await requireLoopbackIdentity(request, reply, commands.identityResolver);
+    if (!identity) return;
+    if (!isNamedTaskCommandRequest(request.body)) {
+      return reply.code(400).send({ error: "invalid_named_task_command" });
+    }
+    try {
+      const admission = await commands.authority.admit({
+        accountId: identity.accountId,
+        principalId: identity.principalId,
+        voiceTurnId: request.body.voiceTurnId,
+        workspaceId: request.body.workspaceId,
+        productId: request.body.productId,
+        projectId: request.body.projectId,
+        taskId: request.body.taskId,
+        text: request.body.text,
+      });
+      if (!isNamedTaskCommandResponse(admission)
+          || admission.voiceTurnId !== request.body.voiceTurnId
+          || admission.taskId !== request.body.taskId) {
+        return reply.code(503).send({ error: "named_task_command_unavailable" });
+      }
+      return reply.code(201).send(admission);
+    } catch (error) {
+      if (error instanceof DomainNotFoundError) {
+        return reply.code(404).send({ error: "named_task_not_found" });
+      }
+      if (error instanceof IdempotencyConflictError) {
+        return reply.code(409).send({ error: "voice_turn_conflict" });
+      }
+      return reply.code(503).send({ error: "named_task_command_unavailable" });
+    }
+  });
 }
 
 function registerVoiceGrantRoutes(app: FastifyInstance, voiceGrants: VoiceGrantRouteOptions): void {

@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "voiceTurnId": "voice-turn-1",
+  "workspaceId": "/Users/private/workspace",
+  "productId": "019cc2a0-0000-7000-8000-000000000011",
+  "projectId": "019cc2a0-0000-7000-8000-000000000012",
+  "taskId": "019cc2a0-0000-7000-8000-000000000013",
+  "text": "Continue building.",
+  "providerId": "provider-private"
+}

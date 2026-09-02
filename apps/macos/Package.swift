@@ -30,7 +30,7 @@ let package = Package(
             ]
         ),
         .target(name: "ConatusContracts"),
-        .target(name: "ConatusCommandCenter"),
+        .target(name: "ConatusCommandCenter", dependencies: ["ConatusContracts", "ConatusVoice"]),
         .target(name: "ConatusVoice", dependencies: ["ConatusContracts"]),
         .target(name: "ConatusVoicePlatform", dependencies: ["ConatusContracts", "ConatusVoice"]),
         .target(name: "ConatusWakeCollection"),

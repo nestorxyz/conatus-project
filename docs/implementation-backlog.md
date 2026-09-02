@@ -181,10 +181,9 @@ state or another account-backed Codex task.
 
 **Depends on:** M1
 
-**Status:** In progress; M2-06a native spoken status and M2-06b authenticated
-account transcription are complete. M2-02b2b2 remains approval-blocked, M2-06c
-is next, and live microphone, model, provider, and product validation is not
-complete.
+**Status:** In progress; M2-06a through M2-06c are complete. M2-02b2b2 remains
+approval-blocked, M2-06d is next, and live microphone, model, provider, and
+product validation is not complete.
 
 **User-visible outcome:** A user says `Hey Conatus` and continues the command in
 the same sentence. Conatus acknowledges immediately, transcribes post-wake audio
@@ -397,7 +396,7 @@ provider, persistent transcript, paid usage, or real Codex Task is used.
 
 **Depends on:** M2-05
 
-**Status:** In progress; M2-06a and M2-06b are complete and M2-06c is next.
+**Status:** In progress; M2-06a through M2-06c are complete and M2-06d is next.
 Live microphone, model, provider, and real command validation remain separately
 gated.
 
@@ -429,7 +428,7 @@ separately approved bounded live transcription.
 
 **Depends on:** M1-05 and M2-06b
 
-**Status:** Planned
+**Status:** Complete on 2026-09-02. See `RESULT.md` and ADR 0024.
 
 **Acceptance:** A committed Voice Turn routes through stable Conatus Product,
 Project, Task, and Workspace IDs without requiring or exposing repository paths

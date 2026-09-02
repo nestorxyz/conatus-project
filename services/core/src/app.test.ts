@@ -4,8 +4,18 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { isComponentHealth } from "@conatus/contracts";
-import { buildApp, LocalBearerIdentityResolver, type VoiceGrantAuthority } from "./app.js";
-import { VoiceGrantLimitError, VoiceQuotaExceededError } from "./domain/errors.js";
+import {
+  buildApp,
+  LocalBearerIdentityResolver,
+  type NamedTaskCommandAuthority,
+  type VoiceGrantAuthority,
+} from "./app.js";
+import {
+  DomainNotFoundError,
+  IdempotencyConflictError,
+  VoiceGrantLimitError,
+  VoiceQuotaExceededError,
+} from "./domain/errors.js";
 import type { PortfolioProjection } from "./domain/types.js";
 
 test("GET /health returns the shared contract", async () => {
@@ -98,6 +108,135 @@ test("command center hides reader failures", async () => {
   assert.deepEqual(response.json(), { error: "command_center_unavailable" });
   assert.equal(response.body.includes("private database detail"), false);
   await app.close();
+});
+
+const namedTaskRequest = {
+  schemaVersion: 1,
+  voiceTurnId: "voice-turn-1",
+  workspaceId: "019cc2a0-0000-7000-8000-000000000010",
+  productId: "019cc2a0-0000-7000-8000-000000000011",
+  projectId: "019cc2a0-0000-7000-8000-000000000012",
+  taskId: "019cc2a0-0000-7000-8000-000000000013",
+  text: "Continue the named task.",
+} as const;
+
+function namedTaskCommandApp(authority: NamedTaskCommandAuthority) {
+  return buildApp({
+    namedTaskCommands: {
+      identityResolver: new LocalBearerIdentityResolver("command-test-token", {
+        accountId: "command-account-private",
+        principalId: "command-principal-private",
+      }),
+      authority,
+    },
+  });
+}
+
+test("named Task command derives identity and returns a matching durable admission", async () => {
+  let received: Parameters<NamedTaskCommandAuthority["admit"]>[0] | undefined;
+  const app = namedTaskCommandApp({
+    async admit(input) {
+      received = input;
+      return {
+        schemaVersion: 1,
+        voiceTurnId: input.voiceTurnId,
+        taskId: input.taskId,
+        commandId: "019cc2a0-0000-7000-8000-000000000020",
+        state: "accepted",
+      };
+    },
+  });
+  const response = await app.inject({
+    method: "POST",
+    url: "/v1/voice/commands?accountId=attacker-selected",
+    headers: { authorization: "Bearer command-test-token" },
+    payload: namedTaskRequest,
+  });
+  assert.equal(response.statusCode, 201);
+  assert.deepEqual(received, {
+    accountId: "command-account-private",
+    principalId: "command-principal-private",
+    voiceTurnId: namedTaskRequest.voiceTurnId,
+    workspaceId: namedTaskRequest.workspaceId,
+    productId: namedTaskRequest.productId,
+    projectId: namedTaskRequest.projectId,
+    taskId: namedTaskRequest.taskId,
+    text: namedTaskRequest.text,
+  });
+  assert.deepEqual(response.json(), {
+    schemaVersion: 1,
+    voiceTurnId: namedTaskRequest.voiceTurnId,
+    taskId: namedTaskRequest.taskId,
+    commandId: "019cc2a0-0000-7000-8000-000000000020",
+    state: "accepted",
+  });
+  for (const forbidden of ["account-private", "principal-private", "provider", "/Users/"]) {
+    assert.equal(response.body.includes(forbidden), false);
+  }
+  await app.close();
+});
+
+test("named Task command rejects unsafe clients and mismatched receipts", async () => {
+  const authority: NamedTaskCommandAuthority = {
+    async admit(input) {
+      return {
+        schemaVersion: 1,
+        voiceTurnId: "wrong-turn",
+        taskId: input.taskId,
+        commandId: "019cc2a0-0000-7000-8000-000000000020",
+        state: "accepted",
+      };
+    },
+  };
+  const app = namedTaskCommandApp(authority);
+  const nonLoopback = await app.inject({
+    method: "POST",
+    url: "/v1/voice/commands",
+    remoteAddress: "192.0.2.50",
+    headers: { authorization: "Bearer command-test-token" },
+    payload: namedTaskRequest,
+  });
+  assert.equal(nonLoopback.statusCode, 403);
+  const unauthenticated = await app.inject({
+    method: "POST",
+    url: "/v1/voice/commands",
+    payload: namedTaskRequest,
+  });
+  assert.equal(unauthenticated.statusCode, 401);
+  const clientScoped = await app.inject({
+    method: "POST",
+    url: "/v1/voice/commands",
+    headers: { authorization: "Bearer command-test-token" },
+    payload: { ...namedTaskRequest, providerId: "provider-private" },
+  });
+  assert.equal(clientScoped.statusCode, 400);
+  const mismatch = await app.inject({
+    method: "POST",
+    url: "/v1/voice/commands",
+    headers: { authorization: "Bearer command-test-token" },
+    payload: namedTaskRequest,
+  });
+  assert.equal(mismatch.statusCode, 503);
+  await app.close();
+});
+
+test("named Task command maps hidden hierarchy and idempotency failures safely", async () => {
+  for (const [error, status, code] of [
+    [new DomainNotFoundError("private task"), 404, "named_task_not_found"],
+    [new IdempotencyConflictError(), 409, "voice_turn_conflict"],
+  ] as const) {
+    const app = namedTaskCommandApp({ async admit() { throw error; } });
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/voice/commands",
+      headers: { authorization: "Bearer command-test-token" },
+      payload: namedTaskRequest,
+    });
+    assert.equal(response.statusCode, status);
+    assert.deepEqual(response.json(), { error: code });
+    assert.equal(response.body.includes("private task"), false);
+    await app.close();
+  }
 });
 
 const issuedGrant = {

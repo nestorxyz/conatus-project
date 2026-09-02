@@ -99,6 +99,45 @@ export function isVoiceGrantResponse(value: unknown): value is VoiceGrantRespons
     && isIntegerBetween(value.maxTurns, 1, 10);
 }
 
+export interface NamedTaskCommandRequest {
+  schemaVersion: 1;
+  voiceTurnId: string;
+  workspaceId: string;
+  productId: string;
+  projectId: string;
+  taskId: string;
+  text: string;
+}
+
+export interface NamedTaskCommandResponse {
+  schemaVersion: 1;
+  voiceTurnId: string;
+  taskId: string;
+  commandId: string;
+  state: "accepted";
+}
+
+export function isNamedTaskCommandRequest(value: unknown): value is NamedTaskCommandRequest {
+  return isRecord(value)
+    && hasExactKeys(value, [
+      "schemaVersion", "voiceTurnId", "workspaceId", "productId", "projectId", "taskId", "text",
+    ])
+    && value.schemaVersion === 1
+    && isVoiceTurnId(value.voiceTurnId)
+    && [value.workspaceId, value.productId, value.projectId, value.taskId].every(isConatusId)
+    && isBoundedText(value.text, 32_768);
+}
+
+export function isNamedTaskCommandResponse(value: unknown): value is NamedTaskCommandResponse {
+  return isRecord(value)
+    && hasExactKeys(value, ["schemaVersion", "voiceTurnId", "taskId", "commandId", "state"])
+    && value.schemaVersion === 1
+    && isVoiceTurnId(value.voiceTurnId)
+    && isConatusId(value.taskId)
+    && isConatusId(value.commandId)
+    && value.state === "accepted";
+}
+
 export interface CommandCenterSnapshot {
   schemaVersion: 1;
   observedAt: string;
@@ -250,6 +289,19 @@ function isVersion(value: unknown): value is number {
 
 function isIntegerBetween(value: unknown, minimum: number, maximum: number): value is number {
   return Number.isSafeInteger(value) && Number(value) >= minimum && Number(value) <= maximum;
+}
+
+function isConatusId(value: unknown): value is string {
+  return typeof value === "string"
+    && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value);
+}
+
+function isVoiceTurnId(value: unknown): value is string {
+  return typeof value === "string" && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(value);
+}
+
+function isBoundedText(value: unknown, maximum: number): value is string {
+  return typeof value === "string" && value.trim().length > 0 && value.length <= maximum;
 }
 
 function nonemptyString(value: unknown): value is string {

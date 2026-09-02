@@ -7,6 +7,8 @@ import { test } from "node:test";
 import {
   isCommandCenterSnapshot,
   isComponentHealth,
+  isNamedTaskCommandRequest,
+  isNamedTaskCommandResponse,
   isVoiceGrantRequest,
   isVoiceGrantResponse,
   isVoiceStatusSnapshot,
@@ -60,4 +62,19 @@ test("accepts strict bounded voice grant vectors", async () => {
 test("rejects client scope, provider data, and unknown voice grant fields", async () => {
   assert.equal(isVoiceGrantRequest(await vector("voice-grant-request.invalid.json")), false);
   assert.equal(isVoiceGrantResponse(await vector("voice-grant-response.invalid.json")), false);
+});
+
+test("accepts strict named Task voice-command vectors", async () => {
+  const request = await vector("named-task-command-request.valid.json");
+  assert.equal(isNamedTaskCommandRequest(request), true);
+  assert.equal(isNamedTaskCommandResponse(await vector("named-task-command-response.valid.json")), true);
+  assert.equal(isNamedTaskCommandRequest({
+    ...(request as Record<string, unknown>),
+    text: "😀".repeat(16_385),
+  }), false);
+});
+
+test("rejects paths, provider scope, and mismatched named Task command shapes", async () => {
+  assert.equal(isNamedTaskCommandRequest(await vector("named-task-command-request.invalid.json")), false);
+  assert.equal(isNamedTaskCommandResponse(await vector("named-task-command-response.invalid.json")), false);
 });

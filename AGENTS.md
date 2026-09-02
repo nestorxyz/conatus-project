@@ -25,12 +25,13 @@ Before making meaningful changes, read:
 15. `docs/decisions/0021-native-voice-conversation-coordinator.md`
 16. `docs/decisions/0022-native-spoken-status-output.md`
 17. `docs/decisions/0023-authenticated-account-transcription-transport.md`
-18. `docs/product-spec.md`
-19. `docs/alpha-scope.md`
-20. `docs/decisions/0001-foundation.md`
-21. `docs/technical-spec.md`
-22. `docs/threat-model.md`
-23. `docs/implementation-backlog.md`
+18. `docs/decisions/0024-named-task-voice-command-routing.md`
+19. `docs/product-spec.md`
+20. `docs/alpha-scope.md`
+21. `docs/decisions/0001-foundation.md`
+22. `docs/technical-spec.md`
+23. `docs/threat-model.md`
+24. `docs/implementation-backlog.md`
 
 Read any ticket-specific documents linked from the backlog before implementing
 that ticket.

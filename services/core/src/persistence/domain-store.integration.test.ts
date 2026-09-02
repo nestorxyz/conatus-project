@@ -76,6 +76,49 @@ test("F02 durable kernel invariants", { skip: !databaseUrl }, async (context) =>
     );
   });
 
+  await context.test("named voice command atomically binds the complete portfolio hierarchy", async () => {
+    const request = {
+      accountId: ownerA.accountId,
+      principalId: ownerA.principalId,
+      voiceTurnId: "voice-turn-named-1",
+      workspaceId: portfolioA.workspaceId,
+      productId: portfolioA.productId,
+      projectId: portfolioA.projectId,
+      taskId: portfolioA.task.taskId,
+      text: "Continue the durable kernel task",
+    };
+    const first = await store.submitNamedTaskCommand(request);
+    const replay = await store.submitNamedTaskCommand(request);
+    assert.equal(replay.commandId, first.commandId);
+    assert.equal(first.taskId, portfolioA.task.taskId);
+
+    const restarted = new DomainStore(databaseUrl!);
+    context.after(async () => restarted.close());
+    assert.equal((await restarted.submitNamedTaskCommand(request)).commandId, first.commandId);
+
+    await assert.rejects(
+      store.submitNamedTaskCommand({
+        ...request,
+        voiceTurnId: "voice-turn-wrong-project",
+        projectId: portfolioA.productId,
+      }),
+      DomainNotFoundError,
+    );
+    await assert.rejects(
+      store.submitNamedTaskCommand({
+        ...request,
+        accountId: ownerB.accountId,
+        principalId: ownerB.principalId,
+        voiceTurnId: "voice-turn-cross-account",
+      }),
+      DomainNotFoundError,
+    );
+    await assert.rejects(
+      store.submitNamedTaskCommand({ ...request, text: "Changed transcript" }),
+      IdempotencyConflictError,
+    );
+  });
+
   await context.test("one optimistic-version writer wins", async () => {
     const outcomes = await Promise.allSettled([
       store.renameTask({

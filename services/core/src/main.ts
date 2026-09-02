@@ -4,6 +4,7 @@
 import { buildApp, LocalBearerIdentityResolver, type AppOptions } from "./app.js";
 import { DomainStore } from "./persistence/domain-store.js";
 import { VoiceGrantStore } from "./persistence/voice-grant-store.js";
+import { DurableNamedTaskCommandAuthority } from "./named-task-command-authority.js";
 import { assertSafeRuntimeConfiguration, RuntimeConfigurationError } from "./runtime-config.js";
 
 const host = process.env.CONATUS_HOST ?? "127.0.0.1";
@@ -36,6 +37,10 @@ const options: AppOptions = store ? {
   voiceGrants: {
     identityResolver: identityResolver!,
     authority: voiceGrantStore!,
+  },
+  namedTaskCommands: {
+    identityResolver: identityResolver!,
+    authority: new DurableNamedTaskCommandAuthority(store),
   },
 } : {};
 const app = buildApp(options);

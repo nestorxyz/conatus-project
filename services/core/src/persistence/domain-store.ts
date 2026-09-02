@@ -494,12 +494,60 @@ export class DomainStore {
     commandType: string;
     payload: Record<string, unknown>;
   }): Promise<CommandRecord> {
+    return this.submitCommandWithContext(input);
+  }
+
+  async submitNamedTaskCommand(input: {
+    accountId: string;
+    principalId: string;
+    voiceTurnId: string;
+    workspaceId: string;
+    productId: string;
+    projectId: string;
+    taskId: string;
+    text: string;
+  }): Promise<CommandRecord> {
+    return this.submitCommandWithContext({
+      accountId: input.accountId,
+      taskId: input.taskId,
+      actorRef: `principal:${input.principalId}`,
+      idempotencyKey: `voice-turn:${input.voiceTurnId}`,
+      commandType: "task.voice_message",
+      payload: { text: input.text },
+    }, {
+      workspaceId: input.workspaceId,
+      productId: input.productId,
+      projectId: input.projectId,
+    });
+  }
+
+  private async submitCommandWithContext(input: {
+    accountId: string;
+    taskId: string;
+    actorRef: string;
+    idempotencyKey: string;
+    commandType: string;
+    payload: Record<string, unknown>;
+  }, namedContext?: {
+    workspaceId: string;
+    productId: string;
+    projectId: string;
+  }): Promise<CommandRecord> {
     const operationScope = "command.submit";
-    const fingerprint = fingerprintRequest({ taskId: input.taskId, commandType: input.commandType, payload: input.payload });
+    const fingerprint = fingerprintRequest({
+      taskId: input.taskId,
+      commandType: input.commandType,
+      payload: input.payload,
+      ...(namedContext ? { namedContext } : {}),
+    });
     return this.transaction(async (client) => {
       const existing = await this.reserveIdempotency(client, input.accountId, input.actorRef, operationScope, input.idempotencyKey, fingerprint);
       if (existing) return this.getCommandWith(client, input.accountId, existing);
-      await this.getTaskWith(client, input.accountId, input.taskId);
+      if (namedContext) {
+        await this.requireNamedTaskContextWith(client, input.accountId, input.taskId, namedContext);
+      } else {
+        await this.getTaskWith(client, input.accountId, input.taskId);
+      }
       const commandId = uuidV7();
       const correlationId = uuidV7();
       const now = new Date();
@@ -524,6 +572,27 @@ export class DomainStore {
       await this.resolveIdempotency(client, input.accountId, input.actorRef, operationScope, input.idempotencyKey, "Command", commandId);
       return this.getCommandWith(client, input.accountId, commandId);
     });
+  }
+
+  private async requireNamedTaskContextWith(
+    client: Queryable,
+    accountId: string,
+    taskId: string,
+    context: { workspaceId: string; productId: string; projectId: string },
+  ): Promise<void> {
+    const result = await client.query(
+      `SELECT 1
+       FROM tasks t
+       JOIN projects p ON p.account_id = t.account_id AND p.project_id = t.project_id
+       WHERE t.account_id = $1
+         AND t.task_id = $2
+         AND t.workspace_id = $3
+         AND p.workspace_id = $3
+         AND p.product_id = $4
+         AND p.project_id = $5`,
+      [accountId, taskId, context.workspaceId, context.productId, context.projectId],
+    );
+    if (!result.rowCount) throw new DomainNotFoundError("Named task context");
   }
 
   async beginExecution(accountId: string, commandId: string, actorRef: string): Promise<ExecutionRecord> {
