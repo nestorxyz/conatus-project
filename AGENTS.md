@@ -14,12 +14,13 @@ Before making meaningful changes, read:
 4. `docs/decisions/0010-durable-domain-kernel.md`
 5. `docs/decisions/0011-local-supervision-and-ci.md`
 6. `docs/decisions/0012-codex-app-server-compatibility.md`
-7. `docs/product-spec.md`
-8. `docs/alpha-scope.md`
-9. `docs/decisions/0001-foundation.md`
-10. `docs/technical-spec.md`
-11. `docs/threat-model.md`
-12. `docs/implementation-backlog.md`
+7. `docs/decisions/0013-named-portfolio-projection.md`
+8. `docs/product-spec.md`
+9. `docs/alpha-scope.md`
+10. `docs/decisions/0001-foundation.md`
+11. `docs/technical-spec.md`
+12. `docs/threat-model.md`
+13. `docs/implementation-backlog.md`
 
 Read any ticket-specific documents linked from the backlog before implementing
 that ticket.

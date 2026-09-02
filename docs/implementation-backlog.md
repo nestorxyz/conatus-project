@@ -68,7 +68,7 @@ blocked.
 
 **Depends on:** F03
 
-**Status:** In progress; M1-01 complete and M1-02 next
+**Status:** In progress; M1-01 complete and M1-02 selected
 
 **User-visible outcome:** The Mac command center shows named projects, tasks,
 blockers, and results. A user can create or resume a Conatus-owned Codex task
@@ -110,6 +110,20 @@ schema digest are checked reproducibly; every allowlisted request/notification
 is present; Swift emits stable initialize and task-lifecycle requests; thread
 creation is structurally limited to read-only sandbox and approval policy
 `never`; no provider process, account usage, or persistent Codex task is used.
+
+#### M1-02 Registered workspace and portfolio projection
+
+**Depends on:** M1-01
+
+**Status:** In progress
+
+**Acceptance:** Account-scoped Workspace handles and aliases resolve primary
+names and spoken aliases without storing a path; ambiguous names return a
+deterministic candidate set instead of selecting a target; a persistent Core
+projection returns Products, Projects, Tasks, active blockers, and recent
+results; a fresh connection observes the same state; cross-account reads and
+mutations reveal nothing; projection payloads contain no absolute path or
+provider reference.
 
 ## How to use this backlog
 
