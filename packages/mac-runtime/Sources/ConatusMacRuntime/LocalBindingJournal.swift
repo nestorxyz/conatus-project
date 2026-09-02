@@ -79,6 +79,22 @@ public enum BindingReconciliation: Codable, Equatable, Sendable {
     case resumeReady(bindingId: String)
 }
 
+struct LocalProviderBinding {
+    let bindingId: String
+    let workspaceId: String
+    let providerThreadId: String
+}
+
+struct LocalTurnReceipt: Equatable {
+    let receiptId: String
+    let bindingId: String
+    let taskId: String
+    let requestFingerprint: String
+    let state: ReceiptState
+    let providerTurnId: String?
+    let responseFingerprint: String?
+}
+
 public final class LocalBindingJournal: @unchecked Sendable {
     private let database: SQLiteDatabase
     private let databaseURL: URL
@@ -111,7 +127,7 @@ public final class LocalBindingJournal: @unchecked Sendable {
             throw LocalBindingJournalError.unsupportedSchemaVersion
         }
         try database.executeSchema(Self.schema)
-        if schemaVersion == 0 {
+        if schemaVersion < Self.currentSchemaVersion {
             try database.setUserVersion(Self.currentSchemaVersion)
         }
         try secureJournalFiles()
@@ -342,6 +358,135 @@ public final class LocalBindingJournal: @unchecked Sendable {
         }
     }
 
+    func localProviderBinding(taskId: String) throws -> LocalProviderBinding {
+        try requireIdentifier(taskId)
+        return try database.transaction { database in
+            guard let row = try database.query(
+                """
+                SELECT b.binding_id, b.workspace_id, b.provider_thread_id, w.canonical_path
+                FROM codex_bindings b
+                JOIN workspace_bindings w ON w.workspace_id = b.workspace_id
+                WHERE b.task_id = ?
+                """,
+                bindings: [.text(taskId)]
+            ).first,
+            let providerThreadId = row["provider_thread_id"]
+            else {
+                throw LocalBindingJournalError.bindingNotReady
+            }
+            _ = try canonicalDirectory(
+                URL(fileURLWithPath: try required(row, "canonical_path"))
+            )
+            return LocalProviderBinding(
+                bindingId: try required(row, "binding_id"),
+                workspaceId: try required(row, "workspace_id"),
+                providerThreadId: providerThreadId
+            )
+        }
+    }
+
+    func prepareReadOnlyTurn(
+        taskId: String,
+        idempotencyKey: String,
+        requestFingerprint: String,
+        lease: WriterLease
+    ) throws -> LocalTurnReceipt {
+        try requireIdentifier(taskId)
+        try requireIdentifier(idempotencyKey)
+        try requireIdentifier(requestFingerprint)
+        guard lease.taskId == taskId else { throw LocalBindingJournalError.staleLease }
+        let receipt = try database.transaction { database in
+            try validate(lease: lease, database: database)
+            guard let binding = try loadBinding(taskId: taskId, database: database),
+                  binding.providerThreadId != nil
+            else {
+                throw LocalBindingJournalError.bindingNotReady
+            }
+            if let existing = try loadTurnReceipt(bindingId: binding.bindingId, database: database) {
+                guard existing.requestFingerprint == requestFingerprint else {
+                    throw LocalBindingJournalError.idempotencyConflict
+                }
+                return existing
+            }
+            let receiptId = UUID().uuidString.lowercased()
+            try database.execute(
+                """
+                INSERT INTO turn_receipts
+                  (receipt_id, idempotency_key, request_fingerprint, binding_id, task_id,
+                   prepared_fence_token, state, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, 'prepared', ?)
+                """,
+                bindings: [
+                    .text(receiptId), .text(idempotencyKey), .text(requestFingerprint),
+                    .text(binding.bindingId), .text(taskId), .integer(lease.fenceToken),
+                    .double(now().timeIntervalSince1970),
+                ]
+            )
+            return LocalTurnReceipt(
+                receiptId: receiptId,
+                bindingId: binding.bindingId,
+                taskId: taskId,
+                requestFingerprint: requestFingerprint,
+                state: .prepared,
+                providerTurnId: nil,
+                responseFingerprint: nil
+            )
+        }
+        try secureJournalFiles()
+        return receipt
+    }
+
+    func commitReadOnlyTurn(
+        receiptId: String,
+        providerTurnId: String,
+        responseFingerprint: String,
+        lease: WriterLease
+    ) throws -> LocalTurnReceipt {
+        try requireIdentifier(receiptId)
+        try requireIdentifier(providerTurnId)
+        try requireIdentifier(responseFingerprint)
+        let receipt = try database.transaction { database in
+            try validate(lease: lease, database: database)
+            guard let current = try loadTurnReceipt(receiptId: receiptId, database: database) else {
+                throw LocalBindingJournalError.receiptNotFound
+            }
+            guard current.taskId == lease.taskId else { throw LocalBindingJournalError.staleLease }
+            if current.state == .committed {
+                guard current.providerTurnId == providerTurnId,
+                      current.responseFingerprint == responseFingerprint
+                else {
+                    throw LocalBindingJournalError.providerReferenceConflict
+                }
+                return current
+            }
+            try database.execute(
+                """
+                UPDATE turn_receipts
+                SET state = 'committed', provider_turn_id = ?, response_fingerprint = ?, committed_at = ?
+                WHERE receipt_id = ? AND state = 'prepared'
+                """,
+                bindings: [
+                    .text(providerTurnId), .text(responseFingerprint),
+                    .double(now().timeIntervalSince1970), .text(receiptId),
+                ]
+            )
+            guard let committed = try loadTurnReceipt(receiptId: receiptId, database: database) else {
+                throw LocalBindingJournalError.receiptNotFound
+            }
+            return committed
+        }
+        try secureJournalFiles()
+        return receipt
+    }
+
+    func readOnlyTurnReceipt(taskId: String) throws -> LocalTurnReceipt? {
+        try requireIdentifier(taskId)
+        return try database.transaction { database in
+            guard let binding = try loadBinding(taskId: taskId, database: database) else { return nil }
+            return try loadTurnReceipt(bindingId: binding.bindingId, database: database)
+        }
+    }
+
     private func prepare(
         operation: BindingOperation,
         taskId: String,
@@ -531,6 +676,55 @@ public final class LocalBindingJournal: @unchecked Sendable {
         return try mapBinding(row)
     }
 
+    private func loadTurnReceipt(
+        bindingId: String,
+        database: SQLiteDatabase
+    ) throws -> LocalTurnReceipt? {
+        try loadTurnReceipt(
+            whereClause: "binding_id = ?",
+            binding: .text(bindingId),
+            database: database
+        )
+    }
+
+    private func loadTurnReceipt(
+        receiptId: String,
+        database: SQLiteDatabase
+    ) throws -> LocalTurnReceipt? {
+        try loadTurnReceipt(
+            whereClause: "receipt_id = ?",
+            binding: .text(receiptId),
+            database: database
+        )
+    }
+
+    private func loadTurnReceipt(
+        whereClause: String,
+        binding: SQLiteBinding,
+        database: SQLiteDatabase
+    ) throws -> LocalTurnReceipt? {
+        guard let row = try database.query(
+            """
+            SELECT receipt_id, binding_id, task_id, request_fingerprint, state,
+                   provider_turn_id, response_fingerprint
+            FROM turn_receipts WHERE \(whereClause)
+            """,
+            bindings: [binding]
+        ).first else { return nil }
+        guard let state = ReceiptState(rawValue: try required(row, "state")) else {
+            throw LocalBindingJournalError.journalCorrupt
+        }
+        return LocalTurnReceipt(
+            receiptId: try required(row, "receipt_id"),
+            bindingId: try required(row, "binding_id"),
+            taskId: try required(row, "task_id"),
+            requestFingerprint: try required(row, "request_fingerprint"),
+            state: state,
+            providerTurnId: row["provider_turn_id"],
+            responseFingerprint: row["response_fingerprint"]
+        )
+    }
+
     private func commitReceipt(receiptId: String, database: SQLiteDatabase) throws {
         try database.execute(
             """
@@ -617,7 +811,7 @@ public final class LocalBindingJournal: @unchecked Sendable {
         let providerThreadId: String?
     }
 
-    private static let currentSchemaVersion = 1
+    private static let currentSchemaVersion = 2
 
     private static let schema = """
     PRAGMA foreign_keys = ON;
@@ -666,5 +860,24 @@ public final class LocalBindingJournal: @unchecked Sendable {
 
     CREATE INDEX IF NOT EXISTS binding_receipt_lookup_idx
       ON binding_receipts(binding_id, operation, state, created_at, receipt_id);
+
+    CREATE TABLE IF NOT EXISTS turn_receipts (
+      receipt_id TEXT PRIMARY KEY,
+      idempotency_key TEXT NOT NULL UNIQUE,
+      request_fingerprint TEXT NOT NULL,
+      binding_id TEXT NOT NULL UNIQUE,
+      task_id TEXT NOT NULL,
+      prepared_fence_token INTEGER NOT NULL CHECK (prepared_fence_token > 0),
+      state TEXT NOT NULL CHECK (state IN ('prepared', 'committed')),
+      provider_turn_id TEXT UNIQUE,
+      response_fingerprint TEXT,
+      created_at REAL NOT NULL,
+      committed_at REAL,
+      FOREIGN KEY (binding_id) REFERENCES codex_bindings(binding_id),
+      CHECK ((state = 'prepared' AND provider_turn_id IS NULL
+          AND response_fingerprint IS NULL AND committed_at IS NULL)
+        OR (state = 'committed' AND provider_turn_id IS NOT NULL
+          AND response_fingerprint IS NOT NULL AND committed_at IS NOT NULL))
+    );
     """
 }

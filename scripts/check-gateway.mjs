@@ -36,6 +36,7 @@ run(
     env: {
       ...environment,
       CONATUS_FAKE_PROVIDER_PATH: `${binPath}/ConatusFakeProviderFixture`,
+      CONATUS_FAKE_APP_SERVER_PATH: `${binPath}/ConatusFakeAppServerFixture`,
     },
   },
 );

@@ -10,6 +10,7 @@ let package = Package(
     products: [
         .library(name: "ConatusMacRuntime", targets: ["ConatusMacRuntime"]),
         .executable(name: "ConatusFakeProviderFixture", targets: ["ConatusFakeProviderFixture"]),
+        .executable(name: "ConatusFakeAppServerFixture", targets: ["ConatusFakeAppServerFixture"]),
     ],
     targets: [
         .target(
@@ -17,6 +18,7 @@ let package = Package(
             linkerSettings: [.linkedLibrary("sqlite3")]
         ),
         .executableTarget(name: "ConatusFakeProviderFixture"),
+        .executableTarget(name: "ConatusFakeAppServerFixture"),
         .testTarget(name: "ConatusMacRuntimeTests", dependencies: ["ConatusMacRuntime"]),
     ]
 )

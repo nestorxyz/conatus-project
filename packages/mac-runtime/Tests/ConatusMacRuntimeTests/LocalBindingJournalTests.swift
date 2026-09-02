@@ -71,7 +71,7 @@ final class LocalBindingJournalTests: XCTestCase {
         try withFixture { fixture in
             do {
                 let database = try SQLiteDatabase(url: fixture.databaseURL)
-                try database.setUserVersion(2)
+                try database.setUserVersion(3)
             }
 
             XCTAssertThrowsError(try fixture.makeJournal()) { error in
@@ -79,7 +79,24 @@ final class LocalBindingJournalTests: XCTestCase {
             }
 
             let database = try SQLiteDatabase(url: fixture.databaseURL)
+            XCTAssertEqual(try database.userVersion(), 3)
+        }
+    }
+
+    func testMigratesVersionOneJournalToTurnReceiptSchema() throws {
+        try withFixture { fixture in
+            do {
+                let database = try SQLiteDatabase(url: fixture.databaseURL)
+                try database.setUserVersion(1)
+            }
+            _ = try fixture.makeJournal()
+            let database = try SQLiteDatabase(url: fixture.databaseURL)
             XCTAssertEqual(try database.userVersion(), 2)
+            XCTAssertEqual(
+                try database.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'turn_receipts'")
+                    .first?["name"],
+                "turn_receipts"
+            )
         }
     }
 
@@ -296,6 +313,81 @@ final class LocalBindingJournalTests: XCTestCase {
             XCTAssertFalse(redacted.contains(privateProviderReference))
             XCTAssertFalse(redacted.contains(workspace.path))
             XCTAssertFalse(redacted.contains("providerThreadId"))
+        }
+    }
+
+    func testReadOnlyTurnReceiptIsDurableIdempotentAndFenced() throws {
+        try withFixture { fixture in
+            let workspace = try fixture.createWorkspace(named: "conatus")
+            let journal = try fixture.makeJournal()
+            _ = try journal.registerWorkspace(workspaceId: "workspace-conatus", directoryURL: workspace)
+            let lease = try journal.acquireWriterLease(taskId: "task-voice", holderId: "gateway", duration: 60)
+            let create = try journal.prepareCreate(
+                taskId: "task-voice",
+                workspaceId: "workspace-conatus",
+                idempotencyKey: "create-voice",
+                lease: lease
+            )
+            _ = try journal.commitCreate(
+                receiptId: create.receiptId,
+                providerThreadId: "private-provider-thread",
+                lease: lease
+            )
+            let prepared = try journal.prepareReadOnlyTurn(
+                taskId: "task-voice",
+                idempotencyKey: "turn-voice",
+                requestFingerprint: "request-fingerprint",
+                lease: lease
+            )
+            XCTAssertEqual(prepared.state, .prepared)
+            XCTAssertEqual(
+                try journal.prepareReadOnlyTurn(
+                    taskId: "task-voice",
+                    idempotencyKey: "turn-voice",
+                    requestFingerprint: "request-fingerprint",
+                    lease: lease
+                ),
+                prepared
+            )
+            XCTAssertThrowsError(
+                try journal.prepareReadOnlyTurn(
+                    taskId: "task-voice",
+                    idempotencyKey: "changed-turn",
+                    requestFingerprint: "changed-fingerprint",
+                    lease: lease
+                )
+            ) { error in
+                XCTAssertEqual(error as? LocalBindingJournalError, .idempotencyConflict)
+            }
+            let committed = try journal.commitReadOnlyTurn(
+                receiptId: prepared.receiptId,
+                providerTurnId: "private-provider-turn",
+                responseFingerprint: "response-fingerprint",
+                lease: lease
+            )
+            XCTAssertEqual(committed.state, .committed)
+            XCTAssertEqual(committed.responseFingerprint, "response-fingerprint")
+            XCTAssertEqual(try fixture.makeJournal().readOnlyTurnReceipt(taskId: "task-voice"), committed)
+            XCTAssertThrowsError(
+                try journal.commitReadOnlyTurn(
+                    receiptId: prepared.receiptId,
+                    providerTurnId: "different-provider-turn",
+                    responseFingerprint: "response-fingerprint",
+                    lease: lease
+                )
+            ) { error in
+                XCTAssertEqual(error as? LocalBindingJournalError, .providerReferenceConflict)
+            }
+            XCTAssertThrowsError(
+                try journal.commitReadOnlyTurn(
+                    receiptId: prepared.receiptId,
+                    providerTurnId: "private-provider-turn",
+                    responseFingerprint: "different-response-fingerprint",
+                    lease: lease
+                )
+            ) { error in
+                XCTAssertEqual(error as? LocalBindingJournalError, .providerReferenceConflict)
+            }
         }
     }
 

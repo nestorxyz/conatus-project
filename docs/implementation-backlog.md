@@ -68,7 +68,7 @@ blocked.
 
 **Depends on:** F03
 
-**Status:** In progress; M1-01 through M1-03 complete, M1-04 next
+**Status:** In progress; M1-01 through M1-04 complete, M1-05 selected
 
 **User-visible outcome:** The Mac command center shows named projects, tasks,
 blockers, and results. A user can create or resume a Conatus-owned Codex task
@@ -145,6 +145,21 @@ is idempotent; conflicting fingerprints fail; two journal connections prove one
 live writer, expiry takeover with a higher fence, and stale-writer rejection; a
 fresh connection recovers pending-create and resume-ready state without starting
 Codex or using a provider account.
+
+#### M1-04 Bounded real read-only lifecycle
+
+**Depends on:** M1-03
+
+**Status:** Complete on 2026-09-02
+
+**Acceptance:** One explicitly approved account-backed provider thread is
+created and receives exactly one fixed read-only, no-network, no-tools turn; its
+final reply is exactly `CONATUS_M1_04_READY`; a fresh Gateway journal connection
+and App Server process read and resume the same provider identity with one turn;
+a complete retry issues neither another `thread/start` nor another `turn/start`;
+public results expose no provider reference, path, prompt, account data, or raw
+App Server output. Prepared-but-uncommitted create or turn dispatches fail
+closed for manual reconciliation.
 
 ## How to use this backlog
 
