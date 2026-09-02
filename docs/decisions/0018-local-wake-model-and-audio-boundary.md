@@ -61,14 +61,19 @@ M2-02 is split at the evidence boundary:
 1. **M2-02a local audio kernel:** audio contracts, bounded rolling memory,
    activation-range isolation, wake-score gating, turn-end detection, immediate
    feedback actions, and deterministic fault/privacy tests.
-2. **M2-02b native model and hardware integration:** microphone permission and
-   route lifecycle, Sound Analysis adapter, provenance-complete `Hey Conatus`
-   model, signed digest verification, live same-sentence tests, false-wake and
-   false-reject evaluation, sleep/wake, and headset-route recovery.
+2. **M2-02b1 native adapter boundary:** strict model-provenance manifest and
+   digest verification, microphone permission/lifecycle, copied monotonic audio
+   frames, and serialized Sound Analysis scoring without a bundled model or live
+   microphone start.
+3. **M2-02b2 model and hardware validation:** provenance-complete `Hey Conatus`
+   model, live same-sentence tests, false-wake and false-reject evaluation,
+   sleep/wake, and headset-route recovery.
 
 M2-02a does not request microphone permission, include a model, start an audio
-engine, or claim that the Mac can hear the wake phrase. M2-02 is complete only
-after M2-02b passes on supported hardware.
+engine, or claim that the Mac can hear the wake phrase. M2-02b1 includes the
+permission declaration and adapter code but does not request access at test or
+application startup. M2-02 is complete only after M2-02b2 passes on supported
+hardware.
 
 ## Consequences
 
@@ -91,3 +96,11 @@ after M2-02b passes on supported hardware.
   silence, and enforces a maximum duration.
 - Encoded diagnostics contain counts and safe state only, never sample values,
   audio bytes, paths, model internals, or transcripts.
+- M2-02b1 rejects incomplete, unknown, noncommercial, filename-drifted, and
+  digest-mismatched model manifests before any Core ML compilation boundary.
+- Synthetic native buffers prove deep-copy isolation, first-channel sample
+  projection, monotonic frame positions, permission denial before input-node
+  access, and deterministic Sound Analysis result mapping.
+- Sound Analysis work is serialized away from the real-time audio callback. The
+  built app declares its scoped microphone purpose, while tests and normal
+  startup neither request permission nor start capture.

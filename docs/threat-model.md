@@ -126,7 +126,10 @@ bounded grants, and enforces account scope, quota, expiry, and revocation.
 rights, training-data provenance, an immutable digest, declared labels and audio
 format, and recorded false-accept/false-reject evidence. Activated command audio
 begins at the accepted local activation range; earlier rolling-buffer samples
-remain local and are excluded from the committed turn.
+remain local and are excluded from the committed turn. Model filename and bytes
+are verified against a strict manifest before Core ML compilation. Microphone
+tap buffers are deep-copied before leaving the real-time callback, and Sound
+Analysis consumes them on one ordered serial queue.
 
 ## 7. Threats and controls
 

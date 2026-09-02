@@ -41,9 +41,16 @@ classifier behind `WakeDetector`, not semantic transcription. Before the model
 is available, the platform-independent audio kernel accepts ordered mono sample
 frames, retains a separately bounded rolling window, commits only the locally
 accepted activation range plus subsequent command audio, gates repeated scores,
-and closes the turn through local energy/silence limits. Microphone, model, and
-audio-route adapters enter only after model provenance and hardware evidence
-exist.
+and closes the turn through local energy/silence limits. The native microphone
+adapter checks authorization before touching the input node, deep-copies each
+non-interleaved Float32 tap buffer, and assigns monotonically increasing sample
+positions. Sound Analysis receives those copies on one dedicated serial queue;
+the real-time callback never performs classification. A strict manifest binds
+the future Core ML filename and SHA-256 digest to commercial distribution,
+training-source, recipe, label, audio-format, evaluation, accent, and hardware
+evidence. No model is compiled until that manifest passes. M2-02b1 verifies
+this adapter boundary synthetically; actual microphone use, the model artifact,
+and hardware/audio-route evidence remain M2-02b2.
 
 ## 2. System boundaries
 

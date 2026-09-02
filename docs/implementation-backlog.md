@@ -181,7 +181,7 @@ state or another account-backed Codex task.
 
 **Depends on:** M1
 
-**Status:** In progress; M2-02a is complete and M2-02b is next
+**Status:** In progress; M2-02b1 is complete and M2-02b2 is next
 
 **User-visible outcome:** A user says `Hey Conatus` and continues the command in
 the same sentence. Conatus acknowledges immediately, transcribes post-wake audio
@@ -246,9 +246,25 @@ duration, malformed/gapped audio rejection, and transcript-free diagnostics. No
 microphone permission, audio engine, model asset, Apple Speech API, filesystem
 write, or network call is used.
 
-#### M2-02b Native wake model and Mac hardware integration
+#### M2-02b1 Native microphone and Sound Analysis boundary
 
 **Depends on:** M2-02a
+
+**Status:** Complete on 2026-09-02. See `RESULT.md` and ADR 0018.
+
+**Acceptance:** A strict provenance manifest rejects unknown fields,
+noncommercial licensing, incomplete data/evaluation evidence, filename drift,
+and model digest mismatch before Core ML compilation. A permission-aware native
+audio source deep-copies tap buffers, assigns monotonic frames, exposes ordered
+first-channel samples to the local kernel, and serializes Sound Analysis work
+off the audio callback. Synthetic buffers prove copying, channel selection,
+frame ordering, result mapping, and safe start/stop faults. The app declares its
+microphone purpose but neither tests nor normal startup request access, start an
+audio engine, bundle a model, compile Core ML, or use Apple Speech.
+
+#### M2-02b2 `Hey Conatus` model and Mac hardware validation
+
+**Depends on:** M2-02b1
 
 **Status:** Planned
 

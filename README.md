@@ -27,12 +27,16 @@ approved bounded M1-04 account-backed lifecycle was verified; M1-05 created no
 additional real Codex task. M2-01 now fixes the account-managed voice lifecycle
 and proves same-utterance capture, exactly-once final routing, follow-up,
 barge-in, cancellation, recovery, and transcript-free public status entirely
-against deterministic local contracts. Microphone capture, wake-model
-integration, provider transcription, production identity, deployment, signing,
-and release evidence remain absent. M2-02a now also proves a bounded in-memory
+against deterministic local contracts. Live microphone capture, a distributable
+wake model, provider transcription, production identity, deployment, signing,
+and release evidence remain absent. M2-02a proves a bounded in-memory
 audio kernel that excludes ambient frames before the accepted activation range,
 suppresses repeated wake scores, and closes turns on silence or a maximum
-duration. See the verified results and exact limitations in
+duration. M2-02b1 adds a permission-aware native microphone boundary, copied
+monotonic PCM frames, serialized Apple Sound Analysis scoring, strict model
+provenance/digest verification, and the app's microphone disclosure. It is
+synthetically verified and does not request access, start capture, or bundle a
+model. See the verified results and exact limitations in
 [RESULT.md](RESULT.md).
 
 ### Preserved pre-pivot evidence

@@ -1,5 +1,53 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M2-02b1 native microphone and Sound Analysis boundary
+
+**Status:** complete through synthetic native-adapter and app-bundle
+verification. No microphone permission was requested, no audio engine was
+started, no personal recording was made, and no model was bundled or compiled.
+
+### Delivered
+
+- A strict JSON wake-model manifest binds a safe Core ML filename and SHA-256
+  digest to model and source licenses, distribution approval, training-source
+  digests and counts, recipe digest, labels, sample rate, evaluation corpus,
+  false accepts/rejects, accent coverage, and tested Mac hardware. Unknown,
+  incomplete, noncommercial, drifted, and mismatched inputs fail closed.
+- A permission-aware native microphone source refuses to touch the input node
+  before authorization, deep-copies non-interleaved Float32 tap buffers, assigns
+  monotonically increasing frame positions, and exposes only first-channel mono
+  samples to the local audio kernel.
+- A Sound Analysis adapter maps only the expected wake label, converts result
+  time ranges to sample frames, serializes analysis and completion away from the
+  real-time audio callback, and prevents analysis after finish.
+- The development app bundle declares why Conatus needs microphone access. A
+  dedicated `pnpm check:m2-02b1` gate rejects accidental Apple Speech use or
+  bundled model assets, runs the native suite, builds the app without launching
+  it, and inspects the resulting privacy purpose string.
+
+### Verification
+
+- `pnpm check:m2-02b1` passed under Node 24.19.0 and pnpm 10.29.2.
+- Twenty-three XCTest cases and sixteen Swift Testing cases passed. New tests
+  cover strict provenance, commercial licensing, filename/digest drift,
+  evaluation completeness, buffer-copy isolation, first-channel projection,
+  monotonic frames, permission denial before capture, and score mapping.
+- The AI-code audit removed an analyze/finish queue-order race, made SHA-256
+  validation ASCII-strict, recognized split non-commercial license spellings,
+  and isolated non-Sendable Apple objects inside an explicitly serialized
+  context.
+
+### Limitations and next step
+
+- Conatus still cannot hear `Hey Conatus` in this implementation. M2-02b2 must
+  produce a provenance-complete, commercially distributable model and run
+  explicitly approved live microphone, same-sentence, latency, false-wake,
+  accent, sleep/wake, denial, headset, route-change, and lifecycle validation.
+- No third-party pretrained weights are approved or bundled. Apple Speech is
+  absent from the production command-transcription path.
+- The preserved broad bootstrap still requires the legacy Android Rust
+  toolchain, which is not installed. No global toolchain was installed.
+
 ## 2026-09-02 — M2-02a local activated-audio kernel
 
 **Status:** complete through deterministic native audio-kernel verification. No

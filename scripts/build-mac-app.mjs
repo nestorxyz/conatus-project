@@ -45,6 +45,7 @@ writeFileSync(new URL("Info.plist", contents), `<?xml version="1.0" encoding="UT
   <key>CFBundleVersion</key><string>1</string>
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>NSHighResolutionCapable</key><true/>
+  <key>NSMicrophoneUsageDescription</key><string>Conatus listens locally for “Hey Conatus” and captures only the activated command.</string>
 </dict></plist>
 `);
 

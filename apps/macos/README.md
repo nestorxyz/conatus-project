@@ -11,13 +11,18 @@ contract. It uses no microphone, Apple Speech API, provider connection, or
 account credential; those boundaries remain dependency-ordered M2 tickets.
 
 M2-02a adds the bounded local audio kernel, activation-range privacy boundary,
-wake-score gate, energy turn end, and safe diagnostics. The Mac still does not
-request microphone permission or bundle a wake model; those are M2-02b gates.
+wake-score gate, energy turn end, and safe diagnostics. M2-02b1 adds the native
+permission/lifecycle and Sound Analysis adapter boundary, deep-copied monotonic
+PCM frames, strict wake-model provenance/digest checks, and the bundle's scoped
+microphone purpose string. Tests and normal startup still do not request
+microphone permission, start capture, compile Core ML, or bundle a wake model;
+the real `Hey Conatus` model and hardware validation remain M2-02b2.
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swift build --package-path apps/macos
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swift test --package-path apps/macos
 pnpm mac:app
+pnpm check:m2-02b1
 ```
 
 The ignored `build/Conatus.app` bundle is for local visual testing only; it is
