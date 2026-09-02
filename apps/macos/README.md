@@ -6,6 +6,10 @@ activation protocol. Development authentication is explicit; account login,
 microphone capture, production deployment, and effectful Codex work remain
 later milestones.
 
+M2-01 adds a deterministic managed-voice lifecycle and shared public status
+contract. It uses no microphone, Apple Speech API, provider connection, or
+account credential; those boundaries remain dependency-ordered M2 tickets.
+
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swift build --package-path apps/macos
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swift test --package-path apps/macos

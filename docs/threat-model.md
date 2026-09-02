@@ -29,6 +29,8 @@ Highest-value assets:
 - Session, run, and security audit history
 - Update-signing keys and distributed machine-agent binaries
 - Recovery and revocation mechanisms
+- Live microphone audio, committed voice transcripts, voice grants, and account
+  quota
 
 Secondary sensitive metadata:
 
@@ -76,6 +78,8 @@ Secondary sensitive metadata:
 - Auto-update channel
 - Administrative and support tooling
 - Telemetry, crash reports, logs, and backups
+- Local wake input, post-wake capture, account voice-grant issuance, provider
+  transcription sessions, speech output, and barge-in
 
 ## 6. Core security invariants
 
@@ -109,6 +113,15 @@ before execution.
 process death, restore, clone detection, or uncertainty. Counters are reserved
 transactionally, complete ciphertext is durable before transmission, and retry
 replays immutable bytes or fails closed.
+**S-018.** Pre-wake audio never leaves the Mac. Raw microphone audio is not
+persisted by default, and public status or telemetry contains no transcript,
+provider identifier, provider credential, repository content, or raw output.
+**S-019.** A partial, duplicated, malformed, empty, delayed, or out-of-order
+transcription event cannot dispatch work. At most one non-empty final transcript
+per provider-neutral Voice Turn ID reaches Task routing.
+**S-020.** The Mac receives no long-lived transcription-provider credential.
+Core derives voice authority from authenticated account context, issues only
+bounded grants, and enforces account scope, quota, expiry, and revocation.
 
 ## 7. Threats and controls
 

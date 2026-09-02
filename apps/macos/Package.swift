@@ -11,6 +11,7 @@ let package = Package(
         .executable(name: "ConatusMac", targets: ["ConatusMac"]),
         .library(name: "ConatusContracts", targets: ["ConatusContracts"]),
         .library(name: "ConatusCommandCenter", targets: ["ConatusCommandCenter"]),
+        .library(name: "ConatusVoice", targets: ["ConatusVoice"]),
     ],
     dependencies: [
         .package(path: "../../packages/mac-runtime"),
@@ -26,7 +27,9 @@ let package = Package(
         ),
         .target(name: "ConatusContracts"),
         .target(name: "ConatusCommandCenter"),
+        .target(name: "ConatusVoice", dependencies: ["ConatusContracts"]),
         .testTarget(name: "ConatusContractsTests", dependencies: ["ConatusContracts"]),
         .testTarget(name: "ConatusCommandCenterTests", dependencies: ["ConatusCommandCenter"]),
+        .testTarget(name: "ConatusVoiceTests", dependencies: ["ConatusVoice"]),
     ]
 )

@@ -18,6 +18,43 @@ export function isComponentHealth(value: unknown): value is ComponentHealth {
     && candidate.version.length > 0;
 }
 
+export const voiceLifecycleStates = [
+  "off",
+  "armed",
+  "acknowledging",
+  "capturing",
+  "transcribing",
+  "routing",
+  "working",
+  "speaking",
+  "recovering",
+  "blocked",
+] as const;
+
+export type VoiceLifecycleState = typeof voiceLifecycleStates[number];
+export type VoiceConversationMode = "wake_required" | "follow_up";
+
+export interface VoiceStatusSnapshot {
+  schemaVersion: 1;
+  state: VoiceLifecycleState;
+  conversationMode: VoiceConversationMode;
+  recoverable: boolean;
+}
+
+export function isVoiceStatusSnapshot(value: unknown): value is VoiceStatusSnapshot {
+  if (!isRecord(value) || containsForbiddenKey(value)) return false;
+  const shapeIsValid = hasExactKeys(value, ["schemaVersion", "state", "conversationMode", "recoverable"])
+    && value.schemaVersion === 1
+    && voiceLifecycleStates.some((state) => state === value.state)
+    && (value.conversationMode === "wake_required" || value.conversationMode === "follow_up")
+    && typeof value.recoverable === "boolean";
+  if (!shapeIsValid) return false;
+  if ((value.state === "off" || value.state === "armed") && value.conversationMode !== "wake_required") return false;
+  if (value.state === "recovering") return value.recoverable === true;
+  if (value.state === "blocked") return true;
+  return value.recoverable === false;
+}
+
 export interface CommandCenterSnapshot {
   schemaVersion: 1;
   observedAt: string;
@@ -81,7 +118,7 @@ export interface CommandCenterResult {
 }
 
 const forbiddenClientKeys = new Set([
-  "accountId", "path", "cwd", "provider", "providerThreadId", "credential", "transcript", "rawOutput",
+  "accountId", "path", "cwd", "provider", "providerId", "providerThreadId", "credential", "transcript", "audio", "rawOutput", "codex",
 ]);
 
 export function isCommandCenterSnapshot(value: unknown): value is CommandCenterSnapshot {

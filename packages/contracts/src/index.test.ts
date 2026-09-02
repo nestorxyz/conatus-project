@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
-import { isCommandCenterSnapshot, isComponentHealth } from "./index.js";
+import { isCommandCenterSnapshot, isComponentHealth, isVoiceStatusSnapshot } from "./index.js";
 
 async function vector(name: string): Promise<unknown> {
   return JSON.parse(await readFile(new URL(`../vectors/${name}`, import.meta.url), "utf8"));
@@ -28,4 +28,20 @@ test("rejects a command-center vector containing private identity", async () => 
 
 test("rejects unknown command-center fields", async () => {
   assert.equal(isCommandCenterSnapshot(await vector("command-center.unknown.invalid.json")), false);
+});
+
+test("accepts the shared transcript-free voice status vector", async () => {
+  assert.equal(isVoiceStatusSnapshot(await vector("voice-status.valid.json")), true);
+});
+
+test("rejects a voice status vector containing a transcript", async () => {
+  assert.equal(isVoiceStatusSnapshot(await vector("voice-status.invalid.json")), false);
+});
+
+test("rejects unknown voice lifecycle state", async () => {
+  assert.equal(isVoiceStatusSnapshot(await vector("voice-status.unknown.invalid.json")), false);
+});
+
+test("rejects contradictory voice recovery status", async () => {
+  assert.equal(isVoiceStatusSnapshot(await vector("voice-status.semantic.invalid.json")), false);
 });

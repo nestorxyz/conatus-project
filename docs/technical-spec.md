@@ -16,6 +16,25 @@ This is an independent implementation. Warp's repository is architectural prior 
 
 The first delivery boundary and dependency-ordered work are defined in [Alpha scope](alpha-scope.md) and the [implementation backlog](implementation-backlog.md).
 
+### Mac managed-voice boundary
+
+The Mac voice path is a product-owned lifecycle with four replaceable local
+boundaries: `WakeDetector`, `TurnCapture`, `Transcriber`, and `SpeechOutput`.
+Local wake classification starts a post-wake capture and immediate feedback;
+it does not perform semantic command transcription. Core authenticates the
+Conatus account and owns voice admission, quota, and short-lived grants. A
+transcription adapter reconciles provider events to provider-neutral Voice Turn
+IDs. Only one non-empty final transcript per Voice Turn ID can enter Task
+routing; partial transcripts are presentation only.
+
+The native lifecycle states are `off`, `armed`, `acknowledging`, `capturing`,
+`transcribing`, `routing`, `working`, `speaking`, `recovering`, and `blocked`.
+Its public projection contains only schema version, lifecycle state,
+conversation mode, and recoverability. Raw audio, transcript text, provider
+identifiers, credentials, paths, raw output, and Codex references are private
+to their narrow owning boundary and are excluded from public status and default
+telemetry.
+
 ## 2. System boundaries
 
 ```mermaid

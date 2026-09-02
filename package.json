@@ -15,6 +15,7 @@
     "check:m1-03": "pnpm check:gateway",
     "check:m1-04:live": "node scripts/check-m1-04-live.mjs",
     "check:m1-05": "node scripts/check-m1-05.mjs",
+    "check:m2-01": "node scripts/check-m2-01.mjs",
     "check:codex-compatibility": "node scripts/check-codex-compatibility.mjs",
     "mac:app": "node scripts/build-mac-app.mjs"
   }

@@ -1,5 +1,54 @@
 # Conatus Implementation Results
 
+## 2026-09-02 — M2-01 managed voice lifecycle contract
+
+**Status:** complete through deterministic local contracts and native lifecycle
+tests. No microphone permission, audio capture, Apple Speech API, network call,
+provider credential, voice quota, or account-backed transcription was used.
+
+### Delivered
+
+- ADR 0017 and the governing product, technical, security, and backlog documents
+  define the literal hands-free interaction: say `Hey Conatus` and continue in
+  the same utterance, receive immediate audible/visible feedback, use
+  account-managed cloud transcription, speak status, continue with follow-ups,
+  and interrupt output through barge-in.
+- A strict transcript-free TypeScript/Swift public status contract for `off`,
+  `armed`, `acknowledging`, `capturing`, `transcribing`, `routing`, `working`,
+  `speaking`, `recovering`, and `blocked`. Private and unknown fields, unknown
+  states, and contradictory recovery projections fail closed.
+- A provider-neutral native `ManagedVoiceSession` state machine. Partial events
+  cannot dispatch, one non-empty final transcript per active Voice Turn ID
+  produces one internal routing action, and duplicate final events are ignored.
+- Explicit follow-up, barge-in, cancellation, network recovery, blocked/reset,
+  and invalid-transition behavior without microphone or provider plumbing.
+- A single `pnpm check:m2-01` gate for the cross-language contract and complete
+  native Mac lifecycle regression.
+
+### Verification
+
+- `pnpm check:m2-01` passed under Node 24.19.0 and pnpm 10.29.2.
+- Nine TypeScript contract tests and twelve XCTest tests passed. The native set
+  includes eight voice-lifecycle tests plus existing Mac contract and command
+  center regressions.
+- Repository formatting, shell lint, negative quality fixtures, lockfile,
+  secret, AGPL, and dependency-license checks passed.
+- The AI-code audit replaced an unbounded historical Voice Turn ID set with one
+  active routed ID, retained explicit enum decisions instead of boolean modes,
+  and aligned semantic recovery validation across Swift and TypeScript.
+
+### Limitations and next step
+
+- This ticket defines behavior but does not yet listen. The next dependency-
+  unblocked ticket is M2-02: local wake detection, same-utterance pre-roll and
+  turn capture, microphone/audio-route handling, and immediate feedback using a
+  wake model whose code and weights permit open-source commercial distribution.
+- M2-03 remains responsible for account grants and quota; M2-04 for the Realtime
+  transcription adapter and separately approved live validation; M2-05 for the
+  integrated native conversation.
+- The preserved broad bootstrap still requires the legacy Android Rust
+  toolchain, which is not installed. No global toolchain was installed.
+
 ## 2026-09-02 — M1-05 native Mac command center integration
 
 **Status:** complete through local, disposable M1 acceptance. No production

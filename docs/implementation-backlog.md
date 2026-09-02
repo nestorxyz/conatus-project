@@ -177,6 +177,60 @@ only Conatus Workspace and Task IDs. Disposable PostgreSQL and fake App Server
 tests prove the read/create/restart/resume/retry journey without production
 state or another account-backed Codex task.
 
+### M2 Account-managed natural voice on Mac
+
+**Depends on:** M1
+
+**Status:** In progress; M2-01 is complete and M2-02 is next
+
+**User-visible outcome:** A user says `Hey Conatus` and continues the command in
+the same sentence. Conatus acknowledges immediately, transcribes post-wake audio
+through the user's Conatus account, routes one committed turn to the named Task,
+speaks useful status, accepts bounded follow-ups without another wake phrase,
+and supports barge-in. No keyboard shortcut, Apple Speech transcription, or
+user-supplied provider key is part of the launch path.
+
+M2 is delivered through the following dependency-ordered slices:
+
+1. **M2-01 Managed voice lifecycle contract:** provider-neutral lifecycle,
+   transcript-free public status, same-utterance activation, exactly-once turn
+   routing, follow-up, barge-in, cancellation, and recoverable failure behavior.
+2. **M2-02 Local wake, capture, and feedback:** replaceable commercially
+   distributable wake detection, pre-roll, local turn capture, microphone/audio
+   route handling, and immediate audible/visible feedback. No local semantic
+   transcription.
+3. **M2-03 Account voice grants and quota:** authenticated short-lived voice
+   admission, least-authority grants, per-account limits, revocation, abandoned
+   session cleanup, and no provider credential on the Mac.
+4. **M2-04 Realtime transcription adapter:** pinned provider contract, ordered
+   partial/final reconciliation, deterministic fake transport, and one separately
+   approved bounded live transcription validation.
+5. **M2-05 Native conversation integration:** task routing, partial transcript
+   presentation, committed command state, spoken status, follow-up, barge-in,
+   cancellation, sleep/wake, network-loss, and audio-route recovery.
+
+**Milestone acceptance:** Five same-sentence commands and two follow-ups route
+exactly once; acknowledgement begins before cloud processing; no pre-wake audio
+is uploaded and raw audio is not retained by default. Microphone denial, false
+wake, provider outage, quota denial, network loss, sleep/wake, headset changes,
+and barge-in are recoverable and visible. Cross-account voice grants fail, the
+Mac contains no provider credential, and production command transcription does
+not invoke Apple Speech.
+
+#### M2-01 Managed voice lifecycle contract
+
+**Depends on:** M1-05
+
+**Status:** Complete on 2026-09-02. See `RESULT.md` and ADR 0017.
+
+**Acceptance:** ADR 0017 and shared Swift/TypeScript vectors define the exact
+transcript-free public voice states. A deterministic native state machine proves
+same-utterance acknowledgement and capture, partial/final separation, one route
+per provider-neutral Voice Turn ID, continuous follow-up, barge-in,
+cancellation, and network recovery. Public status contains no audio, transcript,
+provider identifier, credential, path, raw output, or Codex reference. This
+ticket requests no microphone permission and makes no provider call.
+
 ## How to use this backlog
 
 - One ticket should produce one reviewable change or a deliberately small series of linked changes.

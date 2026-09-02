@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "state": "listening",
+  "conversationMode": "wake_required",
+  "recoverable": true
+}

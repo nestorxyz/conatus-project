@@ -9,6 +9,21 @@
 **Audience:** Product, design, mobile, platform, security, and quality engineering  
 **Product category:** Mobile control surface for developer machines and coding agents
 
+## Current Mac voice requirements
+
+The Mac V1 is voice-first in the literal hands-free sense. `Hey Conatus` starts
+an interaction while the user continues the command in the same utterance; no
+keyboard shortcut, button, or pause is required. Conatus gives immediate audible
+and visible activation feedback, uses account-managed cloud transcription rather
+than Apple Speech, routes only a committed final turn, speaks useful status, and
+supports a bounded follow-up conversation plus barge-in.
+
+Pre-wake audio stays on the Mac, raw audio is not retained by default, and a
+user never supplies a provider API key. The Conatus account owns voice
+authorization, quota, and cost. Wake detection, turn capture, transcription,
+speech output, Task routing, and Codex execution remain separate boundaries so
+no model output can silently expand execution authority.
+
 ## 1. Summary
 
 Conatus Mobile lets a developer securely operate registered computers and coding agents from an iOS or Android device. A universal composer accepts natural-language requests, explicit shell commands, and internal commands. Results appear as structured, resumable blocks; a full interactive terminal is available when a task requires raw terminal semantics.

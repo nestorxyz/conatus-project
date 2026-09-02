@@ -18,12 +18,13 @@ Before making meaningful changes, read:
 8. `docs/decisions/0014-local-binding-receipts-and-fencing.md`
 9. `docs/decisions/0015-bounded-account-backed-codex-validation.md`
 10. `docs/decisions/0016-loopback-command-center-boundary.md`
-11. `docs/product-spec.md`
-12. `docs/alpha-scope.md`
-13. `docs/decisions/0001-foundation.md`
-14. `docs/technical-spec.md`
-15. `docs/threat-model.md`
-16. `docs/implementation-backlog.md`
+11. `docs/decisions/0017-managed-voice-lifecycle.md`
+12. `docs/product-spec.md`
+13. `docs/alpha-scope.md`
+14. `docs/decisions/0001-foundation.md`
+15. `docs/technical-spec.md`
+16. `docs/threat-model.md`
+17. `docs/implementation-backlog.md`
 
 Read any ticket-specific documents linked from the backlog before implementing
 that ticket.

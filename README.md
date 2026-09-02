@@ -24,8 +24,12 @@ Task activation boundary passes only Conatus IDs to the Gateway; provider
 references and local paths remain private. Disposable PostgreSQL and a fake App
 Server prove create, restart, resume, and retry behavior. One separately
 approved bounded M1-04 account-backed lifecycle was verified; M1-05 created no
-additional real Codex task. Production identity, deployment, managed voice,
-signing, and release evidence remain absent. See the verified results and exact
+additional real Codex task. M2-01 now fixes the account-managed voice lifecycle
+and proves same-utterance capture, exactly-once final routing, follow-up,
+barge-in, cancellation, recovery, and transcript-free public status entirely
+against deterministic local contracts. Microphone capture, wake-model
+integration, provider transcription, production identity, deployment, signing,
+and release evidence remain absent. See the verified results and exact
 limitations in [RESULT.md](RESULT.md).
 
 ### Preserved pre-pivot evidence
